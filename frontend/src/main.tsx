@@ -11,7 +11,10 @@ import {
 
 import './styles.css'
 
-import Map from './screens/Map.tsx'
+import { CookiesProvider } from 'react-cookie'
+import { ToastContainer } from 'react-toastify'
+import EndUserMap from './components/screens/EndUserMap.tsx'
+import AdminPanel from './components/screens/AdminPanel.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -25,13 +28,13 @@ const rootRoute = createRootRoute({
 const mapRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: Map,
+  component: EndUserMap,
 })
 
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/',
-  component: Map,
+  component: AdminPanel,
 })
 
 const routeTree = rootRoute.addChildren([mapRoute, adminRoute])
@@ -56,7 +59,10 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
+      <CookiesProvider defaultSetOptions={{ path: '/' }}>
+        <RouterProvider router={router} />
+        <ToastContainer />
+      </CookiesProvider>
     </StrictMode>,
   )
 }
