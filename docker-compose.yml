@@ -38,19 +38,6 @@ services:
       - "5005:5005"
     container_name: backend-stn
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./html:/usr/share/nginx/html:ro
-    networks:
-      - red01
-    restart: unless-stopped
-  
-
   frontend:
     build:
       context: ./frontend
