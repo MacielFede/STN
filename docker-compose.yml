@@ -12,8 +12,6 @@ services:
       - POSTGIS_DB=geodb
       - POSTGIS_USER=geouser
       - POSTGIS_PASSWORD=geopass
-    networks:
-      - red01
     depends_on:
       - postgis
     restart: unless-stopped
