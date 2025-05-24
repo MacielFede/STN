@@ -3,6 +3,7 @@ node_modules
 dist
 dist-ssr
 *.local
+<<<<<<< HEAD
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/react,node
@@ -163,3 +164,6 @@ sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/react,node
 
+=======
+/app
+>>>>>>> origin/develop

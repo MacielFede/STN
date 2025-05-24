@@ -12,9 +12,9 @@ import {
 import './styles.css'
 
 import { CookiesProvider } from 'react-cookie'
-import EndUserMap from './screens/EndUserMap.tsx'
-import AdminPanel from './screens/AdminPanel.tsx'
 import { ToastContainer } from 'react-toastify'
+import EndUserMap from './components/screens/EndUserMap.tsx'
+import AdminPanel from './components/screens/AdminPanel.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
