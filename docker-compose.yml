@@ -5,7 +5,7 @@ services:
     image: docker.osgeo.org/geoserver:2.26.2
     container_name: geoserver
     ports:
-      - "8000:8000"
+      - "8000:8080"
     environment:
       - GEOSERVER_DATA_DIR=/var/local/geoserver
       - POSTGIS_HOST=postgis

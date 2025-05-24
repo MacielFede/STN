@@ -20,10 +20,17 @@ If you make any changes, you'll need to re-build the project:
 docker-compose build --no-cache && docker compose up -d 
 ```
 
-Geoserver will run in the port 80
+Geoserver will run in the port 8000
 
-Postgres will run in the port 5432
+Postgres will run in the port 5433
 
-FrontEnd application will run in the port 5173
+FrontEnd application will run in the port 3000
 
 BackEnd application will run in the port 8080
+
+## Load geoserver config 
+
+```bash
+sudo docker cp utils/geoserver_data/. <container_name_or_id>:/var/local/geoserver
+```
+

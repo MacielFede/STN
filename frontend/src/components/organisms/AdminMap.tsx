@@ -42,7 +42,7 @@ const AdminMap = () => {
       </CommandPallete>
 
       <MapContainer
-        preferCanvas={true}
+        preferCanvas={false}
         center={[-32.5, -56.164]}
         zoom={8}
         scrollWheelZoom
