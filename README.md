@@ -29,7 +29,7 @@ FrontEnd application will run in the port 3000
 BackEnd application will run in the port 8080
 
 ## Load geoserver config 
-sudo docker cp utils/geoserver_data <container_name_or_id>:/var/local/geoserver
+sudo docker cp utils/geoserver_data/. <container_name_or_id>:/var/local/geoserver
 
 
 
