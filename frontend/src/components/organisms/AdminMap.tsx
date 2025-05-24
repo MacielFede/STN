@@ -13,7 +13,9 @@ const AdminMap = () => {
           type="Companies"
           trigger={
             <Button
-              onClick={() => console.log('Adminisitrar empresas de transporte')}
+              onClick={() => {
+                console.log('Adminisitrar empresas de transporte')
+              }}
             >
               Administrar empresas
             </Button>
@@ -44,6 +46,7 @@ const AdminMap = () => {
         center={[-32.5, -56.164]}
         zoom={8}
         scrollWheelZoom
+        zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
