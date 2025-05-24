@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
-import '../styles/Map.css'
+import '@/styles/Map.css'
 import { CircleMarker } from 'react-leaflet'
 
 function EndUserMap  ()  {
@@ -28,10 +28,11 @@ function EndUserMap  ()  {
           draggable: true,
           progress: undefined,
           theme: 'colored',
+          toastId: 'Location-error'
         })
       },
       {
-        //enableHighAccuracy: true,
+        enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
       }
@@ -39,7 +40,7 @@ function EndUserMap  ()  {
   }, [])
 
   return (
-    <>
+    
       <MapContainer preferCanvas center={position} zoom={13} className="leaflet-container">
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -56,7 +57,7 @@ function EndUserMap  ()  {
 
      
 
-    </>
+  
   )
 }
 
