@@ -16,7 +16,7 @@ api.interceptors.response.use(
   },
 )
 
-const geoserverBaseURL = 'http://localhost:8000/geoserver/citeows'
+const geoserverBaseURL = 'http://localhost:8000/geoserver/cite/ows'
 export const geoBaseParams = {
   service: 'WFS',
   version: '1.0.0',
@@ -26,7 +26,5 @@ export const geoBaseParams = {
 
 export const geoApi = axios.create({
   baseURL: geoserverBaseURL,
-  headers: {
-    'Access-Control-Allow-Origin': true,
-  },
+  params: geoBaseParams,
 })

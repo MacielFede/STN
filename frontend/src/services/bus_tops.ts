@@ -5,9 +5,10 @@ import { geoApi } from '@/api/config'
 export const getStops = async () => {
   const { data }: AxiosResponse<PointFeatureCollection> = await geoApi.get('', {
     params: {
-      typeName: 'citeows:ft_bus_stop',
+      typeName: 'cite:ft_bus_stop',
     },
   })
   console.log(data)
+  if (!data.features) throw Error()
   return data.features
 }

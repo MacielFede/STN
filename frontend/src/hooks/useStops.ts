@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { GeoServerFeature } from '@/models/geoserver'
+import type { PointFeature } from '@/models/geoserver'
 import { getStops } from '@/services/bus_tops'
 
 const useStops = (enabled: boolean) => {
@@ -8,7 +8,7 @@ const useStops = (enabled: boolean) => {
     refetch,
     isLoading,
     isError,
-  } = useQuery<Array<GeoServerFeature>>({
+  } = useQuery<Array<PointFeature>>({
     queryKey: ['stops'],
     queryFn: getStops,
     enabled,

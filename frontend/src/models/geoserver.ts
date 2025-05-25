@@ -12,7 +12,7 @@ export type Geometry = {
   }
 }[GeometryType]
 
-type GeoServerFeature<T extends Geometry = Geometry> = {
+export type GeoServerFeature<T extends Geometry = Geometry> = {
   type: 'Feature'
   id: string
   geometry: T
@@ -42,7 +42,10 @@ type GeoServerFeatureCollection<T extends Geometry = Geometry> = {
 }
 
 type PointGeometry = Extract<Geometry, { type: 'Point' }>
+export type PointFeature = GeoServerFeature<PointGeometry>
 export type PointFeatureCollection = GeoServerFeatureCollection<PointGeometry>
+
 type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
+export type LineStringFeature = GeoServerFeature<LineStringGeometry>
 export type LineStringFeatureCollection =
   GeoServerFeatureCollection<LineStringGeometry>
