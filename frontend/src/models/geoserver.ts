@@ -14,7 +14,7 @@ type Geometry = {
   }
 }[GeometryType]
 
-type PointGeometry = Extract<Geometry, { type: 'Point' }>
+export type PointGeometry = Extract<Geometry, { type: 'Point' }>
 
 // type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
 

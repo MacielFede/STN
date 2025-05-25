@@ -3,7 +3,6 @@ package com.tecnoinf.tsig.stn.service;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.locationtech.jts.geom.Geometry;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tecnoinf.tsig.stn.dto.BusStopRequest;
 import com.tecnoinf.tsig.stn.dto.BusStopResponse;
 import com.tecnoinf.tsig.stn.model.BusStop;
@@ -15,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,14 +27,15 @@ public class BusStopService {
     }
 
     public BusStopResponse create(BusStopRequest busStopRequest) {
-        BusStop busStopSaved = saveBusStop(busStopRequest);
+        BusStop busStopSaved = saveBusStop(busStopRequest, Optional.empty());
 
         return mapBusStopResponse(busStopSaved);
     }
 
     public BusStopResponse update(Long id, BusStopRequest busStopRequest) {
-        BusStop busStop = busStopRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bus stop not found"));
-        BusStop busStopUpdated = saveBusStop(busStopRequest);
+        busStopRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bus stop not found"));
+        BusStop busStopUpdated = saveBusStop(busStopRequest, Optional.of(id));
 
         return mapBusStopResponse(busStopUpdated);
     }
@@ -54,7 +55,7 @@ public class BusStopService {
         return busStopRepository.findById(id).stream().map(this::mapBusStopResponse).collect(Collectors.toList());
     }
 
-    private BusStop saveBusStop(BusStopRequest busStopRequest) {
+    private BusStop saveBusStop(BusStopRequest busStopRequest, Optional<Long> busStopId) {
         Geometry geometry = parseGeometry(busStopRequest.geometry());
 
         BusStop busStop = new BusStop();
@@ -63,7 +64,9 @@ public class BusStopService {
         busStop.setStatus(busStopRequest.status());
         busStop.setHasShelter(busStopRequest.hasShelter());
         busStop.setGeometry(geometry);
-
+        if (busStopId.isPresent()) {
+            busStop.setId(busStopId.get());
+        }
         return busStopRepository.save(busStop);
     }
 
@@ -74,8 +77,7 @@ public class BusStopService {
                 busStop.getDescription(),
                 busStop.getStatus(),
                 busStop.getHasShelter(),
-                busStop.getGeometry()
-        );
+                busStop.getGeometry());
     }
 
     private Geometry parseGeometry(JsonNode geoJson) {
