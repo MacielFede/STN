@@ -5,7 +5,7 @@ import java.sql.Time;
 
 public record BusLineScheduleResponse(
         Long id,
-        Date operating_day,
-        Time departure_time,
-        Time arrival_time
+        Date operatingDay,
+        Time departureTime,
+        Time arrivalTime
 ) { }
