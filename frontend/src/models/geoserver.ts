@@ -49,3 +49,8 @@ type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
 export type LineStringFeature = GeoServerFeature<LineStringGeometry>
 export type LineStringFeatureCollection =
   GeoServerFeatureCollection<LineStringGeometry>
+
+export type BBox = {
+  sw?: L.LatLng
+  ne?: L.LatLng
+}
