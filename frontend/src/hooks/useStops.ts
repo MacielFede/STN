@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import type { PointFeature } from '@/models/geoserver'
+import type { BusStopFeature } from '@/models/geoserver'
 import { getStops } from '@/services/busStops'
 
 const useStops = (cqlFilter?: string) => {
@@ -9,9 +9,11 @@ const useStops = (cqlFilter?: string) => {
     refetch,
     isLoading,
     isError,
-  } = useQuery<Array<PointFeature>>({
+  } = useQuery<Array<BusStopFeature>>({
     queryKey: ['stops'],
-    queryFn: () => getStops(cqlFilter),
+    queryFn: () => {
+      return cqlFilter ? getStops(cqlFilter) : []
+    },
     enabled: false,
   })
 

@@ -1,3 +1,5 @@
+import type { BusStopProperties } from './database'
+
 type GeometryType = 'Point' | 'LineString'
 
 type GeometryCoordinatesMap = {
@@ -5,30 +7,28 @@ type GeometryCoordinatesMap = {
   LineString: [[number, number]]
 }
 
-export type Geometry = {
+type Geometry = {
   [K in GeometryType]: {
     type: K
     coordinates: GeometryCoordinatesMap[K]
   }
 }[GeometryType]
 
-export type GeoServerFeature<T extends Geometry = Geometry> = {
+type PointGeometry = Extract<Geometry, { type: 'Point' }>
+
+// type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
+
+export type BusStopFeature = {
   type: 'Feature'
   id: string
-  geometry: T
+  geometry: PointGeometry
   geometry_name: string
-  properties: {
-    id: number
-    name: string
-    description: string
-    status: string
-    sheltered: boolean
-  }
+  properties: BusStopProperties
 }
 
-type GeoServerFeatureCollection<T extends Geometry = Geometry> = {
+export type BusStopFeatureCollection = {
   type: 'FeatureCollection'
-  features: Array<GeoServerFeature<T>>
+  features: Array<BusStopFeature>
   totalFeatures: number
   numberMatched: number
   numberReturned: number
@@ -40,15 +40,6 @@ type GeoServerFeatureCollection<T extends Geometry = Geometry> = {
     }
   }
 }
-
-type PointGeometry = Extract<Geometry, { type: 'Point' }>
-export type PointFeature = GeoServerFeature<PointGeometry>
-export type PointFeatureCollection = GeoServerFeatureCollection<PointGeometry>
-
-type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
-export type LineStringFeature = GeoServerFeature<LineStringGeometry>
-export type LineStringFeatureCollection =
-  GeoServerFeatureCollection<LineStringGeometry>
 
 export type BBox = {
   sw?: L.LatLng
