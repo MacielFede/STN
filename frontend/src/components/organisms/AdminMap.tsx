@@ -1,11 +1,14 @@
 import { useCookies } from 'react-cookie'
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
 import CommandPallete from '@/components/molecules/CommandPallete'
+import useStops from '@/hooks/useStops'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
+  const { stops } = useStops(true)
+
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
@@ -52,6 +55,20 @@ const AdminMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {stops?.map((stop) => {
+          return (
+            <Marker
+              key={stop.id || stop.properties.id}
+              position={stop.geometry.coordinates}
+            >
+              <Popup>
+                <strong>{stop.properties.name}</strong>
+                <p>{stop.properties.description}</p>
+                <p>Status: {stop.properties.status}</p>
+              </Popup>
+            </Marker>
+          )
+        })}
       </MapContainer>
     </>
   )
