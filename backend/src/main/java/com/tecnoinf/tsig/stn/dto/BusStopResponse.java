@@ -8,6 +8,5 @@ public record BusStopResponse(
         String name,
         String description,
         StopStatus status,
-        Boolean shelter,
-        Geometry geometry
+        Boolean hasShelter
     ) { }

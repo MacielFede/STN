@@ -27,14 +27,18 @@ public class BusStopService {
     }
 
     public BusStopResponse create(BusStopRequest busStopRequest) {
-        BusStop busStopSaved = saveBusStop(busStopRequest);
+        BusStop busStop = new BusStop();
+        mapRequestToBusStop(busStop, busStopRequest);
 
+        BusStop busStopSaved = busStopRepository.save(busStop);
         return mapBusStopResponse(busStopSaved);
     }
 
     public BusStopResponse update(Long id, BusStopRequest busStopRequest) {
         BusStop busStop = busStopRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bus stop not found"));
-        BusStop busStopUpdated = saveBusStop(busStopRequest);
+        mapRequestToBusStop(busStop, busStopRequest);
+
+        BusStop busStopUpdated = busStopRepository.save(busStop);
 
         return mapBusStopResponse(busStopUpdated);
     }
@@ -54,17 +58,12 @@ public class BusStopService {
         return busStopRepository.findById(id).stream().map(this::mapBusStopResponse).collect(Collectors.toList());
     }
 
-    private BusStop saveBusStop(BusStopRequest busStopRequest) {
-        Geometry geometry = parseGeometry(busStopRequest.geometry());
-
-        BusStop busStop = new BusStop();
+    private void mapRequestToBusStop(BusStop busStop, BusStopRequest busStopRequest) {
         busStop.setName(busStopRequest.name());
         busStop.setDescription(busStopRequest.description());
         busStop.setStatus(busStopRequest.status());
         busStop.setHasShelter(busStopRequest.hasShelter());
-        busStop.setGeometry(geometry);
-
-        return busStopRepository.save(busStop);
+        busStop.setGeometry(parseGeometry(busStopRequest.geometry()));
     }
 
     private BusStopResponse mapBusStopResponse(BusStop busStop) {
@@ -73,8 +72,7 @@ public class BusStopService {
                 busStop.getName(),
                 busStop.getDescription(),
                 busStop.getStatus(),
-                busStop.getHasShelter(),
-                busStop.getGeometry()
+                busStop.getHasShelter()
         );
     }
 
