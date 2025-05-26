@@ -25,7 +25,7 @@ public class StopLineController {
     }
 
     @DeleteMapping("/{stopId}/{lineId}")
-    public ResponseEntity<Void> delete(@PathVariable Long stopId, @PathVariable Long lineId) {
+    public ResponseEntity<Void> deleteAllByStopAndLine(@PathVariable Long stopId, @PathVariable Long lineId) {
         stopLineService.delete(stopId, lineId);
         return ResponseEntity.noContent().build();
     }

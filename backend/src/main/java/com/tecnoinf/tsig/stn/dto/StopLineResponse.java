@@ -1,9 +1,9 @@
 package com.tecnoinf.tsig.stn.dto;
 
-import java.time.LocalTime;
+import java.sql.Time;
 
 public record StopLineResponse(
         Long stopId,
         Long lineId,
-        LocalTime estimatedTime
+        Time estimatedTime
 ) {}
