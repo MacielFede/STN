@@ -6,5 +6,7 @@ public record BusLineResponse(
         Long id,
         String number,
         LineStatus status,
+        String origin,
+        String destination,
         Long companyId
 ) { }
