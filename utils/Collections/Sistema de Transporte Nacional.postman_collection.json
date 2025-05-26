@@ -16,9 +16,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
-									"});"
+									"pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -52,6 +50,18 @@
 				},
 				{
 					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -507,7 +517,7 @@
 	"variable": [
 		{
 			"key": "TOKEN",
-			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODAyODE3NSwiZXhwIjoxNzQ4MTE0NTc1fQ.k49Z9OIKpq7fcxDOdZKAK1_RDM3Fb-tfqz2AOY2HU0A",
+			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODA0MjgyNiwiZXhwIjoxNzQ4MTI5MjI2fQ.G-rSd0_bGoIlWG__h578_Bc7W8e2NbN_ZUB7PAA8P4g",
 			"type": "string"
 		},
 		{
