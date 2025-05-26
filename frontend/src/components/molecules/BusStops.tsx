@@ -76,7 +76,8 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
     return (
       <Marker
         key={stop.id || stop.properties.id}
-        position={stop.geometry.coordinates}
+        position={[stop.geometry.coordinates[1], stop.geometry.coordinates[0]]}
+
         icon={
           stop.properties.status === 'active'
             ? activeBusStopIcon
