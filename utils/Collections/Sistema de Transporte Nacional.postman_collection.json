@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "c54a6445-fdeb-4e3a-bd40-656a1ec996e7",
+		"_postman_id": "f30bf487-06dc-44c8-8186-70f4c32eef39",
 		"name": "Sistema de Transporte Nacional",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "44073787",
-		"_collection_link": "https://festivo-api-team.postman.co/workspace/Festivo~cf3f8462-d1a2-4175-8131-951033421435/collection/44073787-c54a6445-fdeb-4e3a-bd40-656a1ec996e7?action=share&source=collection_link&creator=44073787"
+		"_exporter_id": "18980321"
 	},
 	"item": [
 		{
@@ -349,6 +348,139 @@
 							"path": [
 								"bus-lines",
 								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Stops",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 124\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901119\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 123\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901113\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops/7",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"7"
 							]
 						}
 					},
