@@ -24,9 +24,14 @@ public class StopLineController {
         return ResponseEntity.ok(stopLineService.create(request));
     }
 
-    @DeleteMapping("/{stopId}/{lineId}")
-    public ResponseEntity<Void> delete(@PathVariable Long stopId, @PathVariable Long lineId) {
-        stopLineService.delete(stopId, lineId);
+    @PutMapping("/{id}")
+    public ResponseEntity<StopLineResponse> update(@PathVariable Long id, @RequestBody StopLineRequest request) {
+        return ResponseEntity.ok(stopLineService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        stopLineService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -35,9 +40,14 @@ public class StopLineController {
         return ResponseEntity.ok(stopLineService.findAll());
     }
 
-    @GetMapping("/{stopId}")
+    @GetMapping("/by-stop/{stopId}")
     public ResponseEntity<List<StopLineResponse>> getByStopId(@PathVariable Long stopId) {
         return ResponseEntity.ok(stopLineService.findByStopId(stopId));
+    }
+
+    @GetMapping("/by-line/{lineId}")
+    public ResponseEntity<List<StopLineResponse>> getByLineId(@PathVariable Long lineId) {
+        return ResponseEntity.ok(stopLineService.findByLineId(lineId));
     }
 
     @GetMapping("/{stopId}/time-range")

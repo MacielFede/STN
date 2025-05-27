@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Time;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,12 +53,20 @@ public class StopLineService {
         return mapToResponse(saved);
     }
 
-    public void delete(Long stopId, Long lineId) {
-        boolean exists = stopLineRepository.existsByBusStopIdAndBusLineId(stopId, lineId);
-        if (!exists) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "StopLine not found");
-        }
-        stopLineRepository.deleteByBusStopIdAndBusLineId(stopId, lineId);
+    public StopLineResponse update(Long id, StopLineRequest request) {
+        StopLine stopLine = stopLineRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StopLine not found"));
+
+        stopLine.setEstimatedTime(request.estimatedTime());
+
+        StopLine updated = stopLineRepository.save(stopLine);
+        return mapToResponse(updated);
+    }
+
+    public void delete(Long stopLineId) {
+        StopLine stopLine = stopLineRepository.findById(stopLineId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StopLine not found"));
+        stopLineRepository.delete(stopLine);
     }
 
     public List<StopLineResponse> findAll() {
@@ -78,8 +87,16 @@ public class StopLineService {
                 .collect(Collectors.toList());
     }
 
+    public List<StopLineResponse> findByLineId(Long lineId) {
+        return stopLineRepository.findAll().stream()
+                .filter(stopLine -> stopLine.getBusLine().getId().equals(lineId))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     private StopLineResponse mapToResponse(StopLine stopLine) {
         return new StopLineResponse(
+                stopLine.getId(),
                 stopLine.getBusStop().getId(),
                 stopLine.getBusLine().getId(),
                 stopLine.getEstimatedTime()
