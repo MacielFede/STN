@@ -25,7 +25,7 @@ public class StopLineController {
     }
 
     @DeleteMapping("/{stopId}/{lineId}")
-    public ResponseEntity<Void> deleteAllByStopAndLine(@PathVariable Long stopId, @PathVariable Long lineId) {
+    public ResponseEntity<Void> delete(@PathVariable Long stopId, @PathVariable Long lineId) {
         stopLineService.delete(stopId, lineId);
         return ResponseEntity.noContent().build();
     }
@@ -40,7 +40,7 @@ public class StopLineController {
         return ResponseEntity.ok(stopLineService.findByStopId(stopId));
     }
 
-    @GetMapping("/{stopId}/by-stop-and-time")
+    @GetMapping("/{stopId}/time-range")
     public ResponseEntity<List<StopLineResponse>> findByStopAndEstimatedTimeRange(
             @PathVariable Long stopId,
             @RequestParam Time startTime,
