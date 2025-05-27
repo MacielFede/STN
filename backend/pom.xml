@@ -82,6 +82,32 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+            <version>6.4.4.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-geojson</artifactId>
+            <version>30.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>30.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>30.3</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -92,5 +118,10 @@
             </plugin>
         </plugins>
     </build>
-
+    <repositories>
+        <repository>
+            <id>osgeo</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+    </repositories>
 </project>

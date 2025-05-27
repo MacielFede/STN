@@ -2,6 +2,6 @@ export type BusStopProperties = {
   id: number
   name: string
   description: string
-  status: 'active' | 'inactive'
-  sheltered: boolean
+  status: 'ACTIVE' | 'INACTIVE'
+  hasShelter: boolean
 }

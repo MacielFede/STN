@@ -4,6 +4,11 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
 import '@/styles/Map.css'
+import BusStops  from '../molecules/BusStops'
+import OriginDestinationSelector  from '../molecules/OriginDestinationSelector'
+import { Button } from '../ui/button'
+import Modal from '../molecules/Modal'
+import CommandPallete from '../molecules/CommandPallete'
 
 function EndUserMap() {
   const [position, setPosition] = useState<[number, number]>([
@@ -52,6 +57,14 @@ function EndUserMap() {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap contributors"
       />
+
+
+<CommandPallete yPosition="top" xPosition="right">
+  <OriginDestinationSelector onOriginChange={(val) => console.log('Origen:', val)}
+  onDestinationChange={(val) => console.log('Destino:', val)}/>
+ 
+</CommandPallete>
+
       {
         <CircleMarker
           center={position}
@@ -65,6 +78,7 @@ function EndUserMap() {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
       }
+       <BusStops isAdmin={false} />
     </MapContainer>
   )
 }

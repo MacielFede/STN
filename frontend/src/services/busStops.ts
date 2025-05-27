@@ -1,7 +1,11 @@
 import debounce from 'lodash.debounce'
 import type { AxiosResponse } from 'axios'
-import type { BusStopFeatureCollection } from '@/models/geoserver'
-import { geoApi } from '@/api/config'
+import type {
+  BusStopFeatureCollection,
+  PointGeometry,
+} from '@/models/geoserver'
+import type { BusStopProperties } from '@/models/database'
+import { api, geoApi } from '@/api/config'
 
 const _getStops = async (cqlFilter: string) => {
   const { data }: AxiosResponse<BusStopFeatureCollection> = await geoApi.get(
@@ -13,15 +17,26 @@ const _getStops = async (cqlFilter: string) => {
       },
     },
   )
-  console.log(data)
   return data.features
 }
 
 export const getStops = debounce(
   async (cqlFilter: string) => _getStops(cqlFilter),
-  2000,
+  1000,
   {
     leading: true,
     trailing: true,
   },
 )
+
+export const updateStop = async (
+  values: BusStopProperties & { geometry: PointGeometry },
+) => {
+  return await api.put(`bus-stops/${values.id}`, {
+    ...values,
+  })
+}
+
+export const deleteStop = async (id: number) => {
+  return await api.delete(`bus-stops/${id}`)
+}

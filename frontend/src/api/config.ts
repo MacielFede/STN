@@ -1,21 +1,18 @@
+import Cookies from 'js-cookie'
 import { XMLParser } from 'fast-xml-parser'
 import axios from 'axios'
+import { transformKeysToCamelCase } from '@/utils/helpers'
 
 const backendBaseURL = 'http://localhost:8080/api/'
 export const api = axios.create({ baseURL: backendBaseURL })
 
-api.interceptors.response.use(
-  (response) => {
-    if (response.config.url?.endsWith('/auth/login') && response.data.token) {
-      api.defaults.headers.common['Authorization'] =
-        `Bearer ${response.data.token}`
-    }
-    return response
-  },
-  (error) => {
-    return Promise.reject(error)
-  },
-)
+api.interceptors.request.use((config) => {
+  const token = Cookies.get('admin-jwt')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
 const geoserverBaseURL = 'http://localhost:8000/geoserver/cite/ows'
 const geoBaseParams = {
@@ -53,9 +50,20 @@ geoApi.interceptors.response.use(
           ),
         )
       }
+    } // Only apply transformation to GeoJSON-like objects
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      Array.isArray(response.data.features)
+    ) {
+      const camelData = transformKeysToCamelCase(response.data)
+      return {
+        ...response,
+        data: camelData,
+      }
     }
 
-    return response // Continue normally if not XML
+    return response
   },
   (error) => {
     // Handle transport-level errors here
