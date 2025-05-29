@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
 import '@/styles/Map.css'
 import BusStops  from '../molecules/BusStops'
-import OriginDestinationSelector  from '../molecules/OriginDestinationSelector'
+import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
 import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
 import CommandPallete from '../molecules/CommandPallete'
@@ -60,8 +60,7 @@ function EndUserMap() {
 
 
 <CommandPallete yPosition="top" xPosition="right">
-  <OriginDestinationSelector onOriginChange={(val) => console.log('Origen:', val)}
-  onDestinationChange={(val) => console.log('Destino:', val)}/>
+  <OriginDestinationSelector />
  
 </CommandPallete>
 

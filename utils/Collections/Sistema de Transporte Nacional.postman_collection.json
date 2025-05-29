@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "c54a6445-fdeb-4e3a-bd40-656a1ec996e7",
+		"_postman_id": "f30bf487-06dc-44c8-8186-70f4c32eef39",
 		"name": "Sistema de Transporte Nacional",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "44073787",
-		"_collection_link": "https://festivo-api-team.postman.co/workspace/Festivo~cf3f8462-d1a2-4175-8131-951033421435/collection/44073787-c54a6445-fdeb-4e3a-bd40-656a1ec996e7?action=share&source=collection_link&creator=44073787"
+		"_exporter_id": "18980321"
 	},
 	"item": [
 		{
@@ -17,7 +16,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);"
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -51,18 +52,6 @@
 				},
 				{
 					"name": "Register",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -270,7 +259,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\", // ACTIVE | INACTIVE\r\n    \"companyId\": 2\r\n}",
+							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\",\r\n    \"origin\": \"MONTEVIDEO\",\r\n    \"destination\": \"ATLANTIDA\",\r\n    \"geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                -56.164531,\r\n                -34.901112\r\n            ], // Montevideo - Centro\r\n            [\r\n                -56.053879,\r\n                -34.882119\r\n            ], // Carrasco\r\n            [\r\n                -55.960723,\r\n                -34.851224\r\n            ], // Paso Carrasco / Canelones\r\n            [\r\n                -55.869198,\r\n                -34.786516\r\n            ], // Solymar\r\n            [\r\n                -55.755424,\r\n                -34.757094\r\n            ], // Salinas\r\n            [\r\n                -55.740623,\r\n                -34.750248\r\n            ] // Atlántida\r\n        ]\r\n    },\r\n    \"companyId\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -306,7 +295,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\", // ACTIVE | INACTIVE\r\n    \"companyId\": 2\r\n}",
+							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\",\r\n    \"origin\": \"MONTEVIDEO\",\r\n    \"destination\": \"PARQUE DEL PLATA\",\r\n    \"geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                -56.164531,\r\n                -34.901112\r\n            ], // Montevideo - Centro\r\n            [\r\n                -56.053879,\r\n                -34.882119\r\n            ], // Carrasco\r\n            [\r\n                -55.960723,\r\n                -34.851224\r\n            ], // Paso Carrasco\r\n            [\r\n                -55.869198,\r\n                -34.786516\r\n            ], // Solymar\r\n            [\r\n                -55.794697,\r\n                -34.763431\r\n            ], // El Pinar\r\n            [\r\n                -55.755424,\r\n                -34.757094\r\n            ], // Salinas\r\n            [\r\n                -55.736732,\r\n                -34.749485\r\n            ], // Atlántida\r\n            [\r\n                -55.709457,\r\n                -34.745332\r\n            ] // Parque del Plata\r\n        ]\r\n    },\r\n    \"companyId\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -314,12 +303,145 @@
 							}
 						},
 						"url": {
+							"raw": "{{URL}}/bus-lines/2",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-lines",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
 							"raw": "{{URL}}/bus-lines/1",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"bus-lines",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Stops",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 124\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901119\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 123\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901113\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
 								"1"
 							]
 						}
@@ -342,13 +464,146 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/bus-lines/2",
+							"raw": "{{URL}}/bus-stops/7",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"bus-lines",
-								"2"
+								"bus-stops",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Stops",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 124\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901119\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Av. Italia 123\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901113\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops/7",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"7"
 							]
 						}
 					},
@@ -385,7 +640,7 @@
 	"variable": [
 		{
 			"key": "TOKEN",
-			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODA0MjgyNiwiZXhwIjoxNzQ4MTI5MjI2fQ.G-rSd0_bGoIlWG__h578_Bc7W8e2NbN_ZUB7PAA8P4g",
+			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODAyODE3NSwiZXhwIjoxNzQ4MTE0NTc1fQ.k49Z9OIKpq7fcxDOdZKAK1_RDM3Fb-tfqz2AOY2HU0A",
 			"type": "string"
 		},
 		{

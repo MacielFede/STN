@@ -1,4 +1,4 @@
-import type { BusStopProperties } from './database'
+import type { BusStopProperties, BusLineProperties } from './database'
 
 type GeometryType = 'Point' | 'LineString'
 
@@ -29,6 +29,30 @@ export type BusStopFeature = {
 export type BusStopFeatureCollection = {
   type: 'FeatureCollection'
   features: Array<BusStopFeature>
+  totalFeatures: number
+  numberMatched: number
+  numberReturned: number
+  timeStamp: string
+  crs: {
+    type: 'name'
+    properties: {
+      name: string
+    }
+  }
+}
+
+export type BusLineFeature = {
+  type: 'Feature'
+  id: string
+  geometry: PointGeometry
+  geometry_name: string
+  properties: BusLineProperties
+}
+
+
+export type BusLineFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<BusLineFeature>
   totalFeatures: number
   numberMatched: number
   numberReturned: number

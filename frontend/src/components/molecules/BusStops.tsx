@@ -61,7 +61,7 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
             <div>
               <strong>{stop.properties.name}</strong>
               <p>{stop.properties.description}</p>
-              <p>Estado: {stop.properties.status}</p>
+              <p>Estado: {stop.properties.status === 'ACTIVE' ? 'INACTIVA' : 'ACTIVA'}</p>
             </div>
           </Popup>
         )}
