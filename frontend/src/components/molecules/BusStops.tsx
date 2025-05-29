@@ -41,17 +41,19 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
     const ne = bounds.getNorthEast()
     setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
   }, [map, setCqlFilter])
-
+  
   return stops?.map((stop) => {
     return (
       <Marker
         key={stop.id || stop.properties.id}
         position={[stop.geometry.coordinates[1], stop.geometry.coordinates[0]]}
 
+        
         icon={
           stop.properties.status === 'ACTIVE'
-            ? InactiveBusStopIcon
-            :  ActiveBusStopIcon
+            ? ActiveBusStopIcon
+            
+            :  InactiveBusStopIcon
         }
       >
         {isAdmin ? (
@@ -61,7 +63,7 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
             <div>
               <strong>{stop.properties.name}</strong>
               <p>{stop.properties.description}</p>
-              <p>Estado: {stop.properties.status === 'ACTIVE' ? 'INACTIVA' : 'ACTIVA'}</p>
+              <p>Estado: {stop.properties.status === 'ACTIVE' ? 'ACTIVA' : 'INACTIVA'}</p>
             </div>
           </Popup>
         )}

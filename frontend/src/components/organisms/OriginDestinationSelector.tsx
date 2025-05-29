@@ -9,7 +9,6 @@ const BusLineSelector = () => {
   const [busLines, setBusLines] = useState<BusLineFeature[]>([])
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchLines = async () => {
@@ -89,7 +88,7 @@ const BusLineSelector = () => {
       <Modal
         type="busLines"
         trigger={
-          <Button onClick={() => setModalOpen(true)} disabled={!origin || !destination}>
+          <Button  disabled={!origin || !destination}>
             Buscar líneas
           </Button>
         }
