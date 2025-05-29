@@ -1,25 +1,19 @@
 import axios from 'axios'
+import Cookies from 'js-cookie';
+
 
 const backendBaseURL = 'http://localhost:8080/api/'
 // const geoserverBaseURL = 'http://localhost:8080'
 
 const api = axios.create({ baseURL: backendBaseURL });
 
-const token = localStorage.getItem('token');
+api.interceptors.request.use((config) => {
+const token = Cookies.get('admin-jwt')
 if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+config.headers.Authorization = `Bearer ${token}`
 }
-
-api.interceptors.response.use(
-  (response) => {
-    if (response?.config?.url?.endsWith('/auth/login') && response.data.token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-    }
-    return response;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+return config
+})
 
 export default api
+ 
