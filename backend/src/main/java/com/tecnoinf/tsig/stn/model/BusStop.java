@@ -1,6 +1,5 @@
 package com.tecnoinf.tsig.stn.model;
 
-import com.tecnoinf.tsig.stn.enums.Direction;
 import com.tecnoinf.tsig.stn.enums.StopStatus;
 
 import jakarta.persistence.*;
@@ -17,28 +16,14 @@ public class BusStop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
     @Column(nullable = false)
     private String name;
-
     @Column(nullable = true)
     private String description;
-
     @Enumerated(EnumType.STRING)
     private StopStatus status;
-
-    @Enumerated(EnumType.STRING)
-    private Direction direction;
-
-    @Column(nullable = false)
-    private String department;
-
-    @Column(nullable = false) 
-    private String route;
-
     @Column(nullable = false)
     private Boolean hasShelter;
-
     @Column(columnDefinition = "geometry(Point, 4326)", nullable = false)
     private Geometry geometry;
 }
