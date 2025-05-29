@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "f30bf487-06dc-44c8-8186-70f4c32eef39",
+		"_postman_id": "9d5aff5b-e245-4572-b239-569b341428bb",
 		"name": "Sistema de Transporte Nacional",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "18980321"
+		"_exporter_id": "44073787",
+		"_collection_link": "https://festivo-api-team.postman.co/workspace/Festivo~cf3f8462-d1a2-4175-8131-951033421435/collection/44073787-9d5aff5b-e245-4572-b239-569b341428bb?action=share&source=collection_link&creator=44073787"
 	},
 	"item": [
 		{
@@ -16,9 +17,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
-									"});"
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"TOKEN\", response.token);\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -52,6 +53,19 @@
 				},
 				{
 					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"TOKEN\", response.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -479,7 +493,7 @@
 			]
 		},
 		{
-			"name": "Bus Stops",
+			"name": "Bus Stops And Lines",
 			"item": [
 				{
 					"name": "Get All",
@@ -497,12 +511,109 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/bus-stops",
+							"raw": "{{URL}}/stop-lines",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"bus-stops"
+								"stop-lines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Line",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-line/{lineId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-line",
+								"{lineId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Stops",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-stop/{stopId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-stop",
+								"{stopId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Time Range",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/{stopId}/time-range?startTime=10:45:00&endTime=10:50:00",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"{stopId}",
+								"time-range"
+							],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "10:45:00"
+								},
+								{
+									"key": "endTime",
+									"value": "10:50:00"
+								}
 							]
 						}
 					},
@@ -525,7 +636,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Av. Italia 124\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901119\r\n        ]\r\n    }\r\n}",
+							"raw": "{\r\n    \"stopId\": 1,\r\n    \"lineId\": 1,\r\n    \"estimatedTime\": \"10:00:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -533,12 +644,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/bus-stops",
+							"raw": "{{URL}}/stop-lines",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"bus-stops"
+								"stop-lines"
 							]
 						}
 					},
@@ -561,7 +672,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Av. Italia 123\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901113\r\n        ]\r\n    }\r\n}",
+							"raw": "{\r\n    \"stopId\": 1,\r\n    \"lineId\": 1,\r\n    \"estimatedTime\": \"10:00:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -569,12 +680,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/bus-stops/1",
+							"raw": "{{URL}}/stop-lines/1",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"bus-stops",
+								"stop-lines",
 								"1"
 							]
 						}
@@ -597,13 +708,42 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/bus-stops/7",
+							"raw": "{{URL}}/stop-lines/1",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"bus-stops",
-								"7"
+								"stop-lines",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Stops",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-stop/{stopId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-stop",
+								"{stopId}"
 							]
 						}
 					},
