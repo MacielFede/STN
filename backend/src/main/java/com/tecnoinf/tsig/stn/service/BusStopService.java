@@ -61,6 +61,9 @@ public class BusStopService {
     private void mapRequestToBusStop(BusStop busStop, BusStopRequest busStopRequest) {
         busStop.setName(busStopRequest.name());
         busStop.setDescription(busStopRequest.description());
+        busStop.setDirection(busStopRequest.direction());
+        busStop.setDepartment(busStopRequest.department());
+        busStop.setRoute(busStopRequest.route());
         busStop.setStatus(busStopRequest.status());
         busStop.setHasShelter(busStopRequest.hasShelter());
         busStop.setGeometry(parseGeometry(busStopRequest.geometry()));
@@ -71,6 +74,9 @@ public class BusStopService {
                 busStop.getId(),
                 busStop.getName(),
                 busStop.getDescription(),
+                busStop.getDirection(),
+                busStop.getDepartment(),
+                busStop.getRoute(),
                 busStop.getStatus(),
                 busStop.getHasShelter()
         );
