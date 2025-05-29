@@ -9,17 +9,6 @@ import {
   type Company,
 } from '@/services/admin'
 
-/* import { useState, useEffect } from 'react'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import {
-  getCompanies,
-  createCompany,
-  updateCompany,
-  deleteCompany,
-  Company,
-} from '@/api/admin'
- */
 const CompanyCRUD = () => {
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
