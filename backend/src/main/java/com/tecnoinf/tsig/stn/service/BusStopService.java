@@ -3,6 +3,7 @@ package com.tecnoinf.tsig.stn.service;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.locationtech.jts.geom.Geometry;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tecnoinf.tsig.stn.dto.BusStopRequest;
 import com.tecnoinf.tsig.stn.dto.BusStopResponse;
 import com.tecnoinf.tsig.stn.model.BusStop;
@@ -14,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,15 +27,18 @@ public class BusStopService {
     }
 
     public BusStopResponse create(BusStopRequest busStopRequest) {
-        BusStop busStopSaved = saveBusStop(busStopRequest, Optional.empty());
+        BusStop busStop = new BusStop();
+        mapRequestToBusStop(busStop, busStopRequest);
 
+        BusStop busStopSaved = busStopRepository.save(busStop);
         return mapBusStopResponse(busStopSaved);
     }
 
     public BusStopResponse update(Long id, BusStopRequest busStopRequest) {
-        busStopRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bus stop not found"));
-        BusStop busStopUpdated = saveBusStop(busStopRequest, Optional.of(id));
+        BusStop busStop = busStopRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bus stop not found"));
+        mapRequestToBusStop(busStop, busStopRequest);
+
+        BusStop busStopUpdated = busStopRepository.save(busStop);
 
         return mapBusStopResponse(busStopUpdated);
     }
@@ -55,19 +58,15 @@ public class BusStopService {
         return busStopRepository.findById(id).stream().map(this::mapBusStopResponse).collect(Collectors.toList());
     }
 
-    private BusStop saveBusStop(BusStopRequest busStopRequest, Optional<Long> busStopId) {
-        Geometry geometry = parseGeometry(busStopRequest.geometry());
-
-        BusStop busStop = new BusStop();
+    private void mapRequestToBusStop(BusStop busStop, BusStopRequest busStopRequest) {
         busStop.setName(busStopRequest.name());
         busStop.setDescription(busStopRequest.description());
+        busStop.setDirection(busStopRequest.direction());
+        busStop.setDepartment(busStopRequest.department());
+        busStop.setRoute(busStopRequest.route());
         busStop.setStatus(busStopRequest.status());
         busStop.setHasShelter(busStopRequest.hasShelter());
-        busStop.setGeometry(geometry);
-        if (busStopId.isPresent()) {
-            busStop.setId(busStopId.get());
-        }
-        return busStopRepository.save(busStop);
+        busStop.setGeometry(parseGeometry(busStopRequest.geometry()));
     }
 
     private BusStopResponse mapBusStopResponse(BusStop busStop) {
@@ -75,9 +74,12 @@ public class BusStopService {
                 busStop.getId(),
                 busStop.getName(),
                 busStop.getDescription(),
+                busStop.getDirection(),
+                busStop.getDepartment(),
+                busStop.getRoute(),
                 busStop.getStatus(),
-                busStop.getHasShelter(),
-                busStop.getGeometry());
+                busStop.getHasShelter()
+        );
     }
 
     private Geometry parseGeometry(JsonNode geoJson) {

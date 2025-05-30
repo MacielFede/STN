@@ -4,9 +4,10 @@ import com.tecnoinf.tsig.stn.enums.LineStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.locationtech.jts.geom.Geometry;
 
 @Entity
-@Table(name = "bus_line")
+@Table(name = "ft_bus_line")
 @Setter
 @Getter
 public class BusLine {
@@ -20,6 +21,15 @@ public class BusLine {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LineStatus status;
+
+    @Column(nullable = false)
+    private String origin;
+
+    @Column(nullable = false)
+    private String destination;
+
+    @Column(columnDefinition = "geometry(LineString, 4326)", nullable = false)
+    private Geometry geometry;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)

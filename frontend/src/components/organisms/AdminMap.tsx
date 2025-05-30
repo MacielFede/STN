@@ -8,6 +8,7 @@ import BusStops from '../molecules/BusStops'
 import type { BusStopFeature } from '@/models/geoserver'
 import CommandPallete from '@/components/molecules/CommandPallete'
 import BusStopForm from '@/components/atoms/BusStopForm'
+import CompanyCRUD from '@/components/molecules/CompanyCRUD'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
@@ -37,7 +38,7 @@ const AdminMap = () => {
               Administrar empresas
             </Button>
           }
-          body={'Hola'}
+          body={<CompanyCRUD />}
         />
         <Modal
           type="Lines"
