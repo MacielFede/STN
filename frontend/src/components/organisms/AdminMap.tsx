@@ -29,15 +29,7 @@ const AdminMap = () => {
       <CommandPallete yPosition="top" xPosition="right">
         <Modal
           type="Companies"
-          trigger={
-            <Button
-              onClick={() => {
-                console.log('Administrar empresas de transporte')
-              }}
-            >
-              Administrar empresas
-            </Button>
-          }
+          trigger={<Button>Administrar empresas</Button>}
           body={<CompanyCRUD />}
         />
         <Modal
