@@ -17,7 +17,8 @@ docker compose up -d
 If you make any changes, you'll need to re-build the project:
 
 ```bash
-docker-compose build --no-cache && docker compose up -d 
+docker compose down backend && docker compose build backend --no-cache && docker compose up backend -d 
+docker compose down frontend && docker compose build frontend && docker compose up frontend -d
 ```
 
 Geoserver will run in the port 8000
