@@ -64,19 +64,6 @@ const BusStops = ({
           },
         }}
       >
-<<<<<<< HEAD
-        {isAdmin ? (
-          <AdminPopUp stop={stop} />
-        ) : (
-          <Popup>
-            <div>
-              <strong>{stop.properties.name}</strong>
-              <p>{stop.properties.description}</p>
-              <p>Estado: {stop.properties.status === 'ACTIVE' ? 'ACTIVA' : 'INACTIVA'}</p>
-            </div>
-          </Popup>
-        )}
-=======
         <Popup>
           <div>
             <strong>{stop.properties.name}</strong>
@@ -84,7 +71,6 @@ const BusStops = ({
             <p>Estado: {stop.properties.status}</p>
           </div>
         </Popup>
->>>>>>> f16ec2cb (estoy cansado jefe)
       </Marker>
     )
   })

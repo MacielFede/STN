@@ -26,11 +26,7 @@
     "clsx": "^2.1.1",
 
     "fast-xml-parser": "^5.2.3",
-<<<<<<< HEAD
-
-=======
     "flowbite-react": "^0.11.7",
->>>>>>> f16ec2cb (estoy cansado jefe)
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "lodash.debounce": "^4.0.8",

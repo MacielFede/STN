@@ -7,11 +7,8 @@ import Modal from '../molecules/Modal'
 import BusStops from '../molecules/BusStops'
 import type { BusStopFeature } from '@/models/geoserver'
 import CommandPallete from '@/components/molecules/CommandPallete'
-<<<<<<< HEAD
-import CompanyCRUD from '@/components/molecules/CompanyCRUD'
-=======
 import BusStopForm from '@/components/atoms/BusStopForm'
->>>>>>> f16ec2cb (estoy cansado jefe)
+import CompanyCRUD from '../molecules/CompanyCRUD'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
