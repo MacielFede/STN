@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "9d5aff5b-e245-4572-b239-569b341428bb",
+		"_postman_id": "d7453c9f-bed5-4111-92aa-ea949ac55ee3",
 		"name": "Sistema de Transporte Nacional",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "44073787",
-		"_collection_link": "https://festivo-api-team.postman.co/workspace/Festivo~cf3f8462-d1a2-4175-8131-951033421435/collection/44073787-9d5aff5b-e245-4572-b239-569b341428bb?action=share&source=collection_link&creator=44073787"
+		"_exporter_id": "37753331"
 	},
 	"item": [
 		{
@@ -406,7 +405,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Av. Italia 124\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901119\r\n        ]\r\n    }\r\n}",
+							"raw": "{\r\n  \"name\": \"Av. Italia 124\",\r\n  \"description\": \"Parada frente a la farmacia\",\r\n  \"direction\": \"OUTBOUND\",\r\n  \"department\": \"Montevideo\",\r\n  \"route\": \"COPSA 702\",\r\n  \"status\": \"ACTIVE\",\r\n  \"hasShelter\": false,\r\n  \"geometry\": {\r\n    \"type\": \"Point\",\r\n    \"coordinates\": [\r\n      -56.164532,\r\n      -34.901119\r\n    ]\r\n  }\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -442,7 +441,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Av. Italia 123\",\r\n    \"status\": \"ACTIVE\",\r\n    \"hasShelter\": false,\r\n    \"geometry\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [\r\n            -56.164532,\r\n            -34.901113\r\n        ]\r\n    }\r\n}",
+							"raw": "{\r\n  \"name\": \"Av. Italia 124\",\r\n  \"description\": \"Parada frente a la farmacia\",\r\n  \"direction\": \"OUTBOUND\",\r\n  \"department\": \"Montevideo\",\r\n  \"route\": \"COPSA 702\",\r\n  \"status\": \"INACTIVE\",\r\n  \"hasShelter\": true,\r\n  \"geometry\": {\r\n    \"type\": \"Point\",\r\n    \"coordinates\": [\r\n      -56.164532,\r\n      -34.901119\r\n    ]\r\n  }\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -478,13 +477,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/bus-stops/7",
+							"raw": "{{URL}}/bus-stops/1",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"bus-stops",
-								"7"
+								"1"
 							]
 						}
 					},
