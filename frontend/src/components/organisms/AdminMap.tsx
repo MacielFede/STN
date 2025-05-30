@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
 import BusStops from '../molecules/BusStops'
 import CommandPallete from '@/components/molecules/CommandPallete'
+import CompanyCRUD from '@/components/molecules/CompanyCRUD'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
@@ -21,7 +22,7 @@ const AdminMap = () => {
               Administrar empresas
             </Button>
           }
-          body={'Hola'}
+          body={<CompanyCRUD />}
         />
         <Modal
           type="Lines"

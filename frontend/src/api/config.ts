@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import { XMLParser } from 'fast-xml-parser'
 import axios from 'axios'
+
 import { transformKeysToCamelCase } from '@/utils/helpers'
 
 const backendBaseURL = 'http://localhost:8080/api/'
@@ -70,3 +71,4 @@ geoApi.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
