@@ -2,6 +2,7 @@ import { useCookies } from 'react-cookie'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
+import BusStops from '../molecules/BusStops'
 import CommandPallete from '@/components/molecules/CommandPallete'
 import CompanyCRUD from '@/components/molecules/CompanyCRUD'
 
@@ -53,6 +54,7 @@ const AdminMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <BusStops isAdmin />
       </MapContainer>
     </>
   )
