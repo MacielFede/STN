@@ -19,6 +19,7 @@ services:
   postgis:
     image: postgis/postgis:latest
     container_name: postgis
+    shm_size: 512m          
     environment:
       - POSTGRES_DB=geodb
       - POSTGRES_USER=geouser
@@ -26,6 +27,7 @@ services:
     ports:
       - "5433:5432"
     restart: unless-stopped
+
 
   backend-stn:
     build:
