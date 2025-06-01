@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+/* eslint-disable no-console */
+import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Button } from '../ui/button'
@@ -6,26 +7,95 @@ import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties } from '@/models/database'
-import { deleteStop, updateStop } from '@/services/busStops'
+import {
+  createStop,
+  deleteStop,
+  streetStopContext,
+  updateStop,
+} from '@/services/busStops'
+import { turnCapitalizedDepartment } from '@/utils/helpers'
 
-// Debounce hook
-const useDebounce = <T,>(value: T, delay: number): T => {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const handler = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(handler)
-  }, [value, delay])
-  return debounced
+type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
+
+interface BusStopFormProps {
+  stop: BusStopFeature
+  setStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
+  resetActiveStop: () => void
 }
 
-const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
+const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
   const queryClient = useQueryClient()
-  const updateStopMutation = useMutation({
+  const createStopMutation = useMutation({
     mutationFn: async (
-      data: BusStopProperties & { geometry: PointGeometry },
+      data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        await updateStop(data)
+        const stopContext = await streetStopContext({
+          lon: data.geometry.coordinates[1],
+          lat: data.geometry.coordinates[0],
+        })
+        if (!stopContext) {
+          toast.error(
+            'Error intentando actualizar la parada, calle no encontrada',
+            {
+              closeOnClick: true,
+              position: 'top-left',
+              toastId: 'create-stop-toast-street',
+            },
+          )
+          return
+        }
+        await createStop({
+          ...data,
+          department: turnCapitalizedDepartment(
+            stopContext.properties.department,
+          ),
+          route: stopContext.properties.name,
+        })
+        setStop(null)
+        await queryClient.invalidateQueries({ queryKey: ['stops'] })
+        toast.success('Parada creada correctamente', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'create-stop-toast',
+        })
+      } catch (error) {
+        toast.error('Error intentando crear la parada', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'create-stop-toast-error',
+        })
+        console.log('Error intentando crear la parada: ', error)
+      }
+    },
+  })
+  const updateStopMutation = useMutation({
+    mutationFn: async (
+      data: PartialBusStopProperties & { geometry: PointGeometry },
+    ) => {
+      try {
+        const stopContext = await streetStopContext({
+          lon: data.geometry.coordinates[1],
+          lat: data.geometry.coordinates[0],
+        })
+        if (!stopContext) {
+          toast.error(
+            'Error intentando actualizar la parada, calle no encontrada',
+            {
+              closeOnClick: true,
+              position: 'top-left',
+              toastId: 'update-stop-toast-street',
+            },
+          )
+          return
+        }
+        await updateStop({
+          ...data,
+          department: turnCapitalizedDepartment(
+            stopContext.properties.department,
+          ),
+          route: stopContext.properties.name,
+        })
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada actualizada correctamente', {
           closeOnClick: true,
@@ -36,16 +106,18 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
         toast.error('Error intentando actualizar la parada', {
           closeOnClick: true,
           position: 'top-left',
-          toastId: 'update-stop-toast',
+          toastId: 'update-stop-toast-error',
         })
         console.log('Error intentando actualizar la parada: ', e)
       }
     },
   })
   const deleteStopMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id?: number) => {
+      if (!id) return
       try {
         await deleteStop(id)
+        resetActiveStop()
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada eliminada correctamente', {
           closeOnClick: true,
@@ -63,38 +135,42 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
     },
   })
 
-  // Input states for immediate user feedback
-  const [inputName, setInputName] = useState(stop.properties.name)
-  const [inputDescription, setInputDescription] = useState(
-    stop.properties.description,
-  )
-
-  // Debounced values used for mutation
-  const name = useDebounce(inputName, 300)
-  const description = useDebounce(inputDescription, 300)
-
-  const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>(
-    stop.properties.status,
-  )
-  const [hasShelter, setHasShelter] = useState<boolean>(
-    stop.properties.hasShelter,
-  )
-
-  // Sync with new `stop` prop
-  useEffect(() => {
-    setInputName(stop.properties.name)
-    setInputDescription(stop.properties.description)
-    setStatus(stop.properties.status)
-    setHasShelter(stop.properties.hasShelter)
-  }, [stop])
+  // Functions to update parent's stop state on change
+  const updateProperty = <TKey extends keyof BusStopProperties>(
+    key: TKey,
+    value: BusStopProperties[TKey],
+  ): void => {
+    setStop((prev) => {
+      if (!prev) return null
+      return {
+        ...prev,
+        properties: {
+          ...prev.properties,
+          [key]: value,
+        },
+        geometry: prev.geometry,
+      }
+    })
+  }
 
   const handleStopUpdate = () => {
     updateStopMutation.mutate({
       id: stop.properties.id,
-      name,
-      description,
-      status,
-      hasShelter,
+      name: stop.properties.name,
+      description: stop.properties.description,
+      status: stop.properties.status,
+      hasShelter: stop.properties.hasShelter,
+      direction: stop.properties.direction,
+      geometry: stop.geometry,
+    })
+  }
+  const handleCreateStop = () => {
+    createStopMutation.mutate({
+      name: stop.properties.name,
+      description: stop.properties.description,
+      status: stop.properties.status,
+      hasShelter: stop.properties.hasShelter,
+      direction: stop.properties.direction,
       geometry: stop.geometry,
     })
   }
@@ -108,10 +184,11 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
     <>
       <Label>Paradas</Label>
       <form
-        className="flex flex-row justify-between align-middle gap-1 w-full"
+        className="flex flex-row gap-2 w-full align-top justify-between"
         onSubmit={(event) => {
           event.preventDefault()
-          handleStopUpdate()
+          if (!stop.properties.id) handleCreateStop()
+          else handleStopUpdate()
         }}
       >
         <label>
@@ -119,8 +196,8 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
           <Input
             disabled={loadingFormAction}
             type="text"
-            value={inputName}
-            onChange={(e) => setInputName(e.target.value)}
+            value={stop.properties.name}
+            onChange={(e) => updateProperty('name', e.target.value)}
             className="border-black"
           />
         </label>
@@ -129,8 +206,8 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
           <Input
             disabled={loadingFormAction}
             type="text"
-            value={inputDescription}
-            onChange={(e) => setInputDescription(e.target.value)}
+            value={stop.properties.description}
+            onChange={(e) => updateProperty('description', e.target.value)}
             className="border-black"
           />
         </label>
@@ -143,8 +220,8 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
                 type="radio"
                 name="status"
                 value="ACTIVE"
-                checked={status === 'ACTIVE'}
-                onChange={() => setStatus('ACTIVE')}
+                checked={stop.properties.status === 'ACTIVE'}
+                onChange={() => updateProperty('status', 'ACTIVE')}
               />
               Activa
             </label>
@@ -154,8 +231,8 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
                 type="radio"
                 name="status"
                 value="INACTIVE"
-                checked={status === 'INACTIVE'}
-                onChange={() => setStatus('INACTIVE')}
+                checked={stop.properties.status === 'INACTIVE'}
+                onChange={() => updateProperty('status', 'INACTIVE')}
               />
               Inactiva
             </label>
@@ -170,8 +247,8 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
                 type="radio"
                 name="hasShelter"
                 value="true"
-                checked={hasShelter === true}
-                onChange={() => setHasShelter(true)}
+                checked={stop.properties.hasShelter}
+                onChange={() => updateProperty('hasShelter', true)}
               />
               Sí
             </label>
@@ -181,27 +258,49 @@ const BusStopForm = ({ stop }: { stop: BusStopFeature }) => {
                 type="radio"
                 name="hasShelter"
                 value="false"
-                checked={hasShelter === false}
-                onChange={() => setHasShelter(false)}
+                checked={!stop.properties.hasShelter}
+                onChange={() => updateProperty('hasShelter', false)}
               />
               No
             </label>
           </div>
         </div>
+        <div className="flex flex-col gap-1">
+          <label>
+            Dirección:
+            <select
+              disabled={loadingFormAction}
+              value={stop.properties.direction}
+              onChange={(e) =>
+                updateProperty(
+                  'direction',
+                  e.target.value as 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL',
+                )
+              }
+              className="select select-bordered border-black"
+            >
+              <option value="OUTBOUND">Ida</option>
+              <option value="INBOUND">Vuelta</option>
+              <option value="BIDIRECTIONAL">Circuito</option>
+            </select>
+          </label>
+        </div>
         <div className="flex gap-2 mt-2">
           <Button disabled={loadingFormAction} type="submit">
             Guardar cambios
           </Button>
-          <Button
-            disabled={loadingFormAction}
-            className="bg-red-500"
-            onClick={(event) => {
-              event.preventDefault()
-              deleteStopMutation.mutate(stop.properties.id)
-            }}
-          >
-            Eliminar parada
-          </Button>
+          {stop.properties.id && (
+            <Button
+              disabled={loadingFormAction}
+              className="bg-red-500 hover:bg-red-700"
+              onClick={(event) => {
+                event.preventDefault()
+                deleteStopMutation.mutate(stop.properties.id)
+              }}
+            >
+              Eliminar parada
+            </Button>
+          )}
         </div>
       </form>
     </>

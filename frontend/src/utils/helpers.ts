@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Department } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
@@ -20,4 +21,8 @@ export function transformKeysToCamelCase(obj: any): any {
     }, {} as any)
   }
   return obj
+}
+
+export function turnCapitalizedDepartment(str: string): Department {
+  return (str[0].toUpperCase() + str.slice(1).toLowerCase()) as Department
 }
