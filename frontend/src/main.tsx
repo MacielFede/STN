@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ReactDOM from 'react-dom/client'
 import {
   Outlet,
@@ -15,6 +16,7 @@ import { CookiesProvider } from 'react-cookie'
 import { ToastContainer } from 'react-toastify'
 import EndUserMap from './components/screens/EndUserMap.tsx'
 import AdminPanel from './components/screens/AdminPanel.tsx'
+import { GeoProvider } from './contexts/GeoContext.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -54,14 +56,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const queryClient = new QueryClient()
+
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
       <CookiesProvider defaultSetOptions={{ path: '/' }}>
-        <RouterProvider router={router} />
-        <ToastContainer />
+        <QueryClientProvider client={queryClient}>
+          <GeoProvider>
+            <RouterProvider router={router} />
+            <ToastContainer />
+          </GeoProvider>
+        </QueryClientProvider>
       </CookiesProvider>
     </StrictMode>,
   )
