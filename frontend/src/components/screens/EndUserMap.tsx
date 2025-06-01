@@ -9,13 +9,10 @@ import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
 import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
 import CommandPallete from '../molecules/CommandPallete'
-<<<<<<< HEAD
-=======
 import type { BusStopFeature } from '@/models/geoserver'
 import { Drawer, DrawerItems } from 'flowbite-react'
 import BusStopInfo from '../atoms/BusStopInfo'
 
->>>>>>> 823a1c6d (ya ni me acuerdo)
 
 function EndUserMap() {
 
@@ -98,14 +95,10 @@ useEffect(() => {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
       }
-<<<<<<< HEAD
-       <BusStops isAdmin={false} />
-=======
        <BusStops setActiveStop={setActiveStop} />
 
 
        
->>>>>>> 823a1c6d (ya ni me acuerdo)
     </MapContainer>
     
 <Drawer
