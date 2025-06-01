@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -9,8 +9,28 @@ import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
 import { Button } from '../ui/button'
 import Modal from '../molecules/Modal'
 import CommandPallete from '../molecules/CommandPallete'
+<<<<<<< HEAD
+=======
+import type { BusStopFeature } from '@/models/geoserver'
+import { Drawer, DrawerItems } from 'flowbite-react'
+import BusStopInfo from '../atoms/BusStopInfo'
+
+>>>>>>> 823a1c6d (ya ni me acuerdo)
 
 function EndUserMap() {
+
+
+const [isOpen, setIsOpen] = useState(false)
+
+const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
+
+  const handleCloseDrawer = useCallback(() => setIsOpen(false), [])
+  
+useEffect(() => {
+  if (activeStop) {
+    setIsOpen(true)
+  }
+}, [activeStop])
   const [position, setPosition] = useState<[number, number]>([
     -34.9011, -56.1645,
   ])
@@ -47,6 +67,7 @@ function EndUserMap() {
   }, [])
 
   return (
+    <>
     <MapContainer
       preferCanvas
       center={position}
@@ -77,8 +98,30 @@ function EndUserMap() {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
       }
+<<<<<<< HEAD
        <BusStops isAdmin={false} />
+=======
+       <BusStops setActiveStop={setActiveStop} />
+
+
+       
+>>>>>>> 823a1c6d (ya ni me acuerdo)
     </MapContainer>
+    
+<Drawer
+        open={isOpen}
+        onClose={handleCloseDrawer}
+        position="bottom"
+        className="z-3000 bg-gray-200"
+        backdrop={false}
+      >
+        <DrawerItems>
+          {activeStop && <BusStopInfo stop={activeStop} />}
+        </DrawerItems>
+      </Drawer>
+    </>
+
+
   )
 }
 
