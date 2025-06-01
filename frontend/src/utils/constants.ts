@@ -22,3 +22,5 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
     route: 'AV. Italia',
   },
 }
+
+export const DISTANCE_BETWEEN_STOPS_AND_STREET = 20

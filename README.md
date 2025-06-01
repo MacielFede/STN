@@ -35,4 +35,9 @@ BackEnd application will run in the port 8080
 docker cp urils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/webapps/geoserver/WEB-INF/web.xml
 docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/conf/web.xml
 ```
+## Public geoserver tables
 
+To be able to use the frontend fully, you'll need to publish this tables on geoserver under the workspace defined in `GEO_WORKSPACE` in the file `frontend/src/utils/constants.ts`
+
+1. ft_bus_stop
+2. ft_street (this table should be added using the script created by Martin)
