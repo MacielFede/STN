@@ -8,7 +8,10 @@ import type {
 } from '@/models/geoserver'
 import type { BusStopProperties } from '@/models/database'
 import { api, geoApi } from '@/api/config'
-import { GEO_WORKSPACE } from '@/utils/constants'
+import {
+  DISTANCE_BETWEEN_STOPS_AND_STREET,
+  GEO_WORKSPACE,
+} from '@/utils/constants'
 
 const _getStops = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -60,7 +63,7 @@ export const streetStopContext = async ({
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_street`,
-        CQL_FILTER: `DWITHIN(geom, POINT(${lon} ${lat}), 10, meters)`,
+        CQL_FILTER: `DWITHIN(geom, POINT(${lon} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`,
       },
     })
 
