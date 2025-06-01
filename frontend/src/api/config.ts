@@ -14,6 +14,15 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 403) {
+      Cookies.remove('admin-jwt')
+    }
+    return Promise.reject(error)
+  },
+)
 
 const geoserverBaseURL = 'http://localhost:8000/geoserver/cite/ows'
 const geoBaseParams = {

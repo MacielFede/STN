@@ -16,7 +16,7 @@ import { CookiesProvider } from 'react-cookie'
 import { ToastContainer } from 'react-toastify'
 import EndUserMap from './components/screens/EndUserMap.tsx'
 import AdminPanel from './components/screens/AdminPanel.tsx'
-import { CqlFilterProvider } from './contexts/CqlContext.tsx'
+import { GeoProvider } from './contexts/GeoContext.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -65,10 +65,10 @@ if (rootElement && !rootElement.innerHTML) {
     <StrictMode>
       <CookiesProvider defaultSetOptions={{ path: '/' }}>
         <QueryClientProvider client={queryClient}>
-          <CqlFilterProvider>
+          <GeoProvider>
             <RouterProvider router={router} />
             <ToastContainer />
-          </CqlFilterProvider>
+          </GeoProvider>
         </QueryClientProvider>
       </CookiesProvider>
     </StrictMode>,

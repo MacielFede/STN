@@ -1,13 +1,12 @@
 import L from 'leaflet'
 import { Marker, Popup, useMapEvents } from 'react-leaflet'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
-import AdminPopUp from '../atoms/AdminPopUp'
-import type { BBox } from '@/models/geoserver'
+import type { BusStopFeature } from '@/models/geoserver'
 import useStops from '@/hooks/useStops'
 import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
-import { useCqlFilter } from '@/contexts/CqlContext'
+import { useGeoContext } from '@/contexts/GeoContext'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -23,8 +22,12 @@ const InactiveBusStopIcon = L.icon({
   popupAnchor: [0, -32],
 })
 
-const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
-  const { cqlFilter, setCqlFilter } = useCqlFilter()
+const BusStops = ({
+  setActiveStop,
+}: {
+  setActiveStop: (selectedStop: BusStopFeature | null) => void
+}) => {
+  const { cqlFilter, setCqlFilter } = useGeoContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
@@ -55,7 +58,13 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
             
             :  InactiveBusStopIcon
         }
+        eventHandlers={{
+          click: () => {
+            setActiveStop(stop)
+          },
+        }}
       >
+<<<<<<< HEAD
         {isAdmin ? (
           <AdminPopUp stop={stop} />
         ) : (
@@ -67,6 +76,15 @@ const BusStops = ({ isAdmin }: { isAdmin: boolean }) => {
             </div>
           </Popup>
         )}
+=======
+        <Popup>
+          <div>
+            <strong>{stop.properties.name}</strong>
+            <p>{stop.properties.description}</p>
+            <p>Estado: {stop.properties.status}</p>
+          </div>
+        </Popup>
+>>>>>>> f16ec2cb (estoy cansado jefe)
       </Marker>
     )
   })
