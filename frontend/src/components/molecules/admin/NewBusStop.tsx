@@ -3,7 +3,7 @@ import { booleanEqual } from '@turf/boolean-equal'
 import { point } from '@turf/helpers'
 import { Marker, useMap } from 'react-leaflet'
 import { useMemo } from 'react'
-import NewBusStop from '../../../public/new_bus_stop_icon.png'
+import NewBusStop from '../../../../public/new_bus_stop_icon.png'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
 import { BASIC_STOP_FEATURE, DEFAULT_COORDINATES } from '@/utils/constants'
 
