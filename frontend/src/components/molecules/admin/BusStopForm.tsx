@@ -6,7 +6,7 @@ import { Button } from '../../ui/button'
 import { Label } from '../../ui/label'
 import { Input } from '../../ui/input'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
-import type { BusStopProperties } from '@/models/database'
+import type { BusStopProperties, Department } from '@/models/database'
 import {
   createStop,
   deleteStop,
@@ -49,7 +49,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           ...data,
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
-          ),
+          ) as Department,
           route: stopContext.properties.name,
         })
         setStop(null)
@@ -93,7 +93,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           ...data,
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
-          ),
+          ) as Department,
           route: stopContext.properties.name,
         })
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
