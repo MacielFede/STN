@@ -26,7 +26,6 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-// 3. Custom hook
 export const useGeoContext = () => {
   const context = useContext(GeoContext)
   if (!context) {

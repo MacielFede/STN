@@ -2,9 +2,9 @@
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
-import { Button } from '../ui/button'
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
+import { Button } from '../../ui/button'
+import { Label } from '../../ui/label'
+import { Input } from '../../ui/input'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties } from '@/models/database'
 import {
