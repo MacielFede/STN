@@ -16,8 +16,10 @@ import L from 'leaflet'
 //import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import PolygonDrawHandler from '@/components/atoms/PolygonDrawHandler'
+import { ControlButtons } from '../ui/button'
 
 import { api } from '@/api/config'
+import CommandPallete from '../atoms/CommandPallete'
 
 function EndUserMap() {
   const [position, setPosition] = useState<[number, number]>([-34.9011, -56.1645])
@@ -124,7 +126,8 @@ function EndUserMap() {
         <PolygonDrawHandler isDrawing={isDrawing} setPolygonPoints={setPolygonPoints} />
       </MapContainer>
 
-      <div className="absolute top-4 left-4 z-[1000] space-y-2">
+      <CommandPallete yPosition="top" xPosition="right">
+
         <button
           onClick={() => {
             setIsDrawing(!isDrawing)
@@ -144,7 +147,7 @@ function EndUserMap() {
             Buscar líneas
           </button>
         )}
-      </div>
+      </CommandPallete>
 
       <Drawer open={drawerOpen} 
         onClose={() => setDrawerOpen(false)}
