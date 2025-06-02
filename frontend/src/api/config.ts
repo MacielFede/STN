@@ -1,8 +1,8 @@
 import Cookies from 'js-cookie'
 import { XMLParser } from 'fast-xml-parser'
 import axios from 'axios'
-
 import { transformKeysToCamelCase } from '@/utils/helpers'
+import { GEO_WORKSPACE } from '@/utils/constants'
 
 const backendBaseURL = 'http://localhost:8080/api/'
 export const api = axios.create({ baseURL: backendBaseURL })
@@ -17,14 +17,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
+    if (error.response && error.response.status === 401) {
       Cookies.remove('admin-jwt')
     }
     return Promise.reject(error)
   },
 )
 
-const geoserverBaseURL = 'http://localhost:8000/geoserver/cite/ows'
+const geoserverBaseURL = `http://localhost:8000/geoserver/${GEO_WORKSPACE}/ows`
 const geoBaseParams = {
   service: 'WFS',
   version: '1.0.0',
@@ -80,4 +80,3 @@ geoApi.interceptors.response.use(
     return Promise.reject(error)
   },
 )
-
