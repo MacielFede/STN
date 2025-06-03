@@ -25,7 +25,6 @@ const BusLineCreator = ({
 
   const addPoint = (latlng: LatLng) => {
     setPoints((prev) => [...prev, latlng])
-
     if (points.length > 1) {
       setNewLine({
         ...newLine,
