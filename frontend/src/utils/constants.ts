@@ -1,4 +1,4 @@
-import type { BusStopFeature } from '@/models/geoserver'
+import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 
 export const GEO_WORKSPACE = 'ne'
 
@@ -15,7 +15,7 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
   properties: {
     name: 'Nueva parada',
     description: 'Direccion de la parada',
-    status: 'ACTIVE',
+    status: 'INACTIVE',
     hasShelter: false,
     department: 'Montevideo',
     direction: 'BIDIRECTIONAL',
@@ -24,3 +24,18 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
 }
 
 export const DISTANCE_BETWEEN_STOPS_AND_STREET = 20
+
+export const BASIC_LINE_FEATURE: BusLineFeature = {
+  type: 'Feature',
+  geometry: {
+    type: 'LineString',
+    coordinates: [],
+  },
+  properties: {
+    destination: 'Paysandu',
+    number: 'L29',
+    origin: 'Montevideo',
+    status: 'ACTIVE',
+    company_id: 1,
+  },
+}

@@ -7,26 +7,33 @@ import Modal from '../atoms/Modal'
 import BusStops from '../molecules/BusStops'
 import NewBusStopComponent from '../molecules/admin/NewBusStop'
 import { Separator } from '../ui/separator'
-import type { BusStopFeature } from '@/models/geoserver'
+import BusLineForm from '../molecules/admin/BusLineForm'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import BusLineCreator from '@/components/molecules/admin/BusLineCreator'
 import CommandPallete from '@/components/atoms/CommandPallete'
 import BusStopForm from '@/components/molecules/admin/BusStopForm'
 import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
-import { BASIC_STOP_FEATURE } from '@/utils/constants'
+import { BASIC_LINE_FEATURE, BASIC_STOP_FEATURE } from '@/utils/constants'
+import useLines from '@/hooks/useLines'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
+  const [newBusLine, setNewBusLine] = useState<BusLineFeature | null>(null)
+  const { lines } = useLines(activeStop?.properties.id)
 
   const handleCloseDrawer = useCallback(() => {
     setIsOpen(false)
     setActiveStop(null)
+    setNewBusLine(null)
   }, [])
 
   useEffect(() => {
-    if (activeStop) setIsOpen(true)
+    if (activeStop || newBusLine) setIsOpen(true)
     else setIsOpen(false)
-  }, [activeStop])
+  }, [activeStop, newBusLine])
 
   return (
     <>
@@ -36,9 +43,30 @@ const AdminMap = () => {
           trigger={<Button>Administrar empresas</Button>}
           body={<CompanyCRUD />}
         />
-        <Button onClick={() => setActiveStop(BASIC_STOP_FEATURE)}>
+        <Button
+          disabled={!!newBusLine || !!activeStop}
+          onClick={() => setActiveStop(BASIC_STOP_FEATURE)}
+        >
           Crear parada de omnibus
         </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => setNewBusLine(BASIC_LINE_FEATURE)}
+              disabled={!!newBusLine || !!activeStop}
+            >
+              Crear linea de omnibus
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p>
+              Clickea en cualquier parte del mapa para formar el recorrido de la
+              linea
+            </p>
+            <hr />
+            <p>Arrastra para mover el mapa</p>
+          </TooltipContent>
+        </Tooltip>
         <Button
           className="bg-red-800"
           onClick={() => removeCookie('admin-jwt')}
@@ -65,6 +93,9 @@ const AdminMap = () => {
             newStopGeom={activeStop.geometry}
           />
         )}
+        {newBusLine && (
+          <BusLineCreator newLine={newBusLine} setNewLine={setNewBusLine} />
+        )}
       </MapContainer>
 
       <Drawer
@@ -84,8 +115,10 @@ const AdminMap = () => {
                 resetActiveStop={() => setActiveStop(null)}
               />
               <Separator className="my-4 bg-black" decorative />
+              {lines?.map((line) => <BusLineForm line={line} />)}
             </>
           )}
+          {newBusLine && <BusLineForm line={newBusLine} />}
         </DrawerItems>
       </Drawer>
     </>

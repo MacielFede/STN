@@ -17,6 +17,7 @@ import { ToastContainer } from 'react-toastify'
 import EndUserMap from './components/screens/EndUserMap.tsx'
 import AdminPanel from './components/screens/AdminPanel.tsx'
 import { GeoProvider } from './contexts/GeoContext.tsx'
+import { TooltipProvider } from './components/ui/tooltip.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -66,8 +67,10 @@ if (rootElement && !rootElement.innerHTML) {
       <CookiesProvider defaultSetOptions={{ path: '/' }}>
         <QueryClientProvider client={queryClient}>
           <GeoProvider>
-            <RouterProvider router={router} />
-            <ToastContainer />
+            <TooltipProvider>
+              <RouterProvider router={router} />
+              <ToastContainer />
+            </TooltipProvider>
           </GeoProvider>
         </QueryClientProvider>
       </CookiesProvider>

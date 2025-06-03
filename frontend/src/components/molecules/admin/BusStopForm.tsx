@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
-import { Label } from '../../ui/label'
 import { Input } from '../../ui/input'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
@@ -181,129 +180,126 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
   )
 
   return (
-    <>
-      <Label>Paradas</Label>
-      <form
-        className="flex flex-row gap-2 w-full align-top justify-between"
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (!stop.properties.id) handleCreateStop()
-          else handleStopUpdate()
-        }}
-      >
-        <label>
-          Nombre:
-          <Input
-            disabled={loadingFormAction}
-            type="text"
-            value={stop.properties.name}
-            onChange={(e) => updateProperty('name', e.target.value)}
-            className="border-black"
-          />
-        </label>
-        <label>
-          Descripción:
-          <Input
-            disabled={loadingFormAction}
-            type="text"
-            value={stop.properties.description}
-            onChange={(e) => updateProperty('description', e.target.value)}
-            className="border-black"
-          />
-        </label>
-        <div>
-          <label>Estado:</label>
-          <div className="flex flex-col gap-1">
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="ACTIVE"
-                checked={stop.properties.status === 'ACTIVE'}
-                onChange={() => updateProperty('status', 'ACTIVE')}
-              />
-              Activa
-            </label>
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="INACTIVE"
-                checked={stop.properties.status === 'INACTIVE'}
-                onChange={() => updateProperty('status', 'INACTIVE')}
-              />
-              Inactiva
-            </label>
-          </div>
-        </div>
-        <div>
-          <label>Refugio:</label>
-          <div className="flex flex-col gap-1">
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="hasShelter"
-                value="true"
-                checked={stop.properties.hasShelter}
-                onChange={() => updateProperty('hasShelter', true)}
-              />
-              Sí
-            </label>
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="hasShelter"
-                value="false"
-                checked={!stop.properties.hasShelter}
-                onChange={() => updateProperty('hasShelter', false)}
-              />
-              No
-            </label>
-          </div>
-        </div>
+    <form
+      className="flex flex-row gap-2 w-full align-top justify-between"
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (!stop.properties.id) handleCreateStop()
+        else handleStopUpdate()
+      }}
+    >
+      <label>
+        Nombre:
+        <Input
+          disabled={loadingFormAction}
+          type="text"
+          value={stop.properties.name}
+          onChange={(e) => updateProperty('name', e.target.value)}
+          className="border-black"
+        />
+      </label>
+      <label>
+        Descripción:
+        <Input
+          disabled={loadingFormAction}
+          type="text"
+          value={stop.properties.description}
+          onChange={(e) => updateProperty('description', e.target.value)}
+          className="border-black"
+        />
+      </label>
+      <div>
+        <label>Estado:</label>
         <div className="flex flex-col gap-1">
           <label>
-            Dirección:
-            <select
+            <input
               disabled={loadingFormAction}
-              value={stop.properties.direction}
-              onChange={(e) =>
-                updateProperty(
-                  'direction',
-                  e.target.value as 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL',
-                )
-              }
-              className="select select-bordered border-black"
-            >
-              <option value="OUTBOUND">Ida</option>
-              <option value="INBOUND">Vuelta</option>
-              <option value="BIDIRECTIONAL">Circuito</option>
-            </select>
+              type="radio"
+              name="status"
+              value="ACTIVE"
+              checked={stop.properties.status === 'ACTIVE'}
+              onChange={() => updateProperty('status', 'ACTIVE')}
+            />
+            Activa
+          </label>
+          <label>
+            <input
+              disabled={loadingFormAction}
+              type="radio"
+              name="status"
+              value="INACTIVE"
+              checked={stop.properties.status === 'INACTIVE'}
+              onChange={() => updateProperty('status', 'INACTIVE')}
+            />
+            Inactiva
           </label>
         </div>
-        <div className="flex gap-2 mt-2">
-          <Button disabled={loadingFormAction} type="submit">
-            Guardar cambios
-          </Button>
-          {stop.properties.id && (
-            <Button
+      </div>
+      <div>
+        <label>Refugio:</label>
+        <div className="flex flex-col gap-1">
+          <label>
+            <input
               disabled={loadingFormAction}
-              className="bg-red-500 hover:bg-red-700"
-              onClick={(event) => {
-                event.preventDefault()
-                deleteStopMutation.mutate(stop.properties.id)
-              }}
-            >
-              Eliminar parada
-            </Button>
-          )}
+              type="radio"
+              name="hasShelter"
+              value="true"
+              checked={stop.properties.hasShelter}
+              onChange={() => updateProperty('hasShelter', true)}
+            />
+            Sí
+          </label>
+          <label>
+            <input
+              disabled={loadingFormAction}
+              type="radio"
+              name="hasShelter"
+              value="false"
+              checked={!stop.properties.hasShelter}
+              onChange={() => updateProperty('hasShelter', false)}
+            />
+            No
+          </label>
         </div>
-      </form>
-    </>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label>
+          Dirección:
+          <select
+            disabled={loadingFormAction}
+            value={stop.properties.direction}
+            onChange={(e) =>
+              updateProperty(
+                'direction',
+                e.target.value as 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL',
+              )
+            }
+            className="select select-bordered border-black"
+          >
+            <option value="OUTBOUND">Ida</option>
+            <option value="INBOUND">Vuelta</option>
+            <option value="BIDIRECTIONAL">Circuito</option>
+          </select>
+        </label>
+      </div>
+      <div className="flex gap-2 mt-2">
+        <Button disabled={loadingFormAction} type="submit">
+          Guardar cambios
+        </Button>
+        {stop.properties.id && (
+          <Button
+            disabled={loadingFormAction}
+            className="bg-red-500 hover:bg-red-700"
+            onClick={(event) => {
+              event.preventDefault()
+              deleteStopMutation.mutate(stop.properties.id)
+            }}
+          >
+            Eliminar parada
+          </Button>
+        )}
+      </div>
+    </form>
   )
 }
 

@@ -9,6 +9,15 @@ export type BusStopProperties = {
   route: string
 }
 
+export type BusLineProperties = {
+  id?: number
+  destination: string
+  number: string
+  origin: string
+  status: 'ACTIVE' | 'INACTIVE'
+  company_id: number
+}
+
 export type StreetProperties = {
   id?: number
   sourceId: string
@@ -43,3 +52,10 @@ export type Department =
   | 'Soriano'
   | 'Tacuarembó'
   | 'Treinta y Tres'
+
+export type LineStopRelationship = {
+  id: number
+  stopId: number
+  lineId: number
+  estimatedTime: `${number}:${number}:${number}` // "HH:mm:ss"
+}

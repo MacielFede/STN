@@ -1,4 +1,8 @@
-import type { BusStopProperties, StreetProperties } from './database'
+import type {
+  BusLineProperties,
+  BusStopProperties,
+  StreetProperties,
+} from './database'
 
 type GeometryType = 'Point' | 'LineString' | 'MultiLineString'
 
@@ -16,7 +20,7 @@ type Geometry = {
 }[GeometryType]
 
 export type PointGeometry = Extract<Geometry, { type: 'Point' }>
-// type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
+export type LineStringGeometry = Extract<Geometry, { type: 'LineString' }>
 export type MultiLineStringGeometry = Extract<
   Geometry,
   { type: 'MultiLineString' }
@@ -28,6 +32,14 @@ export type BusStopFeature = {
   geometry: PointGeometry
   geometry_name?: string
   properties: BusStopProperties
+}
+
+export type BusLineFeature = {
+  type?: 'Feature'
+  id?: string
+  geometry: LineStringGeometry
+  geometry_name?: string
+  properties: BusLineProperties
 }
 
 export type StreetFeature = {
