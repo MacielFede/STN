@@ -1,17 +1,17 @@
 import { Button } from 'flowbite-react'
 import type { BusLineFeature } from '@/models/geoserver'
 import { Input } from '@/components/ui/input'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 const loadingFormAction = false
-const updateProperty = (property: string, value: unknown) => {
-  console.log(`Updating ${property} with value:`, value)
-}
 
 interface BusLineFormProps {
   line: BusLineFeature
 }
 
 const BusLineForm = ({ line }: BusLineFormProps) => {
+  const { onEditedRef, onCreationRef, handleDeleted, setNewBusLine, canSave, saveEditedLine, updateBusLine } = useBusLineContext();
+
   return (
     <form
       className="flex flex-row gap-4 w-full"
@@ -31,7 +31,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.number}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateProperty('number', e.target.value)
+            updateBusLine({
+              ...line,
+              properties: {
+                ...line.properties,
+                number: e.target.value,
+              },
+            })
           }
           className="border-black"
         />
@@ -43,7 +49,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.origin}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateProperty('origin', e.target.value)
+            updateBusLine({
+              ...line,
+              properties: {
+                ...line.properties,
+                origin: e.target.value,
+              },
+            })
           }
           className="border-black"
         />
@@ -55,7 +67,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.destination}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateProperty('destination', e.target.value)
+            updateBusLine({
+              ...line,
+              properties: {
+                ...line.properties,
+                destination: e.target.value,
+              },
+            })
           }
           className="border-black"
         />
@@ -70,7 +88,15 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               name="status"
               value="ACTIVE"
               checked={line.properties.status === 'ACTIVE'}
-              onChange={() => updateProperty('status', 'ACTIVE')}
+              onChange={() => {
+                updateBusLine({
+                  ...line,
+                  properties: {
+                    ...line.properties,
+                    status: 'ACTIVE',
+                  },
+                })
+              }}
             />
             Activa
           </label>
@@ -81,7 +107,15 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               name="status"
               value="INACTIVE"
               checked={line.properties.status === 'INACTIVE'}
-              onChange={() => updateProperty('status', 'INACTIVE')}
+              onChange={() => {
+                updateBusLine({
+                  ...line,
+                  properties: {
+                    ...line.properties,
+                    status: 'INACTIVE',
+                  },
+                })
+              }}
             />
             Inactiva
           </label>
@@ -93,15 +127,31 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           disabled={loadingFormAction}
           type="number"
           value={line.properties.company_id}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateProperty('company_id', Number(e.target.value))
-          }
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            updateBusLine({
+              ...line,
+              properties: {
+                ...line.properties,
+                company_id: parseInt(e.target.value ?? null),
+              },
+            })
+          }}
           className="border-black"
         />
       </label>
       <div className="flex gap-2 mt-2">
-        <Button disabled={loadingFormAction} type="submit">
-          Guardar cambios
+        {onCreationRef.current && onEditedRef.current && (
+          <Button disabled={loadingFormAction || !canSave} onClick={saveEditedLine}>
+            Finalizar recorrido
+          </Button>
+        )}
+        {onCreationRef.current && !onEditedRef.current && (
+          <Button disabled={loadingFormAction || !canSave} type="submit">
+            Guardar cambios
+          </Button>
+        )}
+        <Button disabled={!canSave} onClick={handleDeleted}>
+          Eliminar recorrido
         </Button>
         {line.properties.id && (
           <Button

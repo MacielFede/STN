@@ -16,12 +16,13 @@ import BusStopForm from '@/components/molecules/admin/BusStopForm'
 import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
 import { BASIC_LINE_FEATURE, BASIC_STOP_FEATURE } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const [newBusLine, setNewBusLine] = useState<BusLineFeature | null>(null)
+  const { newBusLine, setNewBusLine } = useBusLineContext();
   const { lines } = useLines(activeStop?.properties.id)
 
   const handleCloseDrawer = useCallback(() => {
@@ -29,6 +30,10 @@ const AdminMap = () => {
     setActiveStop(null)
     setNewBusLine(null)
   }, [])
+
+  useEffect(() => {
+    console.log('lines updated:', lines)
+  }, [lines])
 
   useEffect(() => {
     if (activeStop || newBusLine) setIsOpen(true)
@@ -94,7 +99,7 @@ const AdminMap = () => {
           />
         )}
         {newBusLine && (
-          <BusLineCreator newLine={newBusLine} setNewLine={setNewBusLine} />
+          <BusLineCreator/>
         )}
       </MapContainer>
 

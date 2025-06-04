@@ -4,7 +4,6 @@ import '../../styles/Map.css'
 
 import { useCookies } from 'react-cookie'
 import { useCallback } from 'react'
-import LineStringEditor from '../../../LineStringEditor'
 import { LoginForm } from '@/components/organisms/LoginForm'
 import { login } from '@/services/admin'
 import AdminMap from '@/components/organisms/AdminMap'
@@ -44,8 +43,7 @@ function AdminPanel() {
   )
 
   return cookies['admin-jwt'] ? (
-    // <AdminMap />
-    <LineStringEditor />
+    <AdminMap />
   ) : (
     <LoginForm handleSubmit={handleSubmit} />
   )

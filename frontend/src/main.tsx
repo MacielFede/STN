@@ -8,6 +8,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
+import './types/leaflet-draw.d.ts'
 // import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import './styles.css'
@@ -17,6 +18,7 @@ import { ToastContainer } from 'react-toastify'
 import EndUserMap from './components/screens/EndUserMap.tsx'
 import AdminPanel from './components/screens/AdminPanel.tsx'
 import { GeoProvider } from './contexts/GeoContext.tsx'
+import { BusLineProvider } from './contexts/BusLineContext.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
 
 const rootRoute = createRootRoute({
@@ -67,10 +69,12 @@ if (rootElement && !rootElement.innerHTML) {
       <CookiesProvider defaultSetOptions={{ path: '/' }}>
         <QueryClientProvider client={queryClient}>
           <GeoProvider>
-            <TooltipProvider>
-              <RouterProvider router={router} />
-              <ToastContainer />
-            </TooltipProvider>
+            <BusLineProvider>
+              <TooltipProvider>
+                <RouterProvider router={router} />
+                <ToastContainer />
+              </TooltipProvider>
+            </BusLineProvider>
           </GeoProvider>
         </QueryClientProvider>
       </CookiesProvider>

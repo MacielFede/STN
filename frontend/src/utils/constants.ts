@@ -32,7 +32,7 @@ export const BASIC_LINE_FEATURE: BusLineFeature = {
     coordinates: [],
   },
   properties: {
-    destination: 'Paysandu',
+    destination: 'Canelones',
     number: 'L29',
     origin: 'Montevideo',
     status: 'ACTIVE',
