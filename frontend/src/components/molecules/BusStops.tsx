@@ -47,7 +47,6 @@ const BusStops = ({
     const ne = bounds.getNorthEast()
     setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
   }, [map, setCqlFilter])
-
   return stops?.map((stop) => {
     return (
       <Marker
@@ -71,7 +70,7 @@ const BusStops = ({
                     ...prevState,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lat, position.lng],
+                      coordinates: [position.lat, position.lng]
                     },
                   }
                 else
@@ -79,7 +78,7 @@ const BusStops = ({
                     ...stop,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lat, position.lng],
+                      coordinates: [position.lat, position.lng]
                     },
                   }
               })
