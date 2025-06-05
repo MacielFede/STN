@@ -14,10 +14,13 @@ import { Drawer, DrawerItems } from 'flowbite-react'
 import BusStopInfo from '../atoms/BusStopInfo'
 import BusStopLines from '../atoms/BusStopLines'
 import { GeoJSON } from 'react-leaflet'
+import { Separator } from '../ui/separator'
 
 
 function EndUserMap() {
- 
+
+
+
 
 // Para mostrar recorridos, se llama desde BusStopLines
 const [selectedRoutes, setSelectedRoutes] = useState<BusLineFeature[]>([])
@@ -38,9 +41,15 @@ function handleSelectRoute(route: BusLineFeature) {
 
 const [isOpen, setIsOpen] = useState(false)
 
+const handleCloseDrawer = useCallback(() => {
+  setIsOpen(false)
+  setActiveStop(null)
+}, [])
+
+
+
 const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
 
-  const handleCloseDrawer = useCallback(() => setIsOpen(false), [])
   
 useEffect(() => {
   if (activeStop) {
@@ -132,7 +141,7 @@ useEffect(() => {
       >
         <DrawerItems>
           {activeStop && <BusStopInfo stop={activeStop} />}
-          
+          <Separator className="my-4 bg-black" decorative />
           {activeStop?.geometry.coordinates && (
           <BusStopLines
           point={[
@@ -142,7 +151,9 @@ useEffect(() => {
           onSelectRoute={handleSelectRoute}
           selectedRoutes={selectedRoutes}
         />
-
+        
+        
+        
 )}
 
         </DrawerItems>
