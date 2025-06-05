@@ -20,6 +20,7 @@ import AdminPanel from './components/screens/AdminPanel.tsx'
 import { GeoProvider } from './contexts/GeoContext.tsx'
 import { BusLineProvider } from './contexts/BusLineContext.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
+import { AuthProvider } from './contexts/AuthContext.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -69,12 +70,14 @@ if (rootElement && !rootElement.innerHTML) {
       <CookiesProvider defaultSetOptions={{ path: '/' }}>
         <QueryClientProvider client={queryClient}>
           <GeoProvider>
-            <BusLineProvider>
-              <TooltipProvider>
-                <RouterProvider router={router} />
-                <ToastContainer />
-              </TooltipProvider>
-            </BusLineProvider>
+            <AuthProvider>
+              <BusLineProvider>
+                <TooltipProvider>
+                  <RouterProvider router={router} />
+                  <ToastContainer />
+                </TooltipProvider>
+              </BusLineProvider>
+            </AuthProvider>
           </GeoProvider>
         </QueryClientProvider>
       </CookiesProvider>
