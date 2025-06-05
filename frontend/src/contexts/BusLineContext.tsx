@@ -4,6 +4,14 @@ import L, { type LatLngLiteral } from 'leaflet'
 import type { BusLineFeature } from '@/models/geoserver'
 import { BASIC_LINE_FEATURE } from '@/utils/constants'
 
+type BusLineStep =
+    | 'show-selection-popup'
+    | 'creation'
+    | 'edition'
+    | 'select-origin'
+    | 'select-destination'
+    | 'select-intermediate';
+
 type BusLineContextType = {
     newBusLine: BusLineFeature | null
     setNewBusLine: React.Dispatch<React.SetStateAction<BusLineFeature | null>>
@@ -17,13 +25,35 @@ type BusLineContextType = {
     cleanUpBusLineStates: () => void
     canSave: boolean
     saveEditedLine: () => void
+    busLineStep: BusLineStep | null
+    setBusLineStep: React.Dispatch<React.SetStateAction<BusLineStep | null>>
+    originStopId: number | null
+    setOriginStopId: React.Dispatch<React.SetStateAction<number | null>>
+    destinationStopId: number | null
+    setDestinationStopId: React.Dispatch<React.SetStateAction<number | null>>
+    intermediateStopIds: number[]
+    setIntermediateStopIds: React.Dispatch<React.SetStateAction<number[]>>
+    cleanStopFromAssignments: (
+        stopId: number,
+        originId: number | null,
+        destinationId: number | null,
+        intermediates: number[]
+    ) => {
+        newOrigin: number | null,
+        newDestination: number | null,
+        newIntermediates: number[]
+    }
 }
 
 const BusLineContext = createContext<BusLineContextType | undefined>(undefined)
 
 export const BusLineProvider = ({ children }: { children: React.ReactNode }) => {
+    const [busLineStep, setBusLineStep] = useState<BusLineStep | null>(null);
     const [newBusLine, setNewBusLine] = useState<BusLineFeature | null>(null)
     const [canSave, setCanSave] = useState<boolean>(false)
+    const [originStopId, setOriginStopId] = useState<number | null>(null)
+    const [destinationStopId, setDestinationStopId] = useState<number | null>(null)
+    const [intermediateStopIds, setIntermediateStopIds] = useState<number[]>([])
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
     const onEditedRef = useRef<boolean>(false)
@@ -56,6 +86,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, []);
 
     const cleanUpBusLineStates = useCallback(() => {
+        setBusLineStep(null)
         setNewBusLine(null)
         setCanSave(false)
         featureGroupRef.current = null
@@ -97,6 +128,19 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         finishEditingLine();
     }, [newBusLine, updateBusLine, finishEditingLine]);
 
+    const cleanStopFromAssignments = (
+        stopId: number,
+        originId: number | null,
+        destinationId: number | null,
+        intermediates: number[]
+    ) => {
+        let newOrigin = originId === stopId ? null : originId;
+        let newDestination = destinationId === stopId ? null : destinationId;
+        let newIntermediates = intermediates.filter(id => id !== stopId);
+
+        return { newOrigin, newDestination, newIntermediates };
+    };
+
     return (
         <BusLineContext.Provider
             value={{
@@ -111,7 +155,16 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 updateBusLine,
                 canSave,
                 switchMode,
-                saveEditedLine
+                saveEditedLine,
+                busLineStep,
+                setBusLineStep,
+                originStopId,
+                setOriginStopId,
+                destinationStopId,
+                setDestinationStopId,
+                intermediateStopIds,
+                setIntermediateStopIds,
+                cleanStopFromAssignments
             }}
         >
             {children}

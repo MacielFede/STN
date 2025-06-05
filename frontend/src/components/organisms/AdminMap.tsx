@@ -17,12 +17,13 @@ import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
 import { BASIC_LINE_FEATURE, BASIC_STOP_FEATURE } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
+import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const { newBusLine, setNewBusLine, cleanUpBusLineStates } = useBusLineContext();
+  const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep } = useBusLineContext();
   const { lines } = useLines(activeStop?.properties.id)
 
   const handleCloseDrawer = useCallback(() => {
@@ -87,6 +88,12 @@ const AdminMap = () => {
         scrollWheelZoom
         zoomControl={false}
       >
+        <StopAssignmentDrawer
+          open={busLineStep !== null}
+          onClose={() => {
+            handleCloseDrawer()
+          }}
+        />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -99,7 +106,7 @@ const AdminMap = () => {
           />
         )}
         {newBusLine && (
-          <BusLineCreator/>
+          <BusLineCreator />
         )}
       </MapContainer>
 
@@ -123,9 +130,10 @@ const AdminMap = () => {
               {lines?.map((line) => <BusLineForm line={line} />)}
             </>
           )}
-          {newBusLine && <BusLineForm line={newBusLine} />}
+          {newBusLine && busLineStep === null && <BusLineForm line={newBusLine} />}
         </DrawerItems>
       </Drawer>
+
     </>
   )
 }

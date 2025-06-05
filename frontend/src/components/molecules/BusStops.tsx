@@ -9,6 +9,7 @@ import useStops from '@/hooks/useStops'
 import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { ADMIN_PATHNAME } from '@/utils/constants'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -30,6 +31,7 @@ const BusStops = ({
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
 }) => {
   const { cqlFilter, setCqlFilter } = useGeoContext()
+  const { busLineStep, setBusLineStep, originStopId, destinationStopId, intermediateStopIds, cleanStopFromAssignments, setOriginStopId, setDestinationStopId, setIntermediateStopIds } = useBusLineContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
@@ -40,6 +42,27 @@ const BusStops = ({
   })
   const { stops } = useStops(cqlFilter, true)
   const location = useLocation()
+
+  const handleAssoaciationClick = (stop: BusStopFeature) => {
+    const id = stop.properties.id;
+    if (!id) return;
+    if(busLineStep === 'show-selection-popup') return
+    const cleaned = cleanStopFromAssignments(id, originStopId, destinationStopId, intermediateStopIds);
+
+    setOriginStopId(cleaned.newOrigin);
+    setDestinationStopId(cleaned.newDestination);
+    setIntermediateStopIds(cleaned.newIntermediates);
+
+    if (busLineStep === "select-origin") {
+      setOriginStopId(id);
+      setBusLineStep('show-selection-popup');
+    } else if (busLineStep === "select-destination") {
+      setDestinationStopId(id);
+      setBusLineStep('show-selection-popup');
+    } else if (busLineStep === "select-intermediate") {
+      setIntermediateStopIds([...cleaned.newIntermediates, id]);
+    }
+  };
 
   useEffect(() => {
     const bounds = map.getBounds()
@@ -59,7 +82,12 @@ const BusStops = ({
         }
         eventHandlers={{
           click: () => {
-            setActiveStop(stop)
+            if (busLineStep === null) {
+              setActiveStop(stop)
+            }
+            else {
+              handleAssoaciationClick(stop)
+            }
           },
           dragend: (event) => {
             const position = event.target.getLatLng()

@@ -1,5 +1,5 @@
 import { Button, Select } from 'flowbite-react'
-import type { BusLineFeature, LineStringGeometry, PointGeometry } from '@/models/geoserver'
+import type { BusLineFeature, LineStringGeometry } from '@/models/geoserver'
 import { Input } from '@/components/ui/input'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineProperties } from '@/models/database'
@@ -8,7 +8,8 @@ import { toast } from 'react-toastify'
 import { createBusLine, isBusLineOnStreets } from '@/services/busLines'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { getCompanies, type Company } from '@/services/admin'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import StopAssignmentModal from './StopAssignmentDrawer'
 
 const loadingFormAction = false
 
@@ -27,8 +28,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     saveEditedLine,
     updateBusLine,
     newBusLine,
-    setNewBusLine,
-    switchMode
+    switchMode,
+    setBusLineStep
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const queryClient = useQueryClient();
@@ -62,13 +63,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             ),
           },
         })
-        setNewBusLine(null)
         await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
         toast.success('Ruta creada correctamente', {
           closeOnClick: true,
           position: 'top-left',
           toastId: 'create-route-toast',
         })
+        setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error intentando crear la ruta', {
           closeOnClick: true,
@@ -257,6 +258,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         )}
       </div>
     </form>
+
   )
 }
 
