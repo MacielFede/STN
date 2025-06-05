@@ -1,8 +1,4 @@
-import type {
-  BusLineProperties,
-  BusStopProperties,
-  StreetProperties,
-} from './database'
+import type { BusStopProperties, StreetProperties, BusLineProperties } from './database'
 
 type GeometryType = 'Point' | 'LineString' | 'MultiLineString'
 
@@ -64,6 +60,23 @@ export type FeatureCollection<T> = {
     }
   }
 }
+
+
+export type BusLineFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<BusLineFeature>
+  totalFeatures: number
+  numberMatched: number
+  numberReturned: number
+  timeStamp: string
+  crs: {
+    type: 'name'
+    properties: {
+      name: string
+    }
+  }
+}
+
 
 export type BBox = {
   sw?: L.LatLng

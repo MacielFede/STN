@@ -1,8 +1,9 @@
 import type { AxiosResponse } from 'axios'
 import type { LineStopRelationship } from '@/models/database'
-import type { BusLineFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
+import type { BusLineFeature, BusLineFeatureCollection, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
 import { api, geoApi } from '@/api/config'
 import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
+import debounce from 'lodash.debounce'
 
 export const getLinesByStopId = async (stopId: number) => {
   const { data: linesInStop }: AxiosResponse<Array<LineStopRelationship>> =
@@ -77,3 +78,49 @@ const streetPointContext = async ({
 
   return data.features.length > 0 ? data.features[0] : null
 }
+
+const _getLines = async () => {
+  const { data }: AxiosResponse<BusLineFeatureCollection> = await geoApi.get(
+    '',
+    {
+      params: {
+        typeName: 'ne:ft_bus_line'
+
+      },
+    },
+  )
+  return data.features
+}
+
+export const getLines = debounce(
+  async () => _getLines(),
+  1000,
+  {
+    leading: true,
+    trailing: true,
+  },
+)
+
+export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promise<BusLineFeature[]> {
+
+  const cql = `DWITHIN(geometry, POINT(${lng} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+  const params = {
+    typename: `${GEO_WORKSPACE}:ft_bus_line`,
+    outputFormat: 'application/json',
+    CQL_FILTER: cql
+  }
+
+  try {
+    const response: AxiosResponse<{ features: BusLineFeature[] }> = await geoApi.get(
+      '',
+      {
+        params,
+      })
+
+    return response.data.features
+  } catch (error) {
+    console.error('Error al consultar líneas de bus:', error)
+    return []
+  }
+}
+

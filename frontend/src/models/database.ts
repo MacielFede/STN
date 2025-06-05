@@ -30,6 +30,17 @@ export type StreetProperties = {
   department: string
 }
 
+
+export type BusLineProperties = {
+
+  id: number
+  number: string
+  status: 'ACTIVE' | 'INACTIVE'
+  origin: string
+  destination: string
+  companyId: number
+}
+
 export type StopDirection = 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL'
 
 export type Department =
