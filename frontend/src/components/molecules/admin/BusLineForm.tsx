@@ -37,7 +37,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       data: PartialBusLineProperties & { geometry: LineStringGeometry },
     ) => {
       try {
-        debugger;
         const stopContext = await isBusLineOnStreets(data.geometry);
         if (!stopContext || !newBusLine) {
           toast.error(
