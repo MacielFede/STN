@@ -7,14 +7,33 @@ import '@/styles/Map.css'
 import BusStops  from '../molecules/BusStops'
 import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
 import { Button } from '../ui/button'
-import Modal from '../molecules/Modal'
-import CommandPallete from '../molecules/CommandPallete'
-import type { BusStopFeature } from '@/models/geoserver'
+import Modal from '../atoms/Modal'
+import CommandPallete from '../atoms/CommandPallete'
+import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import { Drawer, DrawerItems } from 'flowbite-react'
 import BusStopInfo from '../atoms/BusStopInfo'
+import BusStopLines from '../atoms/BusStopLines'
+import { GeoJSON } from 'react-leaflet'
 
 
 function EndUserMap() {
+ 
+
+// Para mostrar recorridos, se llama desde BusStopLines
+const [selectedRoutes, setSelectedRoutes] = useState<BusLineFeature[]>([])
+
+function handleSelectRoute(route: BusLineFeature) {
+  setSelectedRoutes((prev) => {
+    const exists = prev.some((r) => r.id === route.id)
+    if (exists) {
+      // Quitarla
+      return prev.filter((r) => r.id !== route.id)
+    } else {
+      // Agregarla
+      return [...prev, route]
+    }
+  })
+}
 
 
 const [isOpen, setIsOpen] = useState(false)
@@ -31,7 +50,7 @@ useEffect(() => {
   const [position, setPosition] = useState<[number, number]>([
     -34.9011, -56.1645,
   ])
-
+  
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -79,7 +98,7 @@ useEffect(() => {
 
 <CommandPallete yPosition="top" xPosition="right">
   <OriginDestinationSelector />
- 
+  <BusStops setActiveStop={setActiveStop} />
 </CommandPallete>
 
       {
@@ -95,7 +114,10 @@ useEffect(() => {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
       }
-       <BusStops setActiveStop={setActiveStop} />
+       
+       {selectedRoutes.map((route) => (
+  <GeoJSON key={route.id} data={route} />
+))}
 
 
        
@@ -110,6 +132,19 @@ useEffect(() => {
       >
         <DrawerItems>
           {activeStop && <BusStopInfo stop={activeStop} />}
+          
+          {activeStop?.geometry.coordinates && (
+          <BusStopLines
+          point={[
+            activeStop.geometry.coordinates[0],
+            activeStop.geometry.coordinates[1],
+          ]}
+          onSelectRoute={handleSelectRoute}
+          selectedRoutes={selectedRoutes}
+        />
+
+)}
+
         </DrawerItems>
       </Drawer>
     </>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getLines } from '@/services/busLines'
 import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '../ui/button'
-import Modal from '@/components/molecules/Modal'
+import Modal from '@/components/atoms/Modal'
 import BusLineTable from '@/components/atoms/BusLineTable' // Ajustá el path si es distinto
 
 const BusLineSelector = () => {
