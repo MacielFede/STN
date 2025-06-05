@@ -1,7 +1,14 @@
-import { Button } from 'flowbite-react'
-import type { BusLineFeature } from '@/models/geoserver'
+import { Button, Select } from 'flowbite-react'
+import type { BusLineFeature, LineStringGeometry, PointGeometry } from '@/models/geoserver'
 import { Input } from '@/components/ui/input'
 import { useBusLineContext } from '@/contexts/BusLineContext'
+import type { BusLineProperties } from '@/models/database'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
+import { createBusLine, isBusLineOnStreets } from '@/services/busLines'
+import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { getCompanies, type Company } from '@/services/admin'
+import { use, useEffect, useState } from 'react'
 
 const loadingFormAction = false
 
@@ -9,19 +16,96 @@ interface BusLineFormProps {
   line: BusLineFeature
 }
 
+type PartialBusLineProperties = Omit<BusLineProperties, 'department' | 'route'>
+
 const BusLineForm = ({ line }: BusLineFormProps) => {
-  const { onEditedRef, onCreationRef, handleDeleted, setNewBusLine, canSave, saveEditedLine, updateBusLine } = useBusLineContext();
+  const {
+    onEditedRef,
+    onCreationRef,
+    handleDeleted,
+    canSave,
+    saveEditedLine,
+    updateBusLine,
+    newBusLine,
+    setNewBusLine,
+    switchMode
+  } = useBusLineContext();
+  const [companies, setCompanies] = useState<Array<Company>>([])
+  const queryClient = useQueryClient();
+  const createBusLineMutation = useMutation({
+    mutationFn: async (
+      data: PartialBusLineProperties & { geometry: LineStringGeometry },
+    ) => {
+      try {
+        debugger;
+        const stopContext = await isBusLineOnStreets(data.geometry);
+        if (!stopContext || !newBusLine) {
+          toast.error(
+            'Error intentando crear la ruta, recorrido mal formado o calles no encontradas',
+            {
+              closeOnClick: true,
+              position: 'top-left',
+              toastId: 'create-stop-toast-street',
+            },
+          )
+          switchMode('edition');
+          return
+        }
+        await createBusLine({
+          ...newBusLine,
+          properties: {
+            ...data,
+            origin: turnCapitalizedDepartment(
+              newBusLine.properties.origin,
+            ),
+            destination: turnCapitalizedDepartment(
+              newBusLine.properties.destination,
+            ),
+          },
+        })
+        setNewBusLine(null)
+        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+        toast.success('Ruta creada correctamente', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'create-route-toast',
+        })
+      } catch (error) {
+        toast.error('Error intentando crear la ruta', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'create-route-toast-error',
+        })
+        console.log('Error intentando crear la ruta: ', error)
+      }
+    },
+  })
+
+  const handleCreateBusLine = () => {
+    if (!newBusLine) return;
+    createBusLineMutation.mutate({
+      ...newBusLine?.properties,
+      geometry: newBusLine?.geometry,
+    })
+  }
+
+  useEffect(() => {
+    getCompanies().then((data) => setCompanies(data))
+      .catch((error) => {
+        console.error('Error fetching companies:', error);
+        toast.error('Error al cargar las empresas', {
+          closeOnClick: true,
+          position: 'top-left',
+        });
+      });
+  }, []);
 
   return (
     <form
       className="flex flex-row gap-4 w-full"
       onSubmit={(event) => {
         event.preventDefault()
-        if (!line.properties.id) {
-          console.log('Creating line:', line.properties)
-        } else {
-          console.log('Updating line:', line.properties)
-        }
+        handleCreateBusLine();
       }}
     >
       <label>
@@ -123,21 +207,28 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       </div>
       <label>
         Empresa:
-        <Input
+        <Select
           disabled={loadingFormAction}
-          type="number"
-          value={line.properties.company_id}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          value={line.properties.companyId ?? ''}
+          onChange={(e) => {
+            if (!newBusLine) return;
+            const companyId = Number(e.target.value) === 0 ? null : Number(e.target.value);
             updateBusLine({
-              ...line,
+              ...newBusLine,
               properties: {
-                ...line.properties,
-                company_id: parseInt(e.target.value ?? null),
+                ...newBusLine.properties,
+                companyId: companyId ?? null,
               },
             })
           }}
-          className="border-black"
-        />
+        >
+          <option value="">Seleccione una empresa</option>
+          {companies.map((company) => (
+            <option key={company.id} value={company.id}>
+              {company.name}
+            </option>
+          ))}
+        </Select>
       </label>
       <div className="flex gap-2 mt-2">
         {onCreationRef.current && onEditedRef.current && (

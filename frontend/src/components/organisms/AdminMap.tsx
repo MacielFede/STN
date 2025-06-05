@@ -22,13 +22,13 @@ const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const { newBusLine, setNewBusLine } = useBusLineContext();
+  const { newBusLine, setNewBusLine, cleanUpBusLineStates } = useBusLineContext();
   const { lines } = useLines(activeStop?.properties.id)
 
   const handleCloseDrawer = useCallback(() => {
     setIsOpen(false)
     setActiveStop(null)
-    setNewBusLine(null)
+    cleanUpBusLineStates();
   }, [])
 
   useEffect(() => {

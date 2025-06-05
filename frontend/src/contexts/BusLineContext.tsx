@@ -13,7 +13,8 @@ type BusLineContextType = {
     onEditedRef: React.MutableRefObject<boolean>
     editHandlerRef: React.MutableRefObject<L.EditToolbar.Edit | null>
     updateBusLine: (properties: BusLineFeature) => void;
-    cleanUp: () => void
+    switchMode: (mode: 'creation' | 'edition') => void
+    cleanUpBusLineStates: () => void
     canSave: boolean
     saveEditedLine: () => void
 }
@@ -35,11 +36,26 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         }
     }, [])
 
-    const handleDeleted = useCallback(() => {
-        cleanUp();
+    const switchMode = useCallback((mode: 'creation' | 'edition') => {
+        if (mode === 'creation') {
+            onCreationRef.current = true
+            onEditedRef.current = false
+            if (editHandlerRef.current) {
+                editHandlerRef.current.disable()
+            }
+        } else if (mode === 'edition') {
+            onEditedRef.current = true
+            if (editHandlerRef.current) {
+                editHandlerRef.current.enable()
+            }
+        }
     }, []);
 
-    const cleanUp = useCallback(() => {
+    const handleDeleted = useCallback(() => {
+        cleanUpBusLineStates();
+    }, []);
+
+    const cleanUpBusLineStates = useCallback(() => {
         setNewBusLine(null)
         setCanSave(false)
         featureGroupRef.current = null
@@ -54,7 +70,6 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         )
         const geometryCompleted = feature.geometry && feature.geometry.coordinates.length > 0
         const allCompleted = propertiesCompleted && geometryCompleted
-        debugger;
         setNewBusLine(feature)
         setCanSave(allCompleted)
     }, [])
@@ -92,9 +107,10 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 onCreationRef,
                 onEditedRef,
                 editHandlerRef,
-                cleanUp,
+                cleanUpBusLineStates,
                 updateBusLine,
                 canSave,
+                switchMode,
                 saveEditedLine
             }}
         >

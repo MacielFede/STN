@@ -15,7 +15,7 @@ export type BusLineProperties = {
   number: string
   origin: string
   status: 'ACTIVE' | 'INACTIVE'
-  company_id: number
+  companyId: number | null
 }
 
 export type StreetProperties = {

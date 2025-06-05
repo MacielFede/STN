@@ -23,7 +23,7 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
   },
 }
 
-export const DISTANCE_BETWEEN_STOPS_AND_STREET = 20
+export const DISTANCE_BETWEEN_STOPS_AND_STREET = 10
 
 export const BASIC_LINE_FEATURE: BusLineFeature = {
   type: 'Feature',
@@ -36,6 +36,6 @@ export const BASIC_LINE_FEATURE: BusLineFeature = {
     number: 'L29',
     origin: 'Montevideo',
     status: 'ACTIVE',
-    company_id: 1,
+    companyId: null,
   },
 }
