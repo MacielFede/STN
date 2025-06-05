@@ -12,7 +12,7 @@ export type Company = {
 
 export const login = async (email: string, password: string) => {
   const { data }: AxiosResponse<LoginTransactionResponse> = await api.post(
-    'auth/login',
+    '/auth/login',
     {
       username: email,
       password,

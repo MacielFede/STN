@@ -1,6 +1,7 @@
 import { toast } from 'react-toastify'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/Map.css'
+
 import { useCookies } from 'react-cookie'
 import { useCallback } from 'react'
 import { LoginForm } from '@/components/organisms/LoginForm'

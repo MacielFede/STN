@@ -1,14 +1,12 @@
 import L from 'leaflet'
-import { Marker, useMapEvents } from 'react-leaflet'
+import { Marker, Popup, useMapEvents } from 'react-leaflet'
 import { useEffect } from 'react'
-import { useLocation } from '@tanstack/react-router'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
 import type { BusStopFeature } from '@/models/geoserver'
 import useStops from '@/hooks/useStops'
 import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 import { useGeoContext } from '@/contexts/GeoContext'
-import { ADMIN_PATHNAME } from '@/utils/constants'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -27,7 +25,7 @@ const InactiveBusStopIcon = L.icon({
 const BusStops = ({
   setActiveStop,
 }: {
-  setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
+  setActiveStop: (selectedStop: BusStopFeature | null) => void
 }) => {
   const { cqlFilter, setCqlFilter } = useGeoContext()
   const map = useMapEvents({
@@ -39,7 +37,6 @@ const BusStops = ({
     },
   })
   const { stops } = useStops(cqlFilter, true)
-  const location = useLocation()
 
   useEffect(() => {
     const bounds = map.getBounds()
@@ -47,6 +44,7 @@ const BusStops = ({
     const ne = bounds.getNorthEast()
     setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
   }, [map, setCqlFilter])
+
   return stops?.map((stop) => {
     return (
       <Marker
@@ -61,31 +59,16 @@ const BusStops = ({
           click: () => {
             setActiveStop(stop)
           },
-          dragend: (event) => {
-            const position = event.target.getLatLng()
-            if (position)
-              setActiveStop((prevState) => {
-                if (prevState)
-                  return {
-                    ...prevState,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lat, position.lng]
-                    },
-                  }
-                else
-                  return {
-                    ...stop,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lat, position.lng]
-                    },
-                  }
-              })
-          },
         }}
-        draggable={location.pathname === ADMIN_PATHNAME}
-      ></Marker>
+      >
+        <Popup>
+          <div>
+            <strong>{stop.properties.name}</strong>
+            <p>{stop.properties.description}</p>
+            <p>Estado: {stop.properties.status}</p>
+          </div>
+        </Popup>
+      </Marker>
     )
   })
 }

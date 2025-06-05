@@ -4,6 +4,7 @@ services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.26.2
     container_name: geoserver
+    platform: linux/amd64
     ports:
       - "8000:8080"
     environment:
@@ -23,15 +24,18 @@ services:
       - POSTGRES_DB=geodb
       - POSTGRES_USER=geouser
       - POSTGRES_PASSWORD=geopass
+    platform: linux/amd64
     ports:
       - "5433:5432"
     shm_size: '1gb'
     restart: unless-stopped
 
+
   backend-stn:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    platform: linux/amd64
     ports:
       - "8080:8080"
       - "5005:5005"
@@ -42,6 +46,7 @@ services:
       context: ./frontend
     ports:
       - "3000:3000"
+    platform: linux/amd64
     volumes:
       - ./frontend:/app
       - /app/node_modules
