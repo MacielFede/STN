@@ -1,24 +1,70 @@
-import React, { createContext, useCallback, useContext, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+import type { EndUserFilter } from '@/models/database'
+import { buildCqlFilter, getFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
-  cqlFilter: string
-  setCqlFilter: (value: string) => void
-  resetCqlFilter: () => void
+  endUserFilters: Array<EndUserFilter>
+  toogleEndUserFilter: (filterToToogle: EndUserFilter) => void
+  busStopsCqlFilter: string
+  setBusStopsCqlFilter: (value: string) => void
+  resetCqlFilter: (filterObject: 'busStops' | 'busLines') => void
+  busLinesCqlFilter: string
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
 
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cqlFilter, setCqlFilter] = useState('')
+  const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
+  const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
+  const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
 
-  const resetCqlFilter = useCallback(() => setCqlFilter(''), [setCqlFilter])
+  const toogleEndUserFilter = (filterToToogle: EndUserFilter) => {
+    const filterExists = endUserFilters.some(
+      (filter) => filter.name === filterToToogle.name,
+    )
+    if (filterExists)
+      setEndUserFilters(
+        endUserFilters.map((filter) =>
+          filter.name === filterToToogle.name ? filterToToogle : filter,
+        ),
+      )
+    else setEndUserFilters([...endUserFilters, filterToToogle])
+  }
+  const resetCqlFilter = useCallback(
+    (filterObject: 'busStops' | 'busLines') => {
+      if (filterObject === 'busLines') setBusLinesCqlFilter('')
+      else setBusStopsCqlFilter('')
+    },
+    [setBusStopsCqlFilter],
+  )
+
+  useEffect(() => {
+    setBusLinesCqlFilter(
+      buildCqlFilter(
+        endUserFilters.map((filter) =>
+          filter.isActive
+            ? getFilterFromData({ name: filter.name, data: filter.data })
+            : '',
+        ),
+      ),
+    )
+  }, [endUserFilters])
 
   return (
     <GeoContext.Provider
       value={{
-        cqlFilter,
-        setCqlFilter,
+        endUserFilters,
+        toogleEndUserFilter,
+        busStopsCqlFilter,
+        setBusStopsCqlFilter,
         resetCqlFilter,
+        busLinesCqlFilter,
       }}
     >
       {children}

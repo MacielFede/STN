@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { EndUserFilter, FilterData } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lat}, ${sw.lng}, ${ne.lat}, ${ne.lng})` : ''
 
-export const buildCqlFilter = (BBoxFilter: string) => `${BBoxFilter}`
+export const buildCqlFilter = (filters: Array<string>) =>
+  filters.length > 1
+    ? filters.filter((filter) => filter.trim() === '').join(' AND ')
+    : filters[0]
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -24,4 +28,15 @@ export function transformKeysToCamelCase(obj: any): any {
 
 export function turnCapitalizedDepartment(str: string) {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
+}
+
+type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
+
+export function getFilterFromData({ name, data }: HalfEndUserFilter) {
+  switch (name) {
+    case 'company':
+      return `companyId=${(data as FilterData['company']).id}`
+    default:
+      return ''
+  }
 }
