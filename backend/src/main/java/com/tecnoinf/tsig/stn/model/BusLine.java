@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.Geometry;
 
+import java.sql.Time;
+
 @Entity
 @Table(name = "ft_bus_line")
 @Setter
@@ -27,6 +29,9 @@ public class BusLine {
 
     @Column(nullable = false)
     private String destination;
+
+    @Column(nullable = false)
+    private Time schedule;
 
     @Column(columnDefinition = "geometry(LineString, 4326)", nullable = false)
     private Geometry geometry;
