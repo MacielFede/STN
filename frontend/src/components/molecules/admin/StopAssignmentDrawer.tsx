@@ -1,11 +1,6 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { useState } from 'react'
-import useStops from '@/hooks/useStops'
-import { useGeoContext } from '@/contexts/GeoContext'
-import { useMapEvents } from 'react-leaflet'
-import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 
 const StopAssignmentDrawer = ({
     open,
@@ -20,18 +15,9 @@ const StopAssignmentDrawer = ({
         originStopId,
         destinationStopId,
         intermediateStopIds,
-        setIntermediateStopIds
+        setIntermediateStopIds,
+        selectedStops,
     } = useBusLineContext()
-    const { cqlFilter, setCqlFilter } = useGeoContext();
-    const map = useMapEvents({
-        moveend: () => {
-            const bounds = map.getBounds()
-            const sw = bounds.getSouthWest()
-            const ne = bounds.getNorthEast()
-            setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
-        },
-    })
-    const { stops } = useStops(cqlFilter, true)
 
     const getStopStyle = (id: number | null) => {
         if (!id) return "";
@@ -74,9 +60,9 @@ const StopAssignmentDrawer = ({
                             Seleccionar en el mapa
                         </Button>
                         <div className={getStopStyle(originStopId)}>
-                            {stops ? stops.find(stop => stop.properties.id === originStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
-                            <p className="text-xs text-gray-500">{stops?.find(stop => stop.properties.id === originStopId)?.properties.description}</p>
-                            <p className="text-xs text-gray-500">Refugio: {stops?.find(stop => stop.properties.id === originStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                            {selectedStops.has(originStopId) ? selectedStops.get(originStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
+                            <p className="text-xs text-gray-500">{selectedStops.get(originStopId)?.properties.description}</p>
+                            <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
                         </div>
                     </div>
 
@@ -91,9 +77,9 @@ const StopAssignmentDrawer = ({
                             Seleccionar en el mapa
                         </Button>
                         <div className={getStopStyle(destinationStopId)}>
-                            {stops ? stops.find(stop => stop.properties.id === destinationStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
-                            <p className="text-xs text-gray-500">{stops?.find(stop => stop.properties.id === destinationStopId)?.properties.description}</p>
-                            <p className="text-xs text-gray-500">Refugio: {stops?.find(stop => stop.properties.id === destinationStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                            {selectedStops.has(destinationStopId) ? selectedStops.get(destinationStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
+                            <p className="text-xs text-gray-500">{selectedStops.get(destinationStopId)?.properties.description}</p>
+                            <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
                         </div>
                     </div>
 
@@ -110,7 +96,8 @@ const StopAssignmentDrawer = ({
                         <ul className="space-y-2 mt-2">
                             {intermediateStopIds.length > 0 ? (
                                 intermediateStopIds.map((id) => {
-                                    const stop = stops?.find(stop => stop.properties.id === id);
+                                    const stop = selectedStops.get(id);
+                                    if (!stop) return null;
                                     return (
                                         <li key={id} className="flex flex-col bg-blue-50 p-2 rounded border border-blue-300">
                                             <div className="flex justify-between items-center">
@@ -137,10 +124,6 @@ const StopAssignmentDrawer = ({
                             )}
                         </ul>
                     </div>
-                </div>
-
-                <div className="bg-yellow-100 p-2 rounded text-sm text-yellow-800">
-                    ❗ Las paradas deben estar dentro de 20 m del recorrido para ser válidas
                 </div>
 
                 <div className="flex justify-end gap-2 mt-4">

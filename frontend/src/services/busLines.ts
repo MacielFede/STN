@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import type { LineStopRelationship } from '@/models/database'
-import type { BusLineFeature, BusLineFeatureCollection, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
+import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
 import { api, geoApi } from '@/api/config'
 import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
 import debounce from 'lodash.debounce'
@@ -26,6 +26,18 @@ export const createBusLine = async (line: BusLineFeature) => {
   })
 }
 
+export const createStopLine = async (
+  stopId: number,
+  lineId: number,
+  estimatedTime: string
+) => {
+  return await api.post('/stop-lines', {
+    stopId,
+    lineId,
+    estimatedTime,
+  })
+}
+
 export const isBusLineOnStreets = async (
   geometry: LineStringGeometry,
 ): Promise<boolean> => {
@@ -37,6 +49,57 @@ export const isBusLineOnStreets = async (
     }
   }
   return true
+}
+
+export const isOriginStopOnStreet = async (
+  originStop: BusStopFeature,
+  busLine: BusLineFeature
+): Promise<boolean> => {
+  const [lineLon, lineLat] = busLine.geometry.coordinates[0]
+
+  const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLat} ${lineLon}), 20, meters) AND id = ${originStop.properties.id}`,
+      },
+    })
+
+  return data.features.length > 0
+}
+
+export const isDestinationStopOnStreet = async (
+  destinationStop: BusStopFeature,
+  busLine: BusLineFeature
+): Promise<boolean> => {
+  const [lineLon, lineLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
+
+  const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLat} ${lineLon}), 20, meters) AND id = ${destinationStop.properties.id}`,
+      },
+    })
+
+  return data.features.length > 0
+}
+
+export const isIntermediateStopOnStreet = async (
+  intermediateStop: BusStopFeature,
+  busLine: BusLineFeature
+): Promise<boolean> => {
+  const wkt = `LINESTRING(${busLine.geometry.coordinates.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`
+
+  const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+        CQL_FILTER: `DWITHIN(geometry, ${wkt}, ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters) AND id = ${intermediateStop.properties.id}`,
+      },
+    })
+
+  return data.features.length > 0
 }
 
 function densifyLineString(

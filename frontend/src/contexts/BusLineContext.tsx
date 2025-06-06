@@ -1,8 +1,7 @@
 // context/BusLineContext.tsx
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react'
 import L, { type LatLngLiteral } from 'leaflet'
-import type { BusLineFeature } from '@/models/geoserver'
-import { BASIC_LINE_FEATURE } from '@/utils/constants'
+import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 
 type BusLineStep =
     | 'show-selection-popup'
@@ -43,6 +42,8 @@ type BusLineContextType = {
         newDestination: number | null,
         newIntermediates: number[]
     }
+    cacheStop: (stop: BusStopFeature) => void
+    selectedStops: Map<number | null, BusStopFeature>
 }
 
 const BusLineContext = createContext<BusLineContextType | undefined>(undefined)
@@ -54,6 +55,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [originStopId, setOriginStopId] = useState<number | null>(null)
     const [destinationStopId, setDestinationStopId] = useState<number | null>(null)
     const [intermediateStopIds, setIntermediateStopIds] = useState<number[]>([])
+    const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
     const onEditedRef = useRef<boolean>(false)
@@ -141,6 +143,12 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         return { newOrigin, newDestination, newIntermediates };
     };
 
+    const cacheStop = (stop: BusStopFeature) => {
+        const stopId = stop.properties.id;
+        if (typeof stopId !== 'number') return;
+        setSelectedStops(prev => new Map(prev).set(stopId, stop));
+    };
+
     return (
         <BusLineContext.Provider
             value={{
@@ -164,7 +172,9 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 setDestinationStopId,
                 intermediateStopIds,
                 setIntermediateStopIds,
-                cleanStopFromAssignments
+                cleanStopFromAssignments,
+                cacheStop,
+                selectedStops
             }}
         >
             {children}

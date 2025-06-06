@@ -10,6 +10,8 @@ import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { ADMIN_PATHNAME } from '@/utils/constants'
 import { useBusLineContext } from '@/contexts/BusLineContext'
+import { isDestinationStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
+import { toast } from 'react-toastify'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -31,7 +33,7 @@ const BusStops = ({
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
 }) => {
   const { cqlFilter, setCqlFilter } = useGeoContext()
-  const { busLineStep, setBusLineStep, originStopId, destinationStopId, intermediateStopIds, cleanStopFromAssignments, setOriginStopId, setDestinationStopId, setIntermediateStopIds } = useBusLineContext()
+  const { newBusLine, busLineStep, setBusLineStep, originStopId, destinationStopId, intermediateStopIds, cleanStopFromAssignments, setOriginStopId, setDestinationStopId, setIntermediateStopIds, cacheStop } = useBusLineContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
@@ -43,7 +45,7 @@ const BusStops = ({
   const { stops } = useStops(cqlFilter, true)
   const location = useLocation()
 
-  const handleAssoaciationClick = (stop: BusStopFeature) => {
+  const handleAssoaciationClick = async (stop: BusStopFeature) => {
     const id = stop.properties.id;
     if (!id) return;
     if(busLineStep === 'show-selection-popup') return
@@ -54,13 +56,28 @@ const BusStops = ({
     setIntermediateStopIds(cleaned.newIntermediates);
 
     if (busLineStep === "select-origin") {
+      if (!newBusLine) return;
+      if(!await isOriginStopOnStreet(stop, newBusLine)){
+        toast.error("La parada seleccionada no es valida como origen de la linea");
+        setOriginStopId(null);
+        return;
+      }
       setOriginStopId(id);
       setBusLineStep('show-selection-popup');
+      cacheStop(stop);
     } else if (busLineStep === "select-destination") {
+      if (!newBusLine) return;
+      if(!await isDestinationStopOnStreet(stop, newBusLine)){
+        toast.error("La parada seleccionada no es valida como destino de la linea");
+        setDestinationStopId(null);
+        return;
+      }
       setDestinationStopId(id);
       setBusLineStep('show-selection-popup');
+      cacheStop(stop);
     } else if (busLineStep === "select-intermediate") {
       setIntermediateStopIds([...cleaned.newIntermediates, id]);
+      cacheStop(stop);
     }
   };
 
