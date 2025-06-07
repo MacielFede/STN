@@ -1,10 +1,9 @@
-import { Label } from '../../ui/label'
 import type { BusStopFeature } from '@/models/geoserver'
 
 const BusStopInfo = ({ stop }: { stop: BusStopFeature }) => {
   return (
     <>
-      <Label>Paradas</Label>
+      <h2 className="px-2 font-bold">Parada seleccionada</h2>
       <div className="flex flex-row justify-between align-middle gap-1 w-full p-2 border rounded">
         <div>
           <strong>Nombre:</strong>
@@ -16,7 +15,11 @@ const BusStopInfo = ({ stop }: { stop: BusStopFeature }) => {
         </div>
         <div>
           <strong>Estado:</strong>
-          <p>{stop.properties.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</p>
+          <p>
+            {stop.properties.status === 'ACTIVE'
+              ? 'Habilitada'
+              : 'Deshabilitada'}
+          </p>
         </div>
         <div>
           <strong>Refugio:</strong>

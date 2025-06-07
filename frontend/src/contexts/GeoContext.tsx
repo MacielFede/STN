@@ -11,16 +11,13 @@ import { buildCqlFilter, getFilterFromData } from '@/utils/helpers'
 type GeoContextType = {
   endUserFilters: Array<EndUserFilter>
   toogleEndUserFilter: (filterToToogle: EndUserFilter) => void
-  busStopsCqlFilter: string
-  setBusStopsCqlFilter: (value: string) => void
-  resetCqlFilter: (filterObject: 'busStops' | 'busLines') => void
+  resetBusLineCqlFilter: () => void
   busLinesCqlFilter: string
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
 
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
-  const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
   const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
 
@@ -36,13 +33,9 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
       )
     else setEndUserFilters([...endUserFilters, filterToToogle])
   }
-  const resetCqlFilter = useCallback(
-    (filterObject: 'busStops' | 'busLines') => {
-      if (filterObject === 'busLines') setBusLinesCqlFilter('')
-      else setBusStopsCqlFilter('')
-    },
-    [setBusStopsCqlFilter],
-  )
+  const resetBusLineCqlFilter = useCallback(() => {
+    setBusLinesCqlFilter('')
+  }, [])
 
   useEffect(() => {
     setBusLinesCqlFilter(
@@ -61,9 +54,7 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         endUserFilters,
         toogleEndUserFilter,
-        busStopsCqlFilter,
-        setBusStopsCqlFilter,
-        resetCqlFilter,
+        resetBusLineCqlFilter,
         busLinesCqlFilter,
       }}
     >

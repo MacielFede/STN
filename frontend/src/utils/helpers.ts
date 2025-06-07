@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// import { DISTANCE_BETWEEN_STOPS_AND_STREET } from './constants'
 import type { EndUserFilter, FilterData } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
@@ -35,7 +36,7 @@ type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
-      return `companyId=${(data as FilterData['company']).id}`
+      return `company_id=${(data as FilterData['company']).id}` // AND DWITHIN(geometry, POINT(${-56.16532803} ${-34.89276006}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
     default:
       return ''
   }

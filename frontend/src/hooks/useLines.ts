@@ -6,11 +6,10 @@ const useLines = () => {
   const { busLinesCqlFilter } = useGeoContext()
   const { data: lines } = useQuery({
     queryKey: ['lines', busLinesCqlFilter],
-    queryFn: () => getLines(/* busLinesCqlFilter */),
+    queryFn: () => getLines(busLinesCqlFilter),
     enabled: !!busLinesCqlFilter,
   })
-  console.log(busLinesCqlFilter)
-  console.log(lines)
+
   return { lines }
 }
 

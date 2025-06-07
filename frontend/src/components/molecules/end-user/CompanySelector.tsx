@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Button } from 'flowbite-react'
+import { Button } from '../../ui/button'
 import { useGeoContext } from '@/contexts/GeoContext'
 import useCompanies from '@/hooks/useCompanies'
 
