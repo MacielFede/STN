@@ -1,36 +1,9 @@
 {
-  "name": "Sistema Nacional de Transporte",
+  "name": "Sistema de Transporte Nacional",
   "short_name": "STN",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#317EFB",
-  "orientation": "portrait",
-  "icons": [
-    {
-      "src": "/public/active_bus_stop.png",
-      "sizes": "512×512",
-      "type": "image/png"
-    },
-    {
-      "src": "/public/inactive_bus_stop.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/public/new_bus_stop_icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/public/arrow_down.svg",
-      "sizes": "512x512",
-      "type": "image/svg"
-    },
-    {
-      "src": "/public/arrow_top.svg",
-      "sizes": "512x512",
-      "type": "image/svg"
-    }
-  ]
+  "orientation": "portrait"
 }
