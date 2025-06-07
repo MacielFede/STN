@@ -1,7 +1,7 @@
-# GIS Project
+# Sistema Nacional de Transporte (STN) 
 
 This project was developed for a GIS course, utilizing various tools and technologies. 
-The application is designed to interact with GIS data, providing functionality through PostGIS (PostreSQL).
+The application is designed to interact with GIS data, providing functionality through PostGIS and GeoServer, a backend with SpringBoot and a user interface with React and Leaflet.
 
 ## Requirements
 
