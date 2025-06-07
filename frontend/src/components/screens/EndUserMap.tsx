@@ -11,11 +11,11 @@ import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
 import '@/styles/Map.css'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
-import { Separator } from '@radix-ui/react-separator'
+import { Separator } from '../ui/separator'
 import BusStops from '../molecules/BusStops'
 import CommandPallete from '../atoms/CommandPallete'
 import CompanySelector from '../molecules/end-user/CompanySelector'
-import BusStopInfo from '../molecules/end-user/BusStopInfo'
+import BusStopTable from '../molecules/end-user/BusStopTable'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
@@ -138,7 +138,7 @@ function EndUserMap() {
           <DrawerItems>
             {activeStop && (
               <>
-                <BusStopInfo stop={activeStop} />
+                <BusStopTable stop={activeStop} />
                 <Separator className="my-4 bg-black" decorative />
               </>
             )}

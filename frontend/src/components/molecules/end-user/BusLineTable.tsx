@@ -28,14 +28,16 @@ export default function BusLinetable({
 
   return lines && lines.length > 0 ? (
     <>
-      <h2 className="px-2">Lineas filtradas</h2>
+      <h2 className="px-2 font-bold">Lineas filtradas</h2>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Línea</TableHead>
-            <TableHead>Origen</TableHead>
-            <TableHead>Destino</TableHead>
-            {!!companies && <TableHead>Empresa</TableHead>}
+            <TableHead className="font-bold">Línea</TableHead>
+            <TableHead className="font-bold">Origen</TableHead>
+            <TableHead className="font-bold">Destino</TableHead>
+            {!!companies && (
+              <TableHead className="font-bold">Empresa</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
