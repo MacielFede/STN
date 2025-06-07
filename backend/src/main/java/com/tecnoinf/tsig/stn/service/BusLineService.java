@@ -64,6 +64,7 @@ public class BusLineService {
         busLine.setStatus(busLineRequest.status());
         busLine.setOrigin(busLineRequest.origin());
         busLine.setDestination(busLineRequest.destination());
+        busLine.setSchedule(busLineRequest.schedule());
         busLine.setGeometry(parseGeometry(busLineRequest.geometry()));
         busLine.setCompany(company);
     }
@@ -75,6 +76,7 @@ public class BusLineService {
                 busLine.getStatus(),
                 busLine.getOrigin(),
                 busLine.getDestination(),
+                busLine.getSchedule(),
                 busLine.getCompany().getId()
         );
     }
