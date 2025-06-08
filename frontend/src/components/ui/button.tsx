@@ -71,7 +71,7 @@ function ControlButtons({
   onSearch: () => void
 }) {
   return (
-    <div className="absolute top-4 left-4 z-[1000] space-y-2">
+    <div>
       <button
         onClick={onToggleDrawing}
         className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow"

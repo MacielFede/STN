@@ -1,5 +1,4 @@
 import { useMapEvents } from 'react-leaflet'
-import { ControlButtons } from '../ui/button'
 
 interface PolygonDrawHandlerProps {
   isDrawing: boolean

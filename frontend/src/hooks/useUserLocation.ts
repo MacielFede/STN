@@ -12,6 +12,11 @@ export function useUserLocation() {
         toast.error('No se pudo determinar su ubicación', {
           position: 'top-right',
           autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
           theme: 'colored',
           toastId: 'Location-error',
         })

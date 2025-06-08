@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   CircleMarker,
   MapContainer,
@@ -12,49 +12,86 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
 import '@/styles/Map.css'
-import L from 'leaflet'
-//import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
-import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
+import L, { LatLng } from 'leaflet'
 import PolygonDrawHandler from '@/components/atoms/PolygonDrawHandler'
 import { ControlButtons } from '../ui/button'
-
-import { api } from '@/api/config'
+import { useUserLocation } from '@/hooks/useUserLocation'
+import { geoApi } from '@/api/config'
 import CommandPallete from '../atoms/CommandPallete'
+import { LineDrawer } from '../atoms/LineDrawer'
+import BusStops from '../molecules/BusStops'
+import type { BusStopFeature } from '@/models/geoserver'
+
+const geoJsonStyle = {
+  color: 'green',
+  weight: 3,
+  opacity: 0.8,
+}
+
+
+type Line = {
+  id: string
+  number: string
+  companyName: string
+  geometry: GeoJSON.GeoJsonObject
+}
+
+function latLngsToWktPolygon(points: [number, number][]): string {
+  const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
+  const [firstLat, firstLng] = points[0]
+  return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
+}
+
+function parseLines(features: any[]): Line[] {
+  return features
+    .map((f) => {
+      const id = String(f.id ?? f.properties?.id)
+      const geometry = f.geometry
+      if (!id || !geometry) return null
+
+      return {
+        id,
+        geometry,
+        number: f.properties?.number ?? '(sin número)',
+        companyName: f.properties?.companyName ?? '(sin empresa)',
+      }
+    })
+    .filter((line): line is Line => line !== null)
+}
+
+async function fetchLinesFromGeoServer(polygonPoints: [number, number][]) {
+  const wktPolygon = latLngsToWktPolygon(polygonPoints)
+
+  try {
+    const response = await geoApi.get('', {
+      params: {
+        typeName: 'myworkspace:ft_bus_line',
+        CQL_FILTER: `INTERSECTS(geometry, ${wktPolygon})`,
+      },
+    })
+    return response.data.features || []
+  } catch (error) {
+    console.error('Error al consultar líneas en GeoServer:', error)
+    toast.error('Error al obtener líneas desde GeoServer')
+    return []
+  }
+}
 
 function EndUserMap() {
-  const [position, setPosition] = useState<[number, number]>([-34.9011, -56.1645])
+  const position = useUserLocation()
   const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([])
   const [isDrawing, setIsDrawing] = useState(false)
-  const [intersectingLines, setIntersectingLines] = useState<any[]>([])
+  const [intersectingLines, setIntersectingLines] = useState<Line[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
+  const [selectedLineIds, setSelectedLineIds] = useState<string[]>([])
+
+  const handleCloseDrawer = useCallback(() => setIsOpen(false), [])
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords
-        setPosition([latitude, longitude])
-      },
-      (err) => {
-        console.error('Error obteniendo ubicación:', err)
-        toast.error('No se pudo determinar su ubicación', {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-          toastId: 'Location-error',
-        })
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    )
-  }, [])
+    if (activeStop) setIsOpen(true)
+  }, [activeStop])
 
   async function searchLines() {
     if (polygonPoints.length < 3) {
@@ -64,16 +101,22 @@ function EndUserMap() {
       return
     }
 
-    try {
-      const response = await api.post('lines/intersecting', {
-        polygon: polygonPoints,
-      })
-      setIntersectingLines(response.data)
-      setDrawerOpen(true)
-    } catch (error) {
-      console.error(error)
-      toast.error('Error al buscar líneas.', { theme: 'colored' })
-    }
+    const lines = await fetchLinesFromGeoServer(polygonPoints)
+    const parsedLines = parseLines(lines)
+    setIntersectingLines(parsedLines)
+    setDrawerOpen(true)
+
+    console.log('GeoServer response:', lines)
+    console.log('Parsed lines:', parsedLines)
+    console.log('IDs:', parsedLines.map((l) => l.id))
+  }
+
+  const toggleLineVisibility = (lineId: string) => {
+    setSelectedLineIds((prev) =>
+      prev.includes(lineId)
+        ? prev.filter((id) => id !== lineId)
+        : [...prev, lineId]
+    )
   }
 
   return (
@@ -88,6 +131,7 @@ function EndUserMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
         />
+
         <CircleMarker
           center={position}
           radius={80}
@@ -100,13 +144,20 @@ function EndUserMap() {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
 
-        {polygonPoints.length > 2 && <Polygon positions={polygonPoints} color="blue" />} 
+        <BusStops setActiveStop={setActiveStop} />
+
+        {polygonPoints.length > 2 && (
+          <Polygon positions={polygonPoints} color="yellow" />
+        )}
 
         {polygonPoints.map((point, idx) => (
           <Marker
             key={idx}
             position={point}
-            icon={L.divIcon({ className: 'custom-marker', html: `<div class='w-2 h-2 rounded-full bg-blue-600'></div>` })}
+            icon={L.divIcon({
+              className: 'custom-marker',
+              html: `<div class='w-2 h-2 rounded-full bg-pink-600'></div>`,
+            })}
             eventHandlers={{
               click: () => {
                 setPolygonPoints((prev) => {
@@ -119,56 +170,39 @@ function EndUserMap() {
           />
         ))}
 
-        {intersectingLines.map((line, idx) => (
-          <GeoJSON key={idx} data={line.geometry} style={{ color: 'green' }} />
-        ))}
+        {intersectingLines
+          .filter((line) => selectedLineIds.includes(line.id))
+          .map((line, idx) => (
+            <GeoJSON key={idx} data={line.geometry} style={geoJsonStyle} />
+          ))}
 
-        <PolygonDrawHandler isDrawing={isDrawing} setPolygonPoints={setPolygonPoints} />
+        <PolygonDrawHandler
+          isDrawing={isDrawing}
+          setPolygonPoints={setPolygonPoints}
+        />
       </MapContainer>
 
       <CommandPallete yPosition="top" xPosition="right">
-
-        <button
-          onClick={() => {
+        <ControlButtons
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          onToggleDrawing={() => {
             setIsDrawing(!isDrawing)
             setPolygonPoints([])
             setIntersectingLines([])
+            setSelectedLineIds([])
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow"
-        >
-          {isDrawing ? 'Cancelar dibujo' : 'Dibujar polígono'}
-        </button>
-
-        {polygonPoints.length >= 3 && (
-          <button
-            onClick={searchLines}
-            className="bg-green-600 text-white px-4 py-2 rounded-xl shadow"
-          >
-            Buscar líneas
-          </button>
-        )}
+          onSearch={searchLines}
+        />
       </CommandPallete>
 
-      <Drawer open={drawerOpen} 
+      <LineDrawer
+        lines={intersectingLines}
+        open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        position="bottom"
-        className="z-3000 bg-gray-200 max-h-50"
-        backdrop={false}>
-        <DrawerItems>
-          <DrawerHeader>Líneas encontradas
-          </DrawerHeader>
-          <ul className="px-4 pb-4">
-            {intersectingLines.map((line, idx) => (
-              <li key={idx} className="border-b py-2">
-                <span className="font-semibold">Línea {line.number}</span>: {line.companyName}
-              </li>
-            ))}
-            {intersectingLines.length === 0 && (
-              <p className="text-gray-500">No se encontraron líneas.</p>
-            )}
-          </ul>
-        </DrawerItems>
-      </Drawer>
+        selectedLineIds={selectedLineIds}
+        onToggleLine={toggleLineVisibility}
+      />
     </div>
   )
 }
