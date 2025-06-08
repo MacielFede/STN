@@ -28,6 +28,7 @@ export type BusLineProperties = {
   origin: string
   destination: string
   companyId: number
+  schedule: string
 }
 
 export type StopDirection = 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL'
@@ -53,7 +54,7 @@ export type Department =
   | 'Tacuarembó'
   | 'Treinta y Tres'
 
-type FilterName = 'company' | 'origin-destination'
+type FilterName = 'company' | 'origin-destination' | 'schedule'
 export type FilterData = {
   company: {
     id: number
@@ -62,6 +63,10 @@ export type FilterData = {
   'origin-destination': {
     origin: string
     destination: string
+  }
+  schedule: {
+    lowerTime: string
+    upperTime: string
   }
 }
 

@@ -19,6 +19,7 @@ import BusStopTable from '../molecules/end-user/BusStopTable'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
+import ScheduleSelector from '../molecules/end-user/ScheduleSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
 
@@ -93,6 +94,7 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
+        <ScheduleSelector />
         <CompanySelector />
       </CommandPallete>
       <MapContainer
