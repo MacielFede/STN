@@ -172,8 +172,8 @@ function EndUserMap() {
 
         {intersectingLines
           .filter((line) => selectedLineIds.includes(line.id))
-          .map((line, idx) => (
-            <GeoJSON key={idx} data={line.geometry} style={geoJsonStyle} />
+          .map((line) => (
+            <GeoJSON key={line.id} data={line.geometry} style={geoJsonStyle} />
           ))}
 
         <PolygonDrawHandler
