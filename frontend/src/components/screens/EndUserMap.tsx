@@ -32,7 +32,7 @@ const geoJsonStyle = {
 type Line = {
   id: string
   number: string
-  companyName: string
+  companyId: string
   geometry: GeoJSON.GeoJsonObject
 }
 
@@ -45,6 +45,7 @@ function latLngsToWktPolygon(points: [number, number][]): string {
 function parseLines(features: any[]): Line[] {
   return features
     .map((f) => {
+      console.log('Raw feature:', f)
       const id = String(f.id ?? f.properties?.id)
       const geometry = f.geometry
       if (!id || !geometry) return null
@@ -53,7 +54,7 @@ function parseLines(features: any[]): Line[] {
         id,
         geometry,
         number: f.properties?.number ?? '(sin número)',
-        companyName: f.properties?.companyName ?? '(sin empresa)',
+        companyId: f.properties?.companyId ?? '(sin empresa)',
       }
     })
     .filter((line): line is Line => line !== null)

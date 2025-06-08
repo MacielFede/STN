@@ -3,7 +3,7 @@ import { Drawer } from 'flowbite-react'
 type Line = {
   id: string
   number: string
-  companyName: string
+  companyId: string
 }
 
 type Props = {
@@ -39,7 +39,7 @@ export function LineDrawer({
           >
             <div>
               <div className="font-semibold">Línea {line.number}</div>
-              <div className="text-sm text-gray-600">{line.companyName}</div>
+              <div className="text-sm text-gray-600">{line.companyId}</div>
             </div>
             <button
               onClick={() => onToggleLine(line.id)}
