@@ -36,7 +36,7 @@ export const getStops = debounce(
 export const createStop = async (
   values: BusStopProperties & { geometry: PointGeometry },
 ) => {
-  return await api.post('bus-stops', {
+  return await api.post('/bus-stops', {
     ...values,
   })
 }
@@ -44,14 +44,15 @@ export const createStop = async (
 export const updateStop = async (
   values: BusStopProperties & { geometry: PointGeometry },
 ) => {
-  return await api.put(`bus-stops/${values.id}`, {
+  return await api.put(`/bus-stops/${values.id}`, {
     ...values,
   })
 }
 
 export const deleteStop = async (id: number) => {
-  return await api.delete(`bus-stops/${id}`)
+  return await api.delete(`/bus-stops/${id}`)
 }
+
 export const streetStopContext = async ({
   lon,
   lat,

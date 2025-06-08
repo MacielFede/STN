@@ -4,7 +4,7 @@ import axios from 'axios'
 import { transformKeysToCamelCase } from '@/utils/helpers'
 import { GEO_WORKSPACE } from '@/utils/constants'
 
-const backendBaseURL = 'http://localhost:8080/api/'
+const backendBaseURL = 'http://localhost:8080/api'
 export const api = axios.create({ baseURL: backendBaseURL })
 
 api.interceptors.request.use((config) => {
