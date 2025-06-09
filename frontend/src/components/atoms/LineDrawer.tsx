@@ -1,10 +1,6 @@
 import { Drawer } from 'flowbite-react'
-
-type Line = {
-  id: string
-  number: string
-  companyId: string
-}
+import useCompanies from '@/hooks/useCompanies'
+import type { Line } from '@/models/database'
 
 type Props = {
   lines: Line[]
@@ -21,6 +17,13 @@ export function LineDrawer({
   selectedLineIds,
   onToggleLine,
 }: Props) {
+  const { companies } = useCompanies()
+
+  const getCompanyName = (companyId: string): string => {
+    const company = companies?.find((c) => String(c.id) === String(companyId))
+    return company?.name ?? '(Empresa desconocida)'
+  }
+
   return (
     <Drawer
       open={open}
@@ -30,7 +33,6 @@ export function LineDrawer({
       className="z-3000 bg-gray-200 max-h-50"
       backdrop={false}
     >
-    {/* <Drawer open={open} onClose={onClose} title="Líneas encontradas"> */}
       <ul className="space-y-2 p-4">
         {lines.map((line) => (
           <li
@@ -39,7 +41,9 @@ export function LineDrawer({
           >
             <div>
               <div className="font-semibold">Línea {line.number}</div>
-              <div className="text-sm text-gray-600">{line.companyId}</div>
+              <div className="text-sm text-gray-600">
+                {getCompanyName(line.companyId)}
+              </div>
             </div>
             <button
               onClick={() => onToggleLine(line.id)}

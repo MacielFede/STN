@@ -9,7 +9,7 @@ import { UserPositionMarker } from '../atoms/UserPositionMarker'
 import { PolygonMarkers } from '../atoms/PolygonMarkers'
 import { IntersectingLinesLayer } from '../atoms/IntersectingLinesLayer'
 import { PolygonDrawerControl } from '../atoms/PolygonDrawerControl'
-import { useLinesSearch } from '../atoms/useLinesSearch'
+import { useLinesSearch } from '../../hooks/useLinesSearch'
 import type { BusStopFeature } from '@/models/geoserver'
 
 function EndUserMap() {
