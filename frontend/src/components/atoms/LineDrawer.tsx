@@ -1,13 +1,17 @@
 import { Drawer } from 'flowbite-react'
 import useCompanies from '@/hooks/useCompanies'
-import type { Line } from '@/models/database'
+import type { BusLineProperties  } from '@/models/database'
+import type { GeoJsonObject } from 'geojson'
 
+interface BusLineWithGeometry extends BusLineProperties {
+  geometry: GeoJsonObject
+}
 type Props = {
-  lines: Line[]
+  lines: BusLineWithGeometry[]
   open: boolean
   onClose: () => void
-  selectedLineIds: string[]
-  onToggleLine: (id: string) => void
+  selectedLineIds: number[]
+  onToggleLine: (id: number) => void
 }
 
 export function LineDrawer({
@@ -19,8 +23,8 @@ export function LineDrawer({
 }: Props) {
   const { companies } = useCompanies()
 
-  const getCompanyName = (companyId: string): string => {
-    const company = companies?.find((c) => String(c.id) === String(companyId))
+  const getCompanyName = (companyId: number): string => {
+    const company = companies?.find((c) => c.id === companyId)
     return company?.name ?? '(Empresa desconocida)'
   }
 
@@ -42,7 +46,7 @@ export function LineDrawer({
             <div>
               <div className="font-semibold">Línea {line.number}</div>
               <div className="text-sm text-gray-600">
-                {getCompanyName(line.companyId)}
+                {getCompanyName((line.companyId))}
               </div>
             </div>
             <button

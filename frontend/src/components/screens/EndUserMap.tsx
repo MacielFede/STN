@@ -18,10 +18,10 @@ function EndUserMap() {
   const [isDrawing, setIsDrawing] = useState(false)
   const { intersectingLines, searchLines, setIntersectingLines } = useLinesSearch()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selectedLineIds, setSelectedLineIds] = useState<string[]>([])
+  const [selectedLineIds, setSelectedLineIds] = useState<number[]>([])
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
 
-  const toggleLineVisibility = (lineId: string) => {
+  const toggleLineVisibility = (lineId: number) => {
     setSelectedLineIds((prev) =>
       prev.includes(lineId)
         ? prev.filter((id) => id !== lineId)

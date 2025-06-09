@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { geoApi } from '@/api/config'
+import type { BusLineProperties } from '@/models/database'
+import type { GeoJsonObject } from 'geojson'
 
-type Line = {
-  id: string
-  number: string
-  companyId: string
-  geometry: GeoJSON.GeoJsonObject
+interface BusLineWithGeometry extends BusLineProperties {
+  geometry: GeoJsonObject
 }
 
 function latLngsToWktPolygon(points: [number, number][]): string {
@@ -15,25 +14,42 @@ function latLngsToWktPolygon(points: [number, number][]): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-function parseLines(features: any[]): Line[] {
+// function parseLines(features: any[]): BusLineWithGeometry[] {
+//   return features
+//     .map((f) => {
+//       const id = Number(f.id ?? f.properties?.id)
+//       const geometry = f.geometry
+//       const number = f.properties?.number
+//       const companyId = Number(f.properties?.companyId)
+
+//       if (!id || !geometry || !number || !companyId) return null
+
+//       return {
+//         id,
+//         geometry,
+//         number,
+//         companyId,
+//       }
+//     })
+//     .filter((line): line is BusLineWithGeometry => line !== null)
+// }
+function parseLines(features: any[]): BusLineWithGeometry[] {
   return features
     .map((f) => {
-      const id = String(f.id ?? f.properties?.id)
+      const properties = f.properties
       const geometry = f.geometry
-      if (!id || !geometry) return null
+      if (!properties || !geometry) return null
 
       return {
-        id,
+        ...properties,
         geometry,
-        number: f.properties?.number ?? '(sin número)',
-        companyId: f.properties?.companyId ?? '(sin empresa)',
-      }
+      } as BusLineWithGeometry
     })
-    .filter((line): line is Line => line !== null)
+    .filter((line): line is BusLineWithGeometry => line !== null)
 }
 
 export function useLinesSearch() {
-  const [intersectingLines, setIntersectingLines] = useState<Line[]>([])
+  const [intersectingLines, setIntersectingLines] = useState<BusLineWithGeometry[]>([])
 
   async function searchLines(polygonPoints: [number, number][]) {
     if (polygonPoints.length < 3) {
