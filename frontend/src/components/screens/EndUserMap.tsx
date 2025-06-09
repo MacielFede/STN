@@ -10,7 +10,7 @@ import { Button } from '../ui/button'
 import Modal from '../atoms/Modal'
 import CommandPallete from '../atoms/CommandPallete'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
-import { Drawer, DrawerItems } from 'flowbite-react'
+import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import BusStopInfo from '../atoms/BusStopInfo'
 import BusStopLines from '../atoms/BusStopLines'
 import { GeoJSON } from 'react-leaflet'
@@ -39,18 +39,24 @@ function handleSelectRoute(route: BusLineFeature) {
 }
 
 
+
+
 const [isOpen, setIsOpen] = useState(false)
-
-const handleCloseDrawer = useCallback(() => {
-  setIsOpen(false)
-  setActiveStop(null)
-}, [])
-
 
 
 const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
 
   
+
+
+  const handleCloseDrawer = useCallback(() => {
+    setIsOpen(false)
+    setActiveStop(null)
+    setSelectedRoutes([]) 
+  }, [])
+
+
+
 useEffect(() => {
   if (activeStop) {
     setIsOpen(true)
@@ -139,9 +145,11 @@ useEffect(() => {
         className="z-3000 bg-gray-200"
         backdrop={false}
       >
+        <DrawerHeader>STN</DrawerHeader>
         <DrawerItems>
           {activeStop && <BusStopInfo stop={activeStop} />}
           <Separator className="my-4 bg-black" decorative />
+          
           {activeStop?.geometry.coordinates && (
           <BusStopLines
           point={[

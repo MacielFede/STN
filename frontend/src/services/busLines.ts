@@ -1,7 +1,7 @@
 import debounce from 'lodash.debounce'
 import type { AxiosResponse } from 'axios'
 import { api, geoApi } from '@/api/config'
-import type { BusLineProperties } from "../models/database"
+import type { BusLineProperties, BusStopLine } from "../models/database"
 import type { FeatureCollection , BusLineFeature, BusLineFeatureCollection } from "../models/geoserver"
 import {
   DISTANCE_BETWEEN_STOPS_AND_STREET,
@@ -58,4 +58,21 @@ export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promis
     return []
   }
 }
+
+
+
+
+export async function getStopLines(stop: number) {
+
+   const { data }: AxiosResponse<BusStopLine> = await api.post(
+      '/stop-lines/by-line/',
+      {
+        stopId: stop
+      },
+    )
+    return data
+  }
+
+
+
 
