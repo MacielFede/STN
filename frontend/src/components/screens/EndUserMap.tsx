@@ -30,6 +30,7 @@ function EndUserMap() {
   }
 
   const onSearch = async () => {
+    if (polygonPoints.length < 3) return
     await searchLines(polygonPoints)
     setDrawerOpen(true)
   }
@@ -39,8 +40,8 @@ function EndUserMap() {
     setPolygonPoints([])
     setIntersectingLines([])
     setSelectedLineIds([])
+    setDrawerOpen(false)
   }
-
   return (
     <div className="relative h-screen">
       <MapContainer preferCanvas center={position} zoom={13} className="leaflet-container h-full">
