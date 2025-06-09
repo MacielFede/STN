@@ -1,71 +1,78 @@
-import { useEffect, useState } from 'react'
-import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import 'leaflet/dist/leaflet.css'
-import '@/styles/Map.css'
+import { MapContainer, TileLayer, Polygon } from 'react-leaflet'
+import { useState, useCallback, useEffect } from 'react'
+import PolygonDrawHandler from '@/components/atoms/PolygonDrawHandler'
+import CommandPallete from '../atoms/CommandPallete'
+import BusStops from '../molecules/BusStops'
+import { LineDrawer } from '../atoms/LineDrawer'
+import { useUserLocation } from '@/hooks/useUserLocation'
+import { UserPositionMarker } from '../atoms/UserPositionMarker'
+import { PolygonMarkers } from '../atoms/PolygonMarkers'
+import { IntersectingLinesLayer } from '../atoms/IntersectingLinesLayer'
+import { PolygonDrawerControl } from '../atoms/PolygonDrawerControl'
+import { useLinesSearch } from '../../hooks/useLinesSearch'
+import type { BusStopFeature } from '@/models/geoserver'
 
 function EndUserMap() {
-  const [position, setPosition] = useState<[number, number]>([
-    -34.9011, -56.1645,
-  ])
+  const position = useUserLocation()
+  const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([])
+  const [isDrawing, setIsDrawing] = useState(false)
+  const { intersectingLines, searchLines, setIntersectingLines } = useLinesSearch()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedLineIds, setSelectedLineIds] = useState<string[]>([])
+  const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords
-        setPosition([latitude, longitude])
-      },
-      (err) => {
-        // eslint-disable-next-line no-console
-        console.error('Error obteniendo ubicación:', err)
-
-        // Mostrar toast de error
-        toast.error('No se pudo determinar su ubicación', {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-          toastId: 'Location-error',
-        })
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
+  const toggleLineVisibility = (lineId: string) => {
+    setSelectedLineIds((prev) =>
+      prev.includes(lineId)
+        ? prev.filter((id) => id !== lineId)
+        : [...prev, lineId]
     )
-  }, [])
+  }
+
+  const onSearch = async () => {
+    await searchLines(polygonPoints)
+    setDrawerOpen(true)
+  }
+
+  const onToggleDrawing = () => {
+    setIsDrawing(!isDrawing)
+    setPolygonPoints([])
+    setIntersectingLines([])
+    setSelectedLineIds([])
+  }
 
   return (
-    <MapContainer
-      preferCanvas
-      center={position}
-      zoom={13}
-      className="leaflet-container"
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; OpenStreetMap contributors"
+    <div className="relative h-screen">
+      <MapContainer preferCanvas center={position} zoom={13} className="leaflet-container h-full">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
+        />
+        <UserPositionMarker position={position} />
+        <BusStops setActiveStop={setActiveStop} />
+        {polygonPoints.length > 2 && <Polygon positions={polygonPoints} color="yellow" />}
+        <PolygonMarkers polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
+        <IntersectingLinesLayer lines={intersectingLines} selectedLineIds={selectedLineIds} />
+        <PolygonDrawHandler isDrawing={isDrawing} setPolygonPoints={setPolygonPoints} />
+      </MapContainer>
+
+      <CommandPallete yPosition="top" xPosition="right">
+        <PolygonDrawerControl
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          onToggleDrawing={onToggleDrawing}
+          onSearch={onSearch}
+        />
+      </CommandPallete>
+
+      <LineDrawer
+        lines={intersectingLines}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        selectedLineIds={selectedLineIds}
+        onToggleLine={toggleLineVisibility}
       />
-      {
-        <CircleMarker
-          center={position}
-          radius={80} // en píxeles
-          pathOptions={{
-            color: 'skyblue',
-            fillColor: 'skyblue',
-            fillOpacity: 0.2,
-          }}
-        >
-          <Popup>Estás aquí</Popup>
-        </CircleMarker>
-      }
-    </MapContainer>
+    </div>
   )
 }
 
