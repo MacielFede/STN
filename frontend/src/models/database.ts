@@ -54,7 +54,7 @@ export type Department =
   | 'Tacuarembó'
   | 'Treinta y Tres'
 
-type FilterName = 'company' | 'origin-destination' | 'schedule'
+type FilterName = 'company' | 'origin-destination' | 'schedule' | 'street'
 export type FilterData = {
   company: {
     id: number
@@ -67,6 +67,9 @@ export type FilterData = {
   schedule: {
     lowerTime: string
     upperTime: string
+  }
+  street: {
+    streetName: string
   }
 }
 
