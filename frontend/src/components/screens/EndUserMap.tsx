@@ -1,11 +1,9 @@
-import { MapContainer, TileLayer, Polygon } from 'react-leaflet'
+import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet'
 import { useState, useCallback, useEffect } from 'react'
-import PolygonDrawHandler from '@/components/atoms/PolygonDrawHandler'
 import CommandPallete from '../atoms/CommandPallete'
 import BusStops from '../molecules/BusStops'
 import { LineDrawer } from '../atoms/LineDrawer'
 import { useUserLocation } from '@/hooks/useUserLocation'
-import { UserPositionMarker } from '../atoms/UserPositionMarker'
 import { PolygonMarkers } from '../atoms/PolygonMarkers'
 import { IntersectingLinesLayer } from '../atoms/IntersectingLinesLayer'
 import { PolygonDrawerControl } from '../atoms/PolygonDrawerControl'
@@ -49,12 +47,21 @@ function EndUserMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
         />
-        <UserPositionMarker position={position} />
+        <CircleMarker
+              center={position}
+              radius={80}
+              pathOptions={{
+                color: 'skyblue',
+                fillColor: 'skyblue',
+                fillOpacity: 0.2,
+              }}
+            >
+              <Popup>Estás aquí</Popup>
+          </CircleMarker>
         <BusStops setActiveStop={setActiveStop} />
-        {polygonPoints.length > 2 && <Polygon positions={polygonPoints} color="yellow" />}
-        <PolygonMarkers polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
+        
+        <PolygonMarkers isDrawing={isDrawing} polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
         <IntersectingLinesLayer lines={intersectingLines} selectedLineIds={selectedLineIds} />
-        <PolygonDrawHandler isDrawing={isDrawing} setPolygonPoints={setPolygonPoints} />
       </MapContainer>
 
       <CommandPallete yPosition="top" xPosition="right">

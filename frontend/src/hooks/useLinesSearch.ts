@@ -14,25 +14,6 @@ function latLngsToWktPolygon(points: [number, number][]): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-// function parseLines(features: any[]): BusLineWithGeometry[] {
-//   return features
-//     .map((f) => {
-//       const id = Number(f.id ?? f.properties?.id)
-//       const geometry = f.geometry
-//       const number = f.properties?.number
-//       const companyId = Number(f.properties?.companyId)
-
-//       if (!id || !geometry || !number || !companyId) return null
-
-//       return {
-//         id,
-//         geometry,
-//         number,
-//         companyId,
-//       }
-//     })
-//     .filter((line): line is BusLineWithGeometry => line !== null)
-// }
 function parseLines(features: any[]): BusLineWithGeometry[] {
   return features
     .map((f) => {
