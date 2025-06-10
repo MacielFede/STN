@@ -3,6 +3,7 @@ version: "3.8"
 services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.26.2
+    platform: linux/amd64
     container_name: geoserver
     ports:
       - "8000:8080"
@@ -19,6 +20,7 @@ services:
   postgis:
     image: postgis/postgis:latest
     container_name: postgis
+    platform: linux/amd64
     environment:
       - POSTGRES_DB=geodb
       - POSTGRES_USER=geouser
@@ -32,6 +34,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    platform: linux/amd64
     ports:
       - "8080:8080"
       - "5005:5005"
