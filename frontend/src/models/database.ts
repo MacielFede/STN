@@ -21,6 +21,15 @@ export type StreetProperties = {
   department: string
 }
 
+export type BusLineProperties = {
+  id: number
+  number: string
+  status: 'ACTIVE' | 'INACTIVE'
+  origin: string
+  destination: string
+  companyId: number
+}
+
 export type StopDirection = 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL'
 
 export type Department =
@@ -43,3 +52,32 @@ export type Department =
   | 'Soriano'
   | 'Tacuarembó'
   | 'Treinta y Tres'
+
+type FilterName = 'company' | 'origin-destination'
+export type FilterData = {
+  company: {
+    id: number
+    name: string
+  }
+  'origin-destination': {
+    origin: string
+    destination: string
+  }
+}
+
+export type EndUserFilter = {
+  [k in FilterName]: {
+    name: k
+    isActive: boolean
+    data?: FilterData[k]
+  }
+}[FilterName]
+
+export type Company = {
+  id: number
+  name: string
+}
+
+export type LoginTransactionResponse = {
+  token: string
+}
