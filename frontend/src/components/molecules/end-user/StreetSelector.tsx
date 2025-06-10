@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import debounce from 'lodash.debounce'
-import { Label } from 'flowbite-react'
+import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
 import type { StreetFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
@@ -9,6 +9,7 @@ import { findStreet } from '@/services/street'
 const StreetSelector = () => {
   const { toogleEndUserFilter } = useGeoContext()
   const [street, setStreet] = useState<string>('')
+  const streetRef = useRef<StreetFeature | null>(null)
   const [suggestions, setSuggestions] = useState<Array<StreetFeature>>([])
 
   const debouncedFilter = useMemo(
@@ -18,6 +19,7 @@ const StreetSelector = () => {
           try {
             const results = await findStreet(value)
             setSuggestions(results)
+            return results[0]
           } catch {
             setSuggestions([])
           }
@@ -41,15 +43,34 @@ const StreetSelector = () => {
     toogleEndUserFilter({ name: 'street', isActive: false })
   }
 
-  const handleApplyFilter = () => {
+  const handleApplyFilter = async () => {
+    if (!streetRef.current) {
+      const firstStreetFound = await debouncedFilter(street)
+      if (firstStreetFound === undefined) {
+        toast.error('No tenemos registrada una calle con ese nombre', {
+          position: 'top-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+          toastId: 'street-filter-error',
+        })
+        return
+      } else streetRef.current = firstStreetFound
+    }
+
     toogleEndUserFilter({
       name: 'street',
+      data: { coordinates: streetRef.current.geometry.coordinates },
       isActive: true,
-      data: { streetName: street },
     })
   }
 
   const handleSuggestionClick = (suggestion: StreetFeature) => {
+    streetRef.current = suggestion
     setStreet(suggestion.properties.name)
     setSuggestions([])
   }
@@ -58,7 +79,6 @@ const StreetSelector = () => {
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full h-fit">
       <h3 className="font-semibold">Buscar Lineas por Calle</h3>
       <div className="flex flex-row justify-between items-center">
-        <Label htmlFor="streetInput">Calle:</Label>
         <input
           type="text"
           id="streetInput"

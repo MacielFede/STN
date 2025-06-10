@@ -35,15 +35,28 @@ export function turnCapitalizedDepartment(str: string) {
 
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
+function toWktMultiLineString(coords: Array<Array<Array<number>>>): string {
+  const lines = coords.map(
+    (line) => `(${line.map((pt) => `${pt[0]} ${pt[1]}`).join(', ')})`,
+  )
+  return `MULTILINESTRING(${lines.join(', ')})`
+}
+
 export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
-      return `company_id=${(data as FilterData['company']).id}` // AND DWITHIN(geometry, POINT(${-56.16532803} ${-34.89276006}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
+      return `company_id=${(data as FilterData['company']).id}`
     case 'schedule': {
       const schedule = data as FilterData['schedule']
       return schedule.upperTime
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
+    }
+    case 'street': {
+      const wktMultiLineString = toWktMultiLineString(
+        (data as FilterData['street']).coordinates,
+      )
+      return `INTERSECTS(geometry, ${wktMultiLineString})`
     }
     default:
       return ''

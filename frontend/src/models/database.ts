@@ -1,3 +1,5 @@
+import type { MultiLineStringGeometry } from './geoserver'
+
 export type BusStopProperties = {
   id?: number
   name: string
@@ -54,6 +56,8 @@ export type Department =
   | 'Tacuarembó'
   | 'Treinta y Tres'
 
+type StreetCoordinates = Omit<MultiLineStringGeometry, 'type'>
+
 type FilterName = 'company' | 'origin-destination' | 'schedule' | 'street'
 export type FilterData = {
   company: {
@@ -68,9 +72,7 @@ export type FilterData = {
     lowerTime: string
     upperTime: string
   }
-  street: {
-    streetName: string
-  }
+  street: StreetCoordinates
 }
 
 export type EndUserFilter = {
