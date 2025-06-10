@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import useLines from '@/hooks/useLines'
 import Modal from '@/components/atoms/Modal'
 import useCompanies from '@/hooks/useCompanies'
+import { getHoursAndMinutes } from '@/utils/helpers'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -38,6 +39,7 @@ export default function BusLinetable({
             {!!companies && (
               <TableHead className="font-bold">Empresa</TableHead>
             )}
+            <TableHead className="font-bold">Horario de salida</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -52,6 +54,9 @@ export default function BusLinetable({
                     (company) => company.id === line.properties.companyId,
                   )?.name
                 }
+              </TableCell>
+              <TableCell>
+                {getHoursAndMinutes(line.properties.schedule)}
               </TableCell>
               <TableCell className="text-right">
                 <Button

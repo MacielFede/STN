@@ -40,11 +40,13 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     setBusLinesCqlFilter(
       buildCqlFilter(
-        endUserFilters.map((filter) =>
-          filter.isActive
-            ? getFilterFromData({ name: filter.name, data: filter.data })
-            : '',
-        ),
+        endUserFilters
+          .map((filter) =>
+            filter.isActive
+              ? getFilterFromData({ name: filter.name, data: filter.data })
+              : '',
+          )
+          .filter((filter) => filter !== ''),
       ),
     )
   }, [endUserFilters])

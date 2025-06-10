@@ -8,8 +8,10 @@ export const buildBBoxFilter = ({ sw, ne }: BBox) =>
 
 export const buildCqlFilter = (filters: Array<string>) =>
   filters.length > 1
-    ? filters.filter((filter) => filter.trim() === '').join(' AND ')
-    : filters[0]
+    ? filters.join(' AND ')
+    : filters.length === 1
+      ? filters[0]
+      : ''
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -37,7 +39,31 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}` // AND DWITHIN(geometry, POINT(${-56.16532803} ${-34.89276006}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
+    case 'schedule': {
+      const schedule = data as FilterData['schedule']
+      return schedule.upperTime
+        ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
+        : `schedule = '${schedule.lowerTime}'`
+    }
     default:
       return ''
   }
+}
+
+export function getHoursAndMinutes(isoString: string): string {
+  const date = new Date(isoString)
+
+  if (isNaN(date.getTime())) {
+    throw new Error('Invalid date format')
+  }
+
+  const hours = String(date.getUTCHours()).padStart(2, '0')
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+
+  return `${hours}:${minutes}`
+}
+
+export function toCQLTime(time: string): string {
+  // Add ":00" if only HH:MM is provided
+  return time.length === 5 ? `${time}:00` : time
 }
