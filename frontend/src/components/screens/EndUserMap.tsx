@@ -8,7 +8,6 @@ import {
   TileLayer,
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-
 import 'react-toastify/dist/ReactToastify.css'
 
 import '@/styles/Map.css'
@@ -33,8 +32,11 @@ import { Separator } from '../ui/separator'
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
-import { useGeoContext } from '@/contexts/GeoContext'
-
+const geoJsonStyle = {
+  color: 'pink',
+  weight: 3,
+  opacity: 0.8,
+}
 
 function EndUserMap() {
   const position = useUserLocation()
@@ -71,29 +73,11 @@ function EndUserMap() {
     if (activeStop || lines?.length) setIsOpen(true)
     else setIsOpen(false)
   }, [activeStop, lines])
-    const { toogleEndUserFilter, endUserFilters } = useGeoContext()
-
-  const onSearch = async () => {
-    if (polygonPoints.length < 3) return
-    toogleEndUserFilter({
-      name: 'polygon',
-      isActive: true,
-      data: {
-        polygonPoints: polygonPoints,
-      },
-    })
-    setIsOpen(true)
-  }
 
   const onToggleDrawing = () => {
     setIsDrawing(!isDrawing)
     setPolygonPoints([])
     setIsOpen(false)
-  }
-  const geoJsonStyle = {
-    color: 'pink',
-    weight: 3,
-    opacity: 0.8,
   }
 
   return (
@@ -105,9 +89,8 @@ function EndUserMap() {
           isDrawing={isDrawing}
           polygonPoints={polygonPoints}
           onToggleDrawing={onToggleDrawing}
-          onSearch={onSearch}
         />
-        
+
       </CommandPallete>
       <MapContainer
         preferCanvas
@@ -137,7 +120,7 @@ function EndUserMap() {
           <Popup>Estás aquí</Popup>
         </CircleMarker>
         <PolygonFilterUtilities isDrawing={isDrawing} polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
-        
+
       </MapContainer>
 
       {((lines && lines.length > 0) || activeStop) && (
