@@ -69,15 +69,24 @@ export type Department =
 type FilterName = 'company' | 'origin-destination' | 'line' | 'schedule' 
 
 export type FilterData = {
-    company: {
-      id: number
-      name: string
-    }
-    'origin-destination': {
-      origin: string
-      destination: string
-    }
+  company: {
+    id: number
+    name: string
   }
+  'origin-destination': {
+    origin: string
+    destination: string
+  }
+  schedule: {
+    lowerTime: string
+    upperTime?: string
+  }
+  line: {
+    id: number
+    name: string
+  }
+}
+
   
   export type EndUserFilter = {
     [k in FilterName]: {

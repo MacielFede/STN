@@ -142,7 +142,7 @@ useEffect(() => {
         open={isOpen}
         onClose={handleCloseDrawer}
         position="bottom"
-        className="z-3000 bg-gray-200"
+        className="z-3000 bg-gray-200 space-y-2 max-h-[300px] overflow-y-auto"
         backdrop={false}
       >
         <DrawerHeader>STN</DrawerHeader>
@@ -159,9 +159,7 @@ useEffect(() => {
           onSelectRoute={handleSelectRoute}
           selectedRoutes={selectedRoutes}
         />
-        
-        
-        
+
 )}
 
         </DrawerItems>
