@@ -1,7 +1,7 @@
-# GIS Project
+# Sistema de Transporte Nacional (STN) 
 
 This project was developed for a GIS course, utilizing various tools and technologies. 
-The application is designed to interact with GIS data, providing functionality through PostGIS (PostreSQL).
+The application is designed to interact with GIS data, providing functionality through PostGIS and GeoServer, a backend with SpringBoot and a user interface with React and Leaflet.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ BackEnd application will run in the port 8080
 ## Load geoserver config 
 
 ```bash
-docker cp urils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/webapps/geoserver/WEB-INF/web.xml
+docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/webapps/geoserver/WEB-INF/web.xml
 docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/conf/web.xml
 ```
 ## Public geoserver tables

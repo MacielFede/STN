@@ -21,25 +21,14 @@ export type StreetProperties = {
   department: string
 }
 
-
 export type BusLineProperties = {
-
   id: number
   number: string
   status: 'ACTIVE' | 'INACTIVE'
   origin: string
   destination: string
   companyId: number
-}
-
-
-
-export type BusStopLine = {
-
-        id: number,
-        stopId: string,
-        lineId: number,
-        estimatedTime: string
+  schedule: string
 }
 
 export type StopDirection = 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL'
@@ -66,7 +55,7 @@ export type Department =
   | 'Treinta y Tres'
 
 
-type FilterName = 'company' | 'origin-destination' | 'line' | 'schedule' 
+type FilterName = 'company' | 'origin-destination' | 'schedule' | 'polygon'| 'line'
 
 export type FilterData = {
   company: {
@@ -79,7 +68,10 @@ export type FilterData = {
   }
   schedule: {
     lowerTime: string
-    upperTime?: string
+    upperTime: string
+  }
+  polygon: {
+    polygonPoints: [number, number][]
   }
   line: {
     id: number
@@ -87,20 +79,29 @@ export type FilterData = {
   }
 }
 
-  
-  export type EndUserFilter = {
-    [k in FilterName]: {
-      name: k
-      isActive: boolean
-      data?: FilterData[k]
-    }
-  }[FilterName]
-  
-  export type Company = {
-    id: number
-    name: string
+export type EndUserFilter = {
+  [k in FilterName]: {
+    name: k
+    isActive: boolean
+    data?: FilterData[k]
   }
-  
-  export type LoginTransactionResponse = {
-    token: string
-  }
+}[FilterName]
+
+export type Company = {
+  id: number
+  name: string
+}
+
+export type LoginTransactionResponse = {
+  token: string
+}
+
+
+export type BusStopLine = {
+
+  id: number,
+  stopId: string,
+  lineId: number,
+  estimatedTime: string
+}
+

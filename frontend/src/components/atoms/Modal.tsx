@@ -10,7 +10,7 @@ import {
 } from '../ui/dialog'
 import type { ReactNode } from 'react'
 
-type ModalType = 'Companies' | 'Lines' | 'busLines'
+type ModalType = 'Companies' | 'Lines' | 'busLines' | 'EndUserLines'
 type ModalProps = {
   trigger: ReactNode
   body: ReactNode
@@ -34,6 +34,11 @@ const getModalText = (type: ModalType) => {
           header: 'Lineas de omnibus',
           description: '',
         }
+    case 'EndUserLines':
+      return {
+        header: 'Horarios de linea de transporte',
+        description: '',
+      }
   }
 }
 
@@ -41,9 +46,9 @@ const Modal = ({ trigger, body, type }: ModalProps) => {
   const modalText = useMemo(() => getModalText(type), [type])
   return (
     <Dialog key={type}>
-      <DialogOverlay className="bg-black/50 backdrop-blur-sm fixed inset-0 z-[2002]" />
+      <DialogOverlay className="backdrop-blur-sm fixed inset-0 z-[2002]" />
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="z-[2005]">
+      <DialogContent className="z-[3005]">
         <DialogHeader>
           <DialogTitle>{modalText.header}</DialogTitle>
           <DialogDescription>{modalText.description}</DialogDescription>
