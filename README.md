@@ -41,3 +41,4 @@ To be able to use the frontend fully, you'll need to publish this tables on geos
 
 1. ft_bus_stop
 2. ft_street (this table should be added using the script created by Martin)
+3. ft_bus_line
