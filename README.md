@@ -32,7 +32,7 @@ BackEnd application will run in the port 8080
 ## Load geoserver config 
 
 ```bash
-docker cp urils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/webapps/geoserver/WEB-INF/web.xml
+docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/webapps/geoserver/WEB-INF/web.xml
 docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/conf/web.xml
 ```
 ## Public geoserver tables
