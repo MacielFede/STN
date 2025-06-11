@@ -59,37 +59,5 @@ function Button({
 }
 
 
-function ControlButtons({
-  isDrawing,
-  polygonPoints,
-  onToggleDrawing,
-  onSearch
-}: {
-  isDrawing: boolean
-  polygonPoints: [number, number][]
-  onToggleDrawing: () => void
-  onSearch: () => void
-}) {
-  return (
-    <div>
-      <button
-        onClick={onToggleDrawing}
-        className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow"
-      >
-        {isDrawing ? 'Cancelar dibujo' : 'Dibujar polígono'}
-      </button>
 
-      {polygonPoints.length >= 3 && (
-        <button
-          onClick={onSearch}
-          className="bg-green-600 text-white px-4 py-2 rounded-xl shadow"
-        >
-          Buscar líneas
-        </button>
-      )}
-    </div>
-  )
-}
-
-
-export { Button, buttonVariants, ControlButtons }
+export { Button, buttonVariants }

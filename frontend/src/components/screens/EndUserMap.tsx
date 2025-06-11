@@ -1,7 +1,5 @@
-// React y hooks
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
-// Leaflet
 import {
   CircleMarker,
   GeoJSON,
@@ -11,60 +9,42 @@ import {
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Toast
-import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-// Estilos
 import '@/styles/Map.css'
 
-// Hooks
 import { useUserLocation } from '@/hooks/useUserLocation'
-import { useLinesSearch } from '../../hooks/useLinesSearch'
 import useLines from '@/hooks/useLines'
 
-// Tipos
 import type { BusStopFeature, BusLineFeature } from '@/models/geoserver'
 
-// Componentes - Atoms
 import CommandPallete from '../atoms/CommandPallete'
-import { LineDrawer } from '../atoms/LineDrawer'
-import { PolygonMarkers } from '../atoms/PolygonMarkers'
-import { IntersectingLinesLayer } from '../atoms/IntersectingLinesLayer'
-import { PolygonDrawerControl } from '../atoms/PolygonDrawerControl'
 
-// Componentes - Molecules
 import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
 import BusStopTable from '../molecules/end-user/BusStopTable'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import ScheduleSelector from '../molecules/end-user/ScheduleSelector'
+import PolygonSelector from '../molecules/end-user/PolygonSelector'
 
-// UI
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import { Separator } from '../ui/separator'
 
-// Imágenes
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
+import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
+import { useGeoContext } from '@/contexts/GeoContext'
+
 
 function EndUserMap() {
   const position = useUserLocation()
   const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([])
   const [isDrawing, setIsDrawing] = useState(false)
-  const { intersectingLines, searchLines, setIntersectingLines } = useLinesSearch()
-  const [selectedLineIds, setSelectedLineIds] = useState<number[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
   const { lines } = useLines()
-  const toggleLineVisibility = (lineId: number) => {
-    setSelectedLineIds((prev) =>
-      prev.includes(lineId)
-        ? prev.filter((id) => id !== lineId)
-        : [...prev, lineId]
-          )
-  }
+
 
   function handleDisplayRoute(route: BusLineFeature) {
     setDisplayedRoutes((prev) => {
@@ -91,25 +71,43 @@ function EndUserMap() {
     if (activeStop || lines?.length) setIsOpen(true)
     else setIsOpen(false)
   }, [activeStop, lines])
+    const { toogleEndUserFilter, endUserFilters } = useGeoContext()
 
   const onSearch = async () => {
     if (polygonPoints.length < 3) return
-    await searchLines(polygonPoints)
+    toogleEndUserFilter({
+      name: 'polygon',
+      isActive: true,
+      data: {
+        polygonPoints: polygonPoints,
+      },
+    })
     setIsOpen(true)
   }
 
   const onToggleDrawing = () => {
     setIsDrawing(!isDrawing)
     setPolygonPoints([])
-    setIntersectingLines([])
-    setSelectedLineIds([])
     setIsOpen(false)
   }
+  const geoJsonStyle = {
+    color: 'pink',
+    weight: 3,
+    opacity: 0.8,
+  }
+
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
         <ScheduleSelector />
         <CompanySelector />
+        <PolygonSelector
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          onToggleDrawing={onToggleDrawing}
+          onSearch={onSearch}
+        />
+        
       </CommandPallete>
       <MapContainer
         preferCanvas
@@ -125,7 +123,7 @@ function EndUserMap() {
 
         <BusStops setActiveStop={setActiveStop} />
         {displayedRoutes.map((line) => (
-          <GeoJSON key={line.id} data={line} style={{ color: 'red' }} />
+          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
         ))}
         <CircleMarker
           center={position}
@@ -138,26 +136,9 @@ function EndUserMap() {
         >
           <Popup>Estás aquí</Popup>
         </CircleMarker>
-        <PolygonMarkers isDrawing={isDrawing} polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
-        <IntersectingLinesLayer lines={intersectingLines} selectedLineIds={selectedLineIds} />
+        <PolygonFilterUtilities isDrawing={isDrawing} polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
+        
       </MapContainer>
-
-      <CommandPallete yPosition="top" xPosition="right">
-        <PolygonDrawerControl
-          isDrawing={isDrawing}
-          polygonPoints={polygonPoints}
-          onToggleDrawing={onToggleDrawing}
-          onSearch={onSearch}
-        />
-      </CommandPallete>
-
-      <LineDrawer
-        lines={intersectingLines}
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        selectedLineIds={selectedLineIds}
-        onToggleLine={toggleLineVisibility}
-      />
 
       {((lines && lines.length > 0) || activeStop) && (
         <Drawer

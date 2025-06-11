@@ -1,13 +1,13 @@
 import { Marker, Polygon, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 
-interface PolygonMarkersProps {
+interface PolygonFilterUtilitiesProps {
   isDrawing: boolean
   polygonPoints: [number, number][]
   setPolygonPoints: React.Dispatch<React.SetStateAction<[number, number][]>>
 }
 
-export function PolygonMarkers({ isDrawing, polygonPoints, setPolygonPoints }: PolygonMarkersProps) {
+export function PolygonFilterUtilities({ isDrawing, polygonPoints, setPolygonPoints }: PolygonFilterUtilitiesProps) {
     useMapEvents({
         click(e) {
           if (!isDrawing) return

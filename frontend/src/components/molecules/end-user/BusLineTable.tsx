@@ -56,7 +56,7 @@ export default function BusLinetable({
                 }
               </TableCell>
               <TableCell>
-                {getHoursAndMinutes(line.properties.schedule)}
+                {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}
               </TableCell>
               <TableCell className="text-right">
                 <Button

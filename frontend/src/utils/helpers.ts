@@ -35,6 +35,12 @@ export function turnCapitalizedDepartment(str: string) {
 
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
+function latLngsToWktPolygon(points: [number, number][]): string {
+  const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
+  const [firstLat, firstLng] = points[0]
+  return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
+}
+
 export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
@@ -45,6 +51,11 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
+    case 'polygon': {
+      const polygon = data as FilterData['polygon']
+      const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
+      return `INTERSECTS(geometry, ${wktPolygon})`
+    }
     default:
       return ''
   }
@@ -52,7 +63,6 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
 
 export function getHoursAndMinutes(isoString: string): string {
   const date = new Date(isoString)
-
   if (isNaN(date.getTime())) {
     throw new Error('Invalid date format')
   }
