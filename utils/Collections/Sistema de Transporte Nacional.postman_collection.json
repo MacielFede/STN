@@ -1,0 +1,791 @@
+{
+	"info": {
+		"_postman_id": "d7453c9f-bed5-4111-92aa-ea949ac55ee3",
+		"name": "Sistema de Transporte Nacional",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37753331"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"TOKEN\", response.token);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/auth/login",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"TOKEN\", response.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/auth/register",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Companies",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/companies",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"companies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"company name\"   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/companies",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"companies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"company name edited\"   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/companies/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"companies",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/companies/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"companies",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Lines",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-lines",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-lines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\",\r\n    \"origin\": \"MONTEVIDEO\",\r\n    \"destination\": \"ATLANTIDA\",\r\n    \"geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                -56.164531,\r\n                -34.901112\r\n            ], // Montevideo - Centro\r\n            [\r\n                -56.053879,\r\n                -34.882119\r\n            ], // Carrasco\r\n            [\r\n                -55.960723,\r\n                -34.851224\r\n            ], // Paso Carrasco / Canelones\r\n            [\r\n                -55.869198,\r\n                -34.786516\r\n            ], // Solymar\r\n            [\r\n                -55.755424,\r\n                -34.757094\r\n            ], // Salinas\r\n            [\r\n                -55.740623,\r\n                -34.750248\r\n            ] // Atlántida\r\n        ]\r\n    },\r\n    \"companyId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-lines",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-lines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"number\": \"711\",\r\n    \"status\": \"ACTIVE\",\r\n    \"origin\": \"MONTEVIDEO\",\r\n    \"destination\": \"PARQUE DEL PLATA\",\r\n    \"geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                -56.164531,\r\n                -34.901112\r\n            ], // Montevideo - Centro\r\n            [\r\n                -56.053879,\r\n                -34.882119\r\n            ], // Carrasco\r\n            [\r\n                -55.960723,\r\n                -34.851224\r\n            ], // Paso Carrasco\r\n            [\r\n                -55.869198,\r\n                -34.786516\r\n            ], // Solymar\r\n            [\r\n                -55.794697,\r\n                -34.763431\r\n            ], // El Pinar\r\n            [\r\n                -55.755424,\r\n                -34.757094\r\n            ], // Salinas\r\n            [\r\n                -55.736732,\r\n                -34.749485\r\n            ], // Atlántida\r\n            [\r\n                -55.709457,\r\n                -34.745332\r\n            ] // Parque del Plata\r\n        ]\r\n    },\r\n    \"companyId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-lines/2",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-lines",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-lines/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-lines",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Stops",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Av. Italia 124\",\r\n  \"description\": \"Parada frente a la farmacia\",\r\n  \"direction\": \"OUTBOUND\",\r\n  \"department\": \"Montevideo\",\r\n  \"route\": \"COPSA 702\",\r\n  \"status\": \"ACTIVE\",\r\n  \"hasShelter\": false,\r\n  \"geometry\": {\r\n    \"type\": \"Point\",\r\n    \"coordinates\": [\r\n      -56.164532,\r\n      -34.901119\r\n    ]\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Av. Italia 124\",\r\n  \"description\": \"Parada frente a la farmacia\",\r\n  \"direction\": \"OUTBOUND\",\r\n  \"department\": \"Montevideo\",\r\n  \"route\": \"COPSA 702\",\r\n  \"status\": \"INACTIVE\",\r\n  \"hasShelter\": true,\r\n  \"geometry\": {\r\n    \"type\": \"Point\",\r\n    \"coordinates\": [\r\n      -56.164532,\r\n      -34.901119\r\n    ]\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/bus-stops/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/bus-stops/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"bus-stops",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bus Stops And Lines",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Line",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-line/{lineId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-line",
+								"{lineId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Stops",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-stop/{stopId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-stop",
+								"{stopId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Time Range",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/{stopId}/time-range?startTime=10:45:00&endTime=10:50:00",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"{stopId}",
+								"time-range"
+							],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "10:45:00"
+								},
+								{
+									"key": "endTime",
+									"value": "10:50:00"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"stopId\": 1,\r\n    \"lineId\": 1,\r\n    \"estimatedTime\": \"10:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/stop-lines",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"stopId\": 1,\r\n    \"lineId\": 1,\r\n    \"estimatedTime\": \"10:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/stop-lines/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Stops",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/stop-lines/by-stop/{stopId}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"stop-lines",
+								"by-stop",
+								"{stopId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "TOKEN",
+			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODAyODE3NSwiZXhwIjoxNzQ4MTE0NTc1fQ.k49Z9OIKpq7fcxDOdZKAK1_RDM3Fb-tfqz2AOY2HU0A",
+			"type": "string"
+		},
+		{
+			"key": "URL",
+			"value": "localhost:8080/api",
+			"type": "string"
+		}
+	]
+}
