@@ -118,7 +118,7 @@ const AdminMap = () => {
         className="z-3000 bg-gray-200 max-h-50"
         backdrop={false}
       >
-        <DrawerHeader>STN</DrawerHeader>
+        <DrawerHeader title="STN | Ver información de paradas y recorridos seleccionados" />
         <DrawerItems>
           {activeStop && (
             <>

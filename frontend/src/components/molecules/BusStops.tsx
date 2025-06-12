@@ -1,13 +1,12 @@
 import L from 'leaflet'
 import { Marker, useMapEvents } from 'react-leaflet'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from '@tanstack/react-router'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
 import type { BusStopFeature } from '@/models/geoserver'
 import useStops from '@/hooks/useStops'
 import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
-import { useGeoContext } from '@/contexts/GeoContext'
 import { ADMIN_PATHNAME } from '@/utils/constants'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
@@ -32,17 +31,17 @@ const BusStops = ({
 }: {
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
 }) => {
-  const { cqlFilter, setCqlFilter } = useGeoContext()
+  const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
   const { newBusLine, busLineStep, setBusLineStep, originStopId, destinationStopId, intermediateStopIds, cleanStopFromAssignments, setOriginStopId, setDestinationStopId, setIntermediateStopIds, cacheStop } = useBusLineContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
       const sw = bounds.getSouthWest()
       const ne = bounds.getNorthEast()
-      setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
+      setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
     },
   })
-  const { stops } = useStops(cqlFilter, true)
+  const { stops } = useStops(busStopsCqlFilter, true)
   const location = useLocation()
 
   const handleAssoaciationClick = async (stop: BusStopFeature) => {
@@ -91,8 +90,9 @@ const BusStops = ({
     const bounds = map.getBounds()
     const sw = bounds.getSouthWest()
     const ne = bounds.getNorthEast()
-    setCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
-  }, [map, setCqlFilter])
+    setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
+  }, [map, setBusStopsCqlFilter])
+
   return stops?.map((stop) => {
     return (
       <Marker
