@@ -4,6 +4,7 @@ import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '../ui/button'
 import Modal from '@/components/atoms/Modal'
 import BusLineTable from '@/components/atoms/BusLineTable' // Ajustá el path si es distinto
+import { turnCapitalizedDepartment } from '@/utils/helpers'
 
 const BusLineSelector = () => {
   const [busLines, setBusLines] = useState<BusLineFeature[]>([])
