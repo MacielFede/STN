@@ -10,7 +10,7 @@ import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { ADMIN_PATHNAME } from '@/utils/constants'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { isDestinationStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
+import { isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
 import { toast } from 'react-toastify'
 
 const ActiveBusStopIcon = L.icon({
@@ -76,6 +76,12 @@ const BusStops = ({
       setBusLineStep('show-selection-popup');
       cacheStop(stop);
     } else if (busLineStep === "select-intermediate") {
+      if (!newBusLine) return;
+      if(!await isIntermediateStopOnStreet(stop, newBusLine)){
+        toast.error("La parada seleccionada no es valida como parada intermedia de la linea");
+        setIntermediateStopIds((prev) => prev.filter((intermediateId) => intermediateId !== id));
+        return;
+      }
       setIntermediateStopIds([...cleaned.newIntermediates, id]);
       cacheStop(stop);
     }

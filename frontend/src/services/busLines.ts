@@ -27,8 +27,8 @@ export const createBusLine = async (line: BusLineFeature) => {
 }
 
 export const createStopLine = async (
-  stopId: number,
-  lineId: number,
+  stopId: string,
+  lineId: string,
   estimatedTime: string
 ) => {
   return await api.post('/stop-lines', {
@@ -89,7 +89,14 @@ export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  const wkt = `LINESTRING(${busLine.geometry.coordinates.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`
+  const densified = densifyLineString(busLine.geometry.coordinates)
+  const intermediateDensified = densified.slice(1, -1)
+
+  if (intermediateDensified.length === 0) {
+    return false
+  }
+
+  const wkt = `LINESTRING(${intermediateDensified.map(coord => `${coord[1]} ${coord[0]}`).join(', ')})`
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
     await geoApi.get('', {

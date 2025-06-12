@@ -1,6 +1,8 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
+import { createStopLine } from '@/services/busLines'
+import { toast } from 'react-toastify'
 
 const StopAssignmentDrawer = ({
     open,
@@ -10,6 +12,7 @@ const StopAssignmentDrawer = ({
     onClose: () => void
 }) => {
     const {
+        newBusLine,
         busLineStep,
         setBusLineStep,
         originStopId,
@@ -17,11 +20,45 @@ const StopAssignmentDrawer = ({
         intermediateStopIds,
         setIntermediateStopIds,
         selectedStops,
+        cleanUpBusLineStates,
     } = useBusLineContext()
 
     const getStopStyle = (id: number | null) => {
         if (!id) return "";
         return "bg-blue-50 border border-blue-400 rounded p-2 mt-1";
+    }
+
+    const handleSave = async () => {
+        if (originStopId === null || destinationStopId === null) {
+            toast.error("Por favor, selecciona un origen y un destino antes de guardar.");
+            return;
+        }
+        if (!newBusLine?.properties.number || !newBusLine.properties.id) return;
+
+        const stops = [originStopId, destinationStopId, ...intermediateStopIds];
+        if (stops.length < 2) {
+            toast.error("Debes seleccionar al menos un origen y un destino.");
+            return;
+        }
+
+        try {
+            await Promise.all(
+                stops.map(stopId =>
+                    createStopLine(
+                        String(stopId),
+                        String(newBusLine.properties.id),
+                        '10:00:00'
+                    )
+                )
+            );
+
+            toast.success('Asignación de paradas guardada correctamente.');
+            onClose();
+            cleanUpBusLineStates();
+        } catch (error) {
+            toast.error('Hubo un error al guardar la asignación de paradas, intenta nuevamente.');
+            console.error('Error saving stop assignments:', error);
+        }
     }
 
     return (
@@ -60,9 +97,15 @@ const StopAssignmentDrawer = ({
                             Seleccionar en el mapa
                         </Button>
                         <div className={getStopStyle(originStopId)}>
-                            {selectedStops.has(originStopId) ? selectedStops.get(originStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
-                            <p className="text-xs text-gray-500">{selectedStops.get(originStopId)?.properties.description}</p>
-                            <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                            {selectedStops.has(originStopId) ? (
+                                <>
+                                    <p>{selectedStops.get(originStopId)?.properties.name}</p>
+                                    <p className="text-xs text-gray-500">{selectedStops.get(originStopId)?.properties.description}</p>
+                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                </>
+                            ) : (
+                                "⬜ No seleccionado"
+                            )}
                         </div>
                     </div>
 
@@ -77,9 +120,15 @@ const StopAssignmentDrawer = ({
                             Seleccionar en el mapa
                         </Button>
                         <div className={getStopStyle(destinationStopId)}>
-                            {selectedStops.has(destinationStopId) ? selectedStops.get(destinationStopId)?.properties.name || "⬜ No seleccionado" : "Cargando..."}
-                            <p className="text-xs text-gray-500">{selectedStops.get(destinationStopId)?.properties.description}</p>
-                            <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                            {selectedStops.has(destinationStopId) ? (
+                                <>
+                                    <p>{selectedStops.get(destinationStopId)?.properties.name}</p>
+                                    <p className="text-xs text-gray-500">{selectedStops.get(destinationStopId)?.properties.description}</p>
+                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                </>
+                            ) : (
+                                "⬜ No seleccionado"
+                            )}
                         </div>
                     </div>
 
@@ -133,7 +182,7 @@ const StopAssignmentDrawer = ({
                             originStopId === null ||
                             destinationStopId === null
                         }
-                        onClick={onClose}
+                        onClick={handleSave}
                     >Guardar</Button>
                 </div>
             </div>

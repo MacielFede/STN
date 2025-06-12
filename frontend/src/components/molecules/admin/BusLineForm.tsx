@@ -51,7 +51,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           switchMode('edition');
           return
         }
-        await createBusLine({
+        const response = await createBusLine({
           ...newBusLine,
           properties: {
             ...data,
@@ -63,7 +63,15 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             ),
           },
         })
+        debugger;
         await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+        updateBusLine({
+          ...newBusLine,
+          properties: {
+            ...newBusLine.properties,
+            id: response.data.id,
+          },
+        })
         toast.success('Ruta creada correctamente', {
           closeOnClick: true,
           position: 'top-left',
