@@ -7,9 +7,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { createBusLine, deleteBusLine, deleteStopLine, getStopLineByBusLineId, isBusLineOnStreets, updateBusLine } from '@/services/busLines'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
-import { getCompanies, type Company } from '@/services/admin'
 import { useEffect, useState } from 'react'
 import StopAssignmentModal from './StopAssignmentDrawer'
+import { getCompanies } from '@/services/companies'
+import type { Company } from '@/models/database'
 
 const loadingFormAction = false
 

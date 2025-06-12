@@ -58,28 +58,6 @@ function handleSelectRoute(route: BusLineFeature) {
     }
   })
 }
-
-
-const [isOpen, setIsOpen] = useState(false)
-
-const handleCloseDrawer = useCallback(() => {
-  setIsOpen(false)
-  setActiveStop(null)
-}, [])
-
-
-
-const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-
-  
-useEffect(() => {
-  if (activeStop) {
-    setIsOpen(true)
-  }
-}, [activeStop])
-  const [position, setPosition] = useState<[number, number]>([
-    -34.9011, -56.1645,
-  ])
   
   const position = useUserLocation()
   const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([])

@@ -1,7 +1,8 @@
-import type { BusLineFeature, FeatureCollection } from '@/models/geoserver'
 import type { AxiosResponse } from 'axios'
-import { geoApi } from '@/api/config'
-import { GEO_WORKSPACE } from '@/utils/constants'
+import type { LineStopRelationship } from '@/models/database'
+import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
+import { api, geoApi } from '@/api/config'
+import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
 
 export const getLines = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
@@ -13,12 +14,6 @@ export const getLines = async (cqlFilter: string) => {
     })
   return data.features
 }
-import type { AxiosResponse } from 'axios'
-import type { LineStopRelationship } from '@/models/database'
-import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
-import { api, geoApi } from '@/api/config'
-import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
-import debounce from 'lodash.debounce'
 
 export const getLinesByStopId = async (stopId: number) => {
   const { data: linesInStop }: AxiosResponse<Array<LineStopRelationship>> =
@@ -210,15 +205,6 @@ const _getLines = async () => {
   )
   return data.features
 }
-
-export const getLines = debounce(
-  async () => _getLines(),
-  1000,
-  {
-    leading: true,
-    trailing: true,
-  },
-)
 
 export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promise<BusLineFeature[]> {
 
