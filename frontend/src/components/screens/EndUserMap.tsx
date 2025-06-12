@@ -11,6 +11,15 @@ import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 
 import '@/styles/Map.css'
+import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
+import { Button } from '../ui/button'
+import Modal from '../atoms/Modal'
+
+
+import BusStopInfo from '../atoms/BusStopInfo'
+import BusStopLines from '../atoms/BusStopLines'
+
+
 
 import { useUserLocation } from '@/hooks/useUserLocation'
 import useLines from '@/hooks/useLines'
@@ -83,6 +92,7 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
+        <OriginDestinationSelector></OriginDestinationSelector>
         <ScheduleSelector />
         <CompanySelector />
         <PolygonSelector

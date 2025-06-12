@@ -65,6 +65,27 @@ export type FeatureCollection<T> = {
   }
 }
 
+
+export type BusLineFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<BusLineFeature>
+  totalFeatures: number
+  numberMatched: number
+  numberReturned: number
+  timeStamp: string
+  crs: {
+    type: 'name'
+    properties: {
+      name: string
+    }
+  }
+}
+
+
+
+
+
+
 export type BBox = {
   sw?: L.LatLng
   ne?: L.LatLng

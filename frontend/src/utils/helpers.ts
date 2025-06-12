@@ -1,17 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { DISTANCE_BETWEEN_STOPS_AND_STREET } from './constants'
 import type { EndUserFilter, FilterData } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
-export const buildBBoxFilter = ({ sw, ne }: BBox) =>
-  sw && ne ? `BBOX(geometry, ${sw.lat}, ${sw.lng}, ${ne.lat}, ${ne.lng})` : ''
 
-export const buildCqlFilter = (filters: Array<string>) =>
-  filters.length > 1
+export const buildBBoxFilter = ({ sw, ne }: BBox) =>
+  sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
+
+
+export const buildCqlFilter = (filters: any) => {
+  if (!Array.isArray(filters)) return ''
+  
+  return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
       ? filters[0]
       : ''
+}
+
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -33,13 +37,8 @@ export function turnCapitalizedDepartment(str: string) {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
 }
 
-type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
-function latLngsToWktPolygon(points: [number, number][]): string {
-  const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
-  const [firstLat, firstLng] = points[0]
-  return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
-}
+type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
 export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
@@ -51,21 +50,20 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'polygon': {
-      const polygon = data as FilterData['polygon']
-      const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
-      return `INTERSECTS(geometry, ${wktPolygon})`
-    }
+    case 'line':
+      
     default:
       return ''
   }
 }
+
 
 export function getHoursAndMinutes(isoString: string): string {
   const date = new Date(isoString)
   if (isNaN(date.getTime())) {
     throw new Error('Invalid date format')
   }
+
 
   const hours = String(date.getUTCHours()).padStart(2, '0')
   const minutes = String(date.getUTCMinutes()).padStart(2, '0')
