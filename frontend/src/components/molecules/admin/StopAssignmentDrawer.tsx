@@ -108,7 +108,7 @@ const StopAssignmentDrawer = ({
                                     <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
                                     <Input
                                         type="time"
-                                        value={originStop.estimatedTime}
+                                        value={originStop.estimatedTime ?? ""}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                             const timeValue = e.target.value;
                                             const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
@@ -147,7 +147,7 @@ const StopAssignmentDrawer = ({
                                     <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
                                     <Input
                                         type="time"
-                                        value={destinationStop.estimatedTime}
+                                        value={destinationStop.estimatedTime ?? ""}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                             const timeValue = e.target.value;
                                             const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
@@ -202,7 +202,7 @@ const StopAssignmentDrawer = ({
                                             <p className="text-xs text-gray-500">Refugio: {selectedStops.get(stop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
                                             <Input
                                                 type="time"
-                                                value={stop.estimatedTime}
+                                                value={stop.estimatedTime ?? ""}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                     const timeValue = e.target.value;
                                                     const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
