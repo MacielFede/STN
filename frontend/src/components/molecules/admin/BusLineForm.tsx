@@ -32,6 +32,9 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     switchMode,
     setBusLineStep,
     cleanUpBusLineStates,
+    setOriginStopId,
+    setDestinationStopId,
+    setIntermediateStopIds
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const queryClient = useQueryClient();
@@ -127,6 +130,9 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           position: 'top-left',
           toastId: 'update-line-toast',
         });
+        setOriginStopId(null);
+        setDestinationStopId(null);
+        setIntermediateStopIds([]);
         setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error al actualizar la línea', {
