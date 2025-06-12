@@ -24,7 +24,7 @@ const AdminMap = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
   const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
-  const { lines } = useLines(activeStop?.properties.id)
+  const { lines } = useLines()
 
   const handleCloseDrawer = useCallback(() => {
     setIsOpen(false)

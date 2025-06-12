@@ -88,13 +88,28 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, []);
 
     const cleanUpBusLineStates = useCallback(() => {
-        setBusLineStep(null)
-        setNewBusLine(null)
-        setCanSave(false)
-        featureGroupRef.current = null
-        onCreationRef.current = false
-        onEditedRef.current = false
-        editHandlerRef.current = null
+        debugger;
+        setBusLineStep(null);
+        setNewBusLine(null);
+        setCanSave(false);
+
+        const group = featureGroupRef.current;
+        if (group) {
+            const map = group._map;
+            if (map) {
+                map.removeLayer(group);
+            }
+            group.clearLayers();
+        }
+
+        if (editHandlerRef.current) {
+            editHandlerRef.current.disable();
+        }
+
+        onCreationRef.current = false;
+        onEditedRef.current = false;
+        featureGroupRef.current = null;
+        editHandlerRef.current = null;
         setOriginStop({ id: null, estimatedTime: null });
         setDestinationStop({ id: null, estimatedTime: null });
         setIntermediateStops([]);

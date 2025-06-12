@@ -110,7 +110,7 @@ const BusStops = ({
         }
         eventHandlers={{
           click: () => {
-            if (busLineStep === null) {
+            if (newBusLine === null) {
               setActiveStop(stop)
             }
             else {
@@ -140,7 +140,10 @@ const BusStops = ({
               })
           },
         }}
-        draggable={location.pathname === ADMIN_PATHNAME}
+        draggable={
+          newBusLine === null &&
+          location.pathname === ADMIN_PATHNAME
+        }
       ></Marker>
     )
   })
