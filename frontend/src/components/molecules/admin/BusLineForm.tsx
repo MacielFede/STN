@@ -121,11 +121,12 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           })
           return;
         }
-        toast.success('Línea actualizada correctamente', {
+        toast.success('Recorrido actualizada correctamente', {
           closeOnClick: true,
           position: 'top-left',
           toastId: 'update-line-toast',
-        })
+        });
+        setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error al actualizar la línea', {
           closeOnClick: true,
