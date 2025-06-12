@@ -26,12 +26,12 @@ type BusLineContextType = {
     saveEditedLine: () => void
     busLineStep: BusLineStep | null
     setBusLineStep: React.Dispatch<React.SetStateAction<BusLineStep | null>>
-    originStopId: number | null
-    setOriginStopId: React.Dispatch<React.SetStateAction<number | null>>
-    destinationStopId: number | null
-    setDestinationStopId: React.Dispatch<React.SetStateAction<number | null>>
-    intermediateStopIds: number[]
-    setIntermediateStopIds: React.Dispatch<React.SetStateAction<number[]>>
+    originStop: { id: number | null, estimatedTime: string | null }
+    setOriginStop: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }>>
+    destinationStop: { id: number | null, estimatedTime: string | null }
+    setDestinationStop: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }>>
+    intermediateStops: { id: number | null, estimatedTime: string | null }[]
+    setIntermediateStops: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }[]>>
     cleanStopFromAssignments: (
         stopId: number,
         originId: number | null,
@@ -52,9 +52,9 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [busLineStep, setBusLineStep] = useState<BusLineStep | null>(null);
     const [newBusLine, setNewBusLine] = useState<BusLineFeature | null>(null)
     const [canSave, setCanSave] = useState<boolean>(false)
-    const [originStopId, setOriginStopId] = useState<number | null>(null)
-    const [destinationStopId, setDestinationStopId] = useState<number | null>(null)
-    const [intermediateStopIds, setIntermediateStopIds] = useState<number[]>([])
+    const [originStop, setOriginStop] = useState<{ id: number | null, estimatedTime: string | null }>({ id: null, estimatedTime: null })
+    const [destinationStop, setDestinationStop] = useState<{ id: number | null, estimatedTime: string | null }>({ id: null, estimatedTime: null })
+    const [intermediateStops, setIntermediateStops] = useState<{ id: number | null, estimatedTime: string | null }[]>([]);
     const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
@@ -95,9 +95,9 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         onCreationRef.current = false
         onEditedRef.current = false
         editHandlerRef.current = null
-        setOriginStopId(null)
-        setDestinationStopId(null)
-        setIntermediateStopIds([])
+        setOriginStop({ id: null, estimatedTime: null });
+        setDestinationStop({ id: null, estimatedTime: null });
+        setIntermediateStops([]);
         setSelectedStops(new Map());
     }, []);
 
@@ -170,12 +170,12 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 saveEditedLine,
                 busLineStep,
                 setBusLineStep,
-                originStopId,
-                setOriginStopId,
-                destinationStopId,
-                setDestinationStopId,
-                intermediateStopIds,
-                setIntermediateStopIds,
+                originStop,
+                setOriginStop,
+                destinationStop,
+                setDestinationStop,
+                intermediateStops,
+                setIntermediateStops,
                 cleanStopFromAssignments,
                 cacheStop,
                 selectedStops

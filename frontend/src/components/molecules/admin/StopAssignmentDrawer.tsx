@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { createStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
+import { Input } from '@/components/ui/input'
 
 const StopAssignmentDrawer = ({
     open,
@@ -15,12 +16,14 @@ const StopAssignmentDrawer = ({
         newBusLine,
         busLineStep,
         setBusLineStep,
-        originStopId,
-        destinationStopId,
-        intermediateStopIds,
-        setIntermediateStopIds,
+        originStop,
+        destinationStop,
+        intermediateStops,
         selectedStops,
         cleanUpBusLineStates,
+        setOriginStop,
+        setDestinationStop,
+        setIntermediateStops,
     } = useBusLineContext()
 
     const getStopStyle = (id: number | null) => {
@@ -29,13 +32,13 @@ const StopAssignmentDrawer = ({
     }
 
     const handleSave = async () => {
-        if (originStopId === null || destinationStopId === null) {
+        if (originStop.id === null || destinationStop.id === null) {
             toast.error("Por favor, selecciona un origen y un destino antes de guardar.");
             return;
         }
         if (!newBusLine?.properties.number || !newBusLine.properties.id) return;
 
-        const stops = [originStopId, destinationStopId, ...intermediateStopIds];
+        const stops = [originStop, destinationStop, ...intermediateStops];
         if (stops.length < 2) {
             toast.error("Debes seleccionar al menos un origen y un destino.");
             return;
@@ -43,11 +46,11 @@ const StopAssignmentDrawer = ({
 
         try {
             await Promise.all(
-                stops.map(stopId =>
+                stops.map(stop =>
                     createStopLine(
-                        String(stopId),
+                        String(stop.id),
                         String(newBusLine.properties.id),
-                        '10:00:00'
+                        String(stop.estimatedTime)
                     )
                 )
             );
@@ -97,12 +100,28 @@ const StopAssignmentDrawer = ({
                         >
                             Seleccionar en el mapa
                         </Button>
-                        <div className={getStopStyle(originStopId)}>
-                            {selectedStops.has(originStopId) ? (
+                        <div className={getStopStyle(originStop.id)}>
+                            {selectedStops.has(originStop.id) ? (
                                 <>
-                                    <p>{selectedStops.get(originStopId)?.properties.name}</p>
-                                    <p className="text-xs text-gray-500">{selectedStops.get(originStopId)?.properties.description}</p>
-                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                    <p>{selectedStops.get(originStop.id)?.properties.name}</p>
+                                    <p className="text-xs text-gray-500">{selectedStops.get(originStop.id)?.properties.description}</p>
+                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                    <Input
+                                        type="time"
+                                        value={originStop.estimatedTime}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const timeValue = e.target.value;
+                                            const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
+                                                ? `${timeValue}:00`
+                                                : timeValue;
+
+                                            setOriginStop(prev => ({
+                                                ...prev,
+                                                estimatedTime: timeWithSeconds
+                                            }));
+                                        }}
+                                        className="border-black"
+                                    />
                                 </>
                             ) : (
                                 "⬜ No seleccionado"
@@ -120,12 +139,28 @@ const StopAssignmentDrawer = ({
                         >
                             Seleccionar en el mapa
                         </Button>
-                        <div className={getStopStyle(destinationStopId)}>
-                            {selectedStops.has(destinationStopId) ? (
+                        <div className={getStopStyle(destinationStop.id)}>
+                            {selectedStops.has(destinationStop.id) ? (
                                 <>
-                                    <p>{selectedStops.get(destinationStopId)?.properties.name}</p>
-                                    <p className="text-xs text-gray-500">{selectedStops.get(destinationStopId)?.properties.description}</p>
-                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStopId)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                    <p>{selectedStops.get(destinationStop.id)?.properties.name}</p>
+                                    <p className="text-xs text-gray-500">{selectedStops.get(destinationStop.id)?.properties.description}</p>
+                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                    <Input
+                                        type="time"
+                                        value={destinationStop.estimatedTime}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const timeValue = e.target.value;
+                                            const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
+                                                ? `${timeValue}:00`
+                                                : timeValue;
+
+                                            setDestinationStop(prev => ({
+                                                ...prev,
+                                                estimatedTime: timeWithSeconds
+                                            }));
+                                        }}
+                                        className="border-black"
+                                    />
                                 </>
                             ) : (
                                 "⬜ No seleccionado"
@@ -144,28 +179,44 @@ const StopAssignmentDrawer = ({
                             + Agregar parada
                         </Button>
                         <ul className="space-y-2 mt-2">
-                            {intermediateStopIds.length > 0 ? (
-                                intermediateStopIds.map((id) => {
-                                    const stop = selectedStops.get(id);
+                            {intermediateStops.length > 0 ? (
+                                intermediateStops.map((stop) => {
                                     if (!stop) return null;
                                     return (
-                                        <li key={id} className="flex flex-col bg-blue-50 p-2 rounded border border-blue-300">
+                                        <li key={stop.id} className="flex flex-col bg-blue-50 p-2 rounded border border-blue-300">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-sm font-medium">
-                                                    {stop ? stop.properties.name : "Cargando..."}
+                                                    {selectedStops.get(stop.id)?.properties.name || `Parada ${stop.id}`}
                                                 </span>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => {
-                                                        setIntermediateStopIds(prev => prev.filter(stopId => stopId !== id));
+                                                        setIntermediateStops(prev => prev.filter(intermediate => intermediate.id !== stop.id));
                                                     }}
                                                 >
                                                     ❌
                                                 </Button>
                                             </div>
-                                            <p className="text-xs text-gray-500">{stop?.properties.description}</p>
-                                            <p className="text-xs text-gray-500">Refugio: {stop?.properties.hasShelter ? "Sí" : "No"}</p>
+                                            <p className="text-xs text-gray-500">{selectedStops.get(stop.id)?.properties.description}</p>
+                                            <p className="text-xs text-gray-500">Refugio: {selectedStops.get(stop.id)?.properties.hasShelter ? "Sí" : "No"}</p>
+                                            <Input
+                                                type="time"
+                                                value={stop.estimatedTime}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                    const timeValue = e.target.value;
+                                                    const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
+                                                        ? `${timeValue}:00`
+                                                        : timeValue;
+
+                                                    setIntermediateStops(prev => prev.map(intermediate =>
+                                                        intermediate.id === stop.id
+                                                            ? { ...intermediate, estimatedTime: timeWithSeconds }
+                                                            : intermediate
+                                                    ));
+                                                }}
+                                                className="border-black mt-1"
+                                            />
                                         </li>
                                     );
                                 })
@@ -180,8 +231,10 @@ const StopAssignmentDrawer = ({
                     <Button variant="secondary" onClick={onClose}>Cancelar</Button>
                     <Button
                         disabled={
-                            originStopId === null ||
-                            destinationStopId === null
+                            originStop.id === null ||
+                            destinationStop.id === null ||
+                            originStop.estimatedTime === null ||
+                            destinationStop.estimatedTime === null
                         }
                         onClick={handleSave}
                     >Guardar</Button>
