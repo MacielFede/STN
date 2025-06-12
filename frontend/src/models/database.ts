@@ -9,15 +9,6 @@ export type BusStopProperties = {
   route: string
 }
 
-export type BusLineProperties = {
-  id?: number
-  destination: string
-  number: string
-  origin: string
-  status: 'ACTIVE' | 'INACTIVE'
-  companyId: number | null
-}
-
 export type StreetProperties = {
   id?: number
   sourceId: string

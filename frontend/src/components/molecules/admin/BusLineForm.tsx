@@ -273,6 +273,30 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           className="border-black"
         />
       </label>
+      <label>
+        Horario de salida:
+        <Input
+          disabled={loadingFormAction}
+          type="time"
+          value={line.properties.schedule}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            // Convert HH:MM to HH:MM:SS format
+            const timeValue = e.target.value;
+            const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
+              ? `${timeValue}:00`
+              : timeValue;
+
+            updateBusLineData({
+              ...line,
+              properties: {
+                ...line.properties,
+                schedule: timeWithSeconds,
+              },
+            })
+          }}
+          className="border-black"
+        />
+      </label>
       <div>
         <label>Estado:</label>
         <div className="flex flex-col gap-1">

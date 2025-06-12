@@ -34,14 +34,6 @@ export type BusStopFeature = {
   properties: BusStopProperties
 }
 
-export type BusLineFeature = {
-  type?: 'Feature'
-  id?: string
-  geometry: LineStringGeometry
-  geometry_name?: string
-  properties: BusLineProperties
-}
-
 export type StreetFeature = {
   type?: 'Feature'
   id?: string
