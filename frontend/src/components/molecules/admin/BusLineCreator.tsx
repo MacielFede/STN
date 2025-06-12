@@ -13,7 +13,7 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 
 const BusLineCreator = () => {
-  const { featureGroupRef, onCreationRef, onEditedRef, editHandlerRef, newBusLine, setNewBusLine, updateBusLine } = useBusLineContext();
+  const { featureGroupRef, onCreationRef, onEditedRef, editHandlerRef, newBusLine, setNewBusLine, updateBusLineData } = useBusLineContext();
   const map = useMap();
 
   const handleCreated = (e: any) => {
@@ -28,7 +28,7 @@ const BusLineCreator = () => {
     const latlngs: any = layer.getLatLngs() as LatLngLiteral[]
     const coords = latlngs.map((latlng: { lng: any; lat: any }) => [latlng.lng, latlng.lat])
     if (!newBusLine?.properties) return;
-    updateBusLine({
+    updateBusLineData({
       ...newBusLine,
       geometry: {
         type: 'LineString',
@@ -52,7 +52,7 @@ const BusLineCreator = () => {
         const latlngs: any = layer.getLatLngs() as LatLngLiteral[]
         const coords = latlngs.map((latlng: { lng: any; lat: any }) => [latlng.lng, latlng.lat])
         if (!newBusLine?.properties) return;
-        updateBusLine({
+        updateBusLineData({
           ...newBusLine,
           geometry: {
             type: 'LineString',

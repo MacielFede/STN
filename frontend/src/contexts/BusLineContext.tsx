@@ -19,7 +19,7 @@ type BusLineContextType = {
     onCreationRef: React.MutableRefObject<boolean>
     onEditedRef: React.MutableRefObject<boolean>
     editHandlerRef: React.MutableRefObject<L.EditToolbar.Edit | null>
-    updateBusLine: (properties: BusLineFeature) => void;
+    updateBusLineData: (properties: BusLineFeature) => void;
     switchMode: (mode: 'creation' | 'edition') => void
     cleanUpBusLineStates: () => void
     canSave: boolean
@@ -95,9 +95,13 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         onCreationRef.current = false
         onEditedRef.current = false
         editHandlerRef.current = null
+        setOriginStopId(null)
+        setDestinationStopId(null)
+        setIntermediateStopIds([])
+        setSelectedStops(new Map());
     }, []);
 
-    const updateBusLine = useCallback((feature: BusLineFeature) => {
+    const updateBusLineData = useCallback((feature: BusLineFeature) => {
         const propertiesCompleted = Object.values(feature.properties).every(
             (value) => value !== null && value !== undefined && value !== ''
         )
@@ -117,7 +121,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 const coords = latlngs.map((latlng: { lng: any; lat: any }) => [latlng.lng, latlng.lat]);
 
                 if (!newBusLine?.properties) return;
-                updateBusLine({
+                updateBusLineData({
                     ...newBusLine,
                     geometry: {
                         type: 'LineString',
@@ -128,7 +132,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         });
 
         finishEditingLine();
-    }, [newBusLine, updateBusLine, finishEditingLine]);
+    }, [newBusLine, updateBusLineData, finishEditingLine]);
 
     const cleanStopFromAssignments = (
         stopId: number,
@@ -160,7 +164,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 onEditedRef,
                 editHandlerRef,
                 cleanUpBusLineStates,
-                updateBusLine,
+                updateBusLineData,
                 canSave,
                 switchMode,
                 saveEditedLine,

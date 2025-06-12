@@ -5,7 +5,7 @@ import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineProperties } from '@/models/database'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
-import { createBusLine, isBusLineOnStreets } from '@/services/busLines'
+import { createBusLine, deleteBusLine, deleteStopLine, getStopLineByBusLineId, isBusLineOnStreets, updateBusLine } from '@/services/busLines'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { getCompanies, type Company } from '@/services/admin'
 import { useEffect, useState } from 'react'
@@ -26,10 +26,11 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     handleDeleted,
     canSave,
     saveEditedLine,
-    updateBusLine,
+    updateBusLineData,
     newBusLine,
     switchMode,
-    setBusLineStep
+    setBusLineStep,
+    cleanUpBusLineStates,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const queryClient = useQueryClient();
@@ -63,9 +64,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             ),
           },
         })
-        debugger;
         await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
-        updateBusLine({
+        updateBusLineData({
           ...newBusLine,
           properties: {
             ...newBusLine.properties,
@@ -88,14 +88,109 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       }
     },
   })
+  const updateBusLineMutation = useMutation({
+    mutationFn: async (data: BusLineFeature) => {
+      try {
+        const stopContext = await isBusLineOnStreets(data.geometry);
+        if (!stopContext) {
+          toast.error(
+            'Error intentando actualizar la ruta, recorrido mal formado o calles no encontradas',
+            {
+              closeOnClick: true,
+              position: 'top-left',
+              toastId: 'update-stop-toast-street',
+            },
+          )
+          switchMode('edition');
+          return
+        }
+        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+        await updateBusLine(newBusLine ?? line);
+        updateBusLineData(data);
 
-  const handleCreateBusLine = () => {
+        const associations = await getStopLineByBusLineId(String(data.properties.id));
+        if (associations.length > 0) {
+          associations.forEach(async (association) => {
+            await deleteStopLine(String(association.id));
+          });
+          setBusLineStep('show-selection-popup');
+          toast.success('Recorrido actualizado correctamente', {
+            closeOnClick: true,
+            position: 'top-left',
+            toastId: 'update-stop-toast',
+          })
+          return;
+        }
+        toast.success('Línea actualizada correctamente', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'update-line-toast',
+        })
+      } catch (error) {
+        toast.error('Error al actualizar la línea', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'update-line-toast-error',
+        })
+        console.error('Error al actualizar la línea:', error)
+      }
+    },
+  })
+  const deleteBusLineMutation = useMutation({
+    mutationFn: async (id: string) => {
+      try {
+        const stopsAssociations = await getStopLineByBusLineId(id);
+
+        stopsAssociations.forEach(async (association) => {
+          await deleteStopLine(String(association.id));
+        });
+
+        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+        await queryClient.invalidateQueries({ queryKey: ['stops'] })
+
+        await deleteBusLine(id);
+        toast.success('Línea eliminada correctamente', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'delete-line-toast',
+        })
+        cleanUpBusLineStates();
+      } catch (error) {
+        toast.error('Error al eliminar la línea', {
+          closeOnClick: true,
+          position: 'top-left',
+          toastId: 'delete-line-toast-error',
+        })
+        cleanUpBusLineStates();
+        console.error('Error al eliminar la línea:', error)
+      }
+    },
+  })
+
+  const handleSave = () => {
     if (!newBusLine) return;
-    createBusLineMutation.mutate({
-      ...newBusLine?.properties,
-      geometry: newBusLine?.geometry,
-    })
+    if (!line.properties.id) {
+      createBusLineMutation.mutate({
+        ...newBusLine?.properties,
+        geometry: newBusLine?.geometry,
+      })
+    } else {
+      updateBusLineMutation.mutate({
+        ...newBusLine,
+        properties: {
+          ...newBusLine.properties,
+          id: line.properties.id,
+        },
+      })
+    }
   }
+
+  const handleDeleteBusLine = () => {
+    if (!newBusLine) return;
+    if (!line.properties.id) return;
+    deleteBusLineMutation.mutate(String(line.properties.id));
+  }
+
 
   useEffect(() => {
     getCompanies().then((data) => setCompanies(data))
@@ -113,7 +208,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       className="flex flex-row gap-4 w-full"
       onSubmit={(event) => {
         event.preventDefault()
-        handleCreateBusLine();
+        handleSave();
       }}
     >
       <label>
@@ -123,7 +218,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.number}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateBusLine({
+            updateBusLineData({
               ...line,
               properties: {
                 ...line.properties,
@@ -141,7 +236,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.origin}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateBusLine({
+            updateBusLineData({
               ...line,
               properties: {
                 ...line.properties,
@@ -159,7 +254,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           type="text"
           value={line.properties.destination}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            updateBusLine({
+            updateBusLineData({
               ...line,
               properties: {
                 ...line.properties,
@@ -181,7 +276,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               value="ACTIVE"
               checked={line.properties.status === 'ACTIVE'}
               onChange={() => {
-                updateBusLine({
+                updateBusLineData({
                   ...line,
                   properties: {
                     ...line.properties,
@@ -200,7 +295,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               value="INACTIVE"
               checked={line.properties.status === 'INACTIVE'}
               onChange={() => {
-                updateBusLine({
+                updateBusLineData({
                   ...line,
                   properties: {
                     ...line.properties,
@@ -221,7 +316,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           onChange={(e) => {
             if (!newBusLine) return;
             const companyId = Number(e.target.value) === 0 ? null : Number(e.target.value);
-            updateBusLine({
+            updateBusLineData({
               ...newBusLine,
               properties: {
                 ...newBusLine.properties,
@@ -249,16 +344,18 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             Guardar cambios
           </Button>
         )}
-        <Button disabled={!canSave} onClick={handleDeleted}>
-          Eliminar recorrido
-        </Button>
+        {!line.properties.id && (
+          <Button disabled={!canSave} onClick={handleDeleted}>
+            Eliminar recorrido
+          </Button>
+        )}
         {line.properties.id && (
           <Button
             disabled={loadingFormAction}
             className="bg-red-500 hover:bg-red-700"
             onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
               event.preventDefault()
-              console.log('Deleting line with ID:', line.properties.id)
+              handleDeleteBusLine();
             }}
           >
             Eliminar línea

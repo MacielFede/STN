@@ -26,6 +26,17 @@ export const createBusLine = async (line: BusLineFeature) => {
   })
 }
 
+export const updateBusLine = async (line: BusLineFeature) => {
+  return await api.put(`/bus-lines/${line.properties.id}`, {
+    ...line.properties,
+    geometry: line.geometry,
+  })
+}
+
+export const deleteBusLine = async (lineId: string) => {
+  return await api.delete(`/bus-lines/${lineId}`)
+}
+
 export const createStopLine = async (
   stopId: string,
   lineId: string,
@@ -36,6 +47,17 @@ export const createStopLine = async (
     lineId,
     estimatedTime,
   })
+}
+
+export const deleteStopLine = async (stopLineId: string) => {
+  return await api.delete(`/stop-lines/${stopLineId}`)
+}
+
+export const getStopLineByBusLineId = async (busLineId: string) => {
+  const { data }: AxiosResponse<Array<LineStopRelationship>> =
+    await api.get(`/stop-lines/by-line/${busLineId}`)
+
+  return data
 }
 
 export const isBusLineOnStreets = async (
@@ -55,7 +77,7 @@ export const isOriginStopOnStreet = async (
   originStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if(originStop.properties.status === 'INACTIVE') return false;
+  if (originStop.properties.status === 'INACTIVE') return false;
   const [lineLon, lineLat] = busLine.geometry.coordinates[0]
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -73,7 +95,7 @@ export const isDestinationStopOnStreet = async (
   destinationStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if(destinationStop.properties.status === 'INACTIVE') return false;
+  if (destinationStop.properties.status === 'INACTIVE') return false;
   const [lineLon, lineLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -91,12 +113,12 @@ export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if(intermediateStop.properties.status === 'INACTIVE') return false;
+  if (intermediateStop.properties.status === 'INACTIVE') return false;
   const densified = densifyLineString(busLine.geometry.coordinates)
-  
+
   const [originLon, originLat] = busLine.geometry.coordinates[0]
   const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
-  
+
   const threshold = 0.0003
   const intermediateDensified = densified.filter(([lon, lat]) => {
     const distToOrigin = Math.sqrt((lon - originLon) ** 2 + (lat - originLat) ** 2)

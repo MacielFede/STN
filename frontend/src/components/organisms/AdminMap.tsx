@@ -23,7 +23,7 @@ const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep } = useBusLineContext();
+  const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
   const { lines } = useLines(activeStop?.properties.id)
 
   const handleCloseDrawer = useCallback(() => {
@@ -91,7 +91,8 @@ const AdminMap = () => {
         <StopAssignmentDrawer
           open={busLineStep !== null}
           onClose={() => {
-            handleCloseDrawer()
+            setBusLineStep(null);
+            switchMode('edition');
           }}
         />
         <TileLayer

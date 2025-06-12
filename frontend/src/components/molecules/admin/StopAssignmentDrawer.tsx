@@ -58,6 +58,7 @@ const StopAssignmentDrawer = ({
         } catch (error) {
             toast.error('Hubo un error al guardar la asignación de paradas, intenta nuevamente.');
             console.error('Error saving stop assignments:', error);
+            cleanUpBusLineStates();
         }
     }
 
