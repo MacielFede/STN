@@ -54,7 +54,13 @@ export type Department =
   | 'Tacuarembó'
   | 'Treinta y Tres'
 
-type FilterName = 'company' | 'origin-destination' | 'schedule' | 'street'
+type FilterName =
+  | 'company'
+  | 'origin-destination'
+  | 'schedule'
+  | 'polygon'
+  | 'street'
+
 export type FilterData = {
   company: {
     id: number
@@ -67,6 +73,9 @@ export type FilterData = {
   schedule: {
     lowerTime: string
     upperTime: string
+  }
+  polygon: {
+    polygonPoints: Array<[number, number]>
   }
   street: {
     streetCode: string

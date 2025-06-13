@@ -6,28 +6,38 @@ import {
   Popup,
   TileLayer,
 } from 'react-leaflet'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
+import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
-import { Separator } from '../ui/separator'
-import BusStops from '../molecules/BusStops'
 import CommandPallete from '../atoms/CommandPallete'
+import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
 import BusStopTable from '../molecules/end-user/BusStopTable'
 import BusLinetable from '../molecules/end-user/BusLineTable'
+import ScheduleSelector from '../molecules/end-user/ScheduleSelector'
+import PolygonSelector from '../molecules/end-user/PolygonSelector'
+import { Separator } from '../ui/separator'
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
-import ScheduleSelector from '../molecules/end-user/ScheduleSelector'
+import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
+import { useUserLocation } from '@/hooks/useUserLocation'
+
+const geoJsonStyle = {
+  color: 'pink',
+  weight: 3,
+  opacity: 0.8,
+}
 
 function EndUserMap() {
-  const [position, setPosition] = useState<[number, number]>([
-    -34.9011, -56.1645,
-  ])
+  const position = useUserLocation()
+  const [polygonPoints, setPolygonPoints] = useState<Array<[number, number]>>(
+    [],
+  )
+  const [isDrawing, setIsDrawing] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>(
@@ -57,40 +67,15 @@ function EndUserMap() {
   }, [lines])
 
   useEffect(() => {
-    if (activeStop || lines?.length) setIsOpen(true)
+    if (activeStop || lines.length) setIsOpen(true)
     else setIsOpen(false)
   }, [activeStop, lines])
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords
-        setPosition([latitude, longitude])
-      },
-      (err) => {
-        // eslint-disable-next-line no-console
-        console.error('Error obteniendo ubicación:', err)
-
-        // Mostrar toast de error
-        toast.error('No se pudo determinar su ubicación', {
-          position: 'top-left',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-          toastId: 'Location-error',
-        })
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    )
-  }, [])
+  const onToggleDrawing = () => {
+    setIsDrawing(!isDrawing)
+    setPolygonPoints([])
+    setIsOpen(false)
+  }
 
   return (
     <>
@@ -98,6 +83,11 @@ function EndUserMap() {
         <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
+        <PolygonSelector
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          onToggleDrawing={onToggleDrawing}
+        />
       </CommandPallete>
       <MapContainer
         preferCanvas
@@ -109,9 +99,10 @@ function EndUserMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
         />
+
         <BusStops setActiveStop={setActiveStop} />
         {displayedRoutes.map((line) => (
-          <GeoJSON key={line.id} data={line} style={{ color: 'red' }} />
+          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
         ))}
         <CircleMarker
           center={position}
@@ -124,8 +115,14 @@ function EndUserMap() {
         >
           <Popup>Estás aquí</Popup>
         </CircleMarker>
+        <PolygonFilterUtilities
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          setPolygonPoints={setPolygonPoints}
+        />
       </MapContainer>
-      {((lines && lines.length > 0) || activeStop) && (
+
+      {(lines.length > 0 || activeStop) && (
         <Drawer
           open={isOpen}
           onClose={handleCloseDrawer}
