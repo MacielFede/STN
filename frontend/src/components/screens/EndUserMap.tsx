@@ -27,7 +27,7 @@ import useLines from '@/hooks/useLines'
 import { useUserLocation } from '@/hooks/useUserLocation'
 
 const geoJsonStyle = {
-  color: 'pink',
+  color: 'blue',
   weight: 3,
   opacity: 0.8,
 }

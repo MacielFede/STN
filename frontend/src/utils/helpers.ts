@@ -41,7 +41,7 @@ function latLngsToWktPolygon(points: Array<[number, number]>): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-export function getFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}`
