@@ -40,5 +40,6 @@ docker cp utils/geoserver/web.xml <container_name_or_id>:/usr/local/tomcat/conf/
 To be able to use the frontend fully, you'll need to publish this tables on geoserver under the workspace defined in `GEO_WORKSPACE` in the file `frontend/src/utils/constants.ts`
 
 1. ft_bus_stop
-2. ft_street (this table should be added using the script created by Martin)
+2. ft_street -> this table should be added using the script created by Martin
 3. ft_bus_line
+4. bus_lines_in_streets -> This is a stored view that you have to add following this guide https://docs.geoserver.org/main/en/user/data/database/sqlview.html and using the script at `utils/geoserver/bus_lines_by_street.sql` 

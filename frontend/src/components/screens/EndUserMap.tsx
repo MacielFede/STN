@@ -130,7 +130,7 @@ function EndUserMap() {
           open={isOpen}
           onClose={handleCloseDrawer}
           position="bottom"
-          className="z-3000 bg-gray-200 max-h-50 p-0"
+          className="z-3000 bg-gray-200 p-0"
           edge
         >
           <DrawerHeader
@@ -139,7 +139,7 @@ function EndUserMap() {
             onClick={() => setIsOpen(!isOpen)}
             className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
           />
-          <DrawerItems>
+          <DrawerItems className=" max-h-50 ">
             {activeStop && (
               <>
                 <BusStopTable stop={activeStop} />

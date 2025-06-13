@@ -35,14 +35,7 @@ export function turnCapitalizedDepartment(str: string) {
 
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
-function toWktMultiLineString(coords: Array<Array<Array<number>>>): string {
-  const lines = coords.map(
-    (line) => `(${line.map((pt) => `${pt[0]} ${pt[1]}`).join(', ')})`,
-  )
-  return `MULTILINESTRING(${lines.join(', ')})`
-}
-
-export function getFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}`
@@ -52,12 +45,7 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'street': {
-      const wktMultiLineString = toWktMultiLineString(
-        (data as FilterData['street']).coordinates,
-      )
-      return `INTERSECTS(geometry, ${wktMultiLineString})`
-    }
+    case 'street': // No puede ir por aca este filtro
     default:
       return ''
   }
