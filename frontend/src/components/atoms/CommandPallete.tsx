@@ -13,7 +13,7 @@ const CommandPallete = ({
 }: CommandPalleteProps) => {
   return (
     <div
-      className={`absolute ${yPosition}-4 ${xPosition}-4 z-[1000] flex gap-3`}
+      className={`absolute ${yPosition}-4 ${xPosition}-4 z-[1000] flex justify-end gap-3`}
     >
       {children}
     </div>

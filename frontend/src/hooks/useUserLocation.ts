@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
 export function useUserLocation() {
-  const [position, setPosition] = useState<[number, number]>([-34.9011, -56.1645])
+  const [position, setPosition] = useState<[number, number]>([
+    -34.9011, -56.1645,
+  ])
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => setPosition([coords.latitude, coords.longitude]),
       (err) => {
+        // eslint-disable-next-line no-console
         console.error('Error obteniendo ubicación:', err)
         toast.error('No se pudo determinar su ubicación', {
           position: 'top-right',
@@ -25,7 +28,7 @@ export function useUserLocation() {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-      }
+      },
     )
   }, [])
 

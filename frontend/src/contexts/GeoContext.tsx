@@ -5,14 +5,18 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-import type { EndUserFilter } from '@/models/database'
-import { buildCqlFilter, getFilterFromData } from '@/utils/helpers'
+import type { EndUserFilter, FilterData } from '@/models/database'
+import { buildCqlFilter, getCqlFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
   endUserFilters: Array<EndUserFilter>
   toogleEndUserFilter: (filterToToogle: EndUserFilter) => void
   resetBusLineCqlFilter: () => void
   busLinesCqlFilter: string
+  busLinesInStreetFilter: { streetCode: string } | undefined
+  setBusLinesInStreetFilter: (
+    newStreetCode: { streetCode: string } | undefined,
+  ) => void
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
@@ -20,6 +24,8 @@ const GeoContext = createContext<GeoContextType | undefined>(undefined)
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
   const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
+  const [busLinesInStreetFilter, setBusLinesInStreetFilter] =
+    useState<FilterData['street']>()
 
   const toogleEndUserFilter = (filterToToogle: EndUserFilter) => {
     const filterExists = endUserFilters.some(
@@ -43,7 +49,7 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         endUserFilters
           .map((filter) =>
             filter.isActive
-              ? getFilterFromData({ name: filter.name, data: filter.data })
+              ? getCqlFilterFromData({ name: filter.name, data: filter.data })
               : '',
           )
           .filter((filter) => filter !== ''),
@@ -58,6 +64,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         toogleEndUserFilter,
         resetBusLineCqlFilter,
         busLinesCqlFilter,
+        busLinesInStreetFilter,
+        setBusLinesInStreetFilter,
       }}
     >
       {children}

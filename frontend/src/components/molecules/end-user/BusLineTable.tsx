@@ -27,7 +27,7 @@ export default function BusLinetable({
   const { lines } = useLines()
   const { companies } = useCompanies()
 
-  return lines && lines.length > 0 ? (
+  return lines.length > 0 ? (
     <>
       <h2 className="px-2 font-bold">Lineas filtradas</h2>
       <Table>
@@ -56,7 +56,8 @@ export default function BusLinetable({
                 }
               </TableCell>
               <TableCell>
-                {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}
+                {line.properties.schedule &&
+                  getHoursAndMinutes(line.properties.schedule)}
               </TableCell>
               <TableCell className="text-right">
                 <Button

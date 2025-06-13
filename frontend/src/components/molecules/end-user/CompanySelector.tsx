@@ -15,7 +15,7 @@ const CompanySelector = () => {
   }, [endUserFilters])
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full h-fit">
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-fit max-w-[300px] h-fit">
       <div className="flex flex-col gap-2">
         <label className="font-semibold" htmlFor="company">
           Filtrar lineas por empresa
