@@ -92,7 +92,6 @@ const BusLineSelector = () => {
           className="border rounded px-3 py-2"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          // disabled={!origin}
         >
           <option value="">Seleccionar destino</option>
           {destinations

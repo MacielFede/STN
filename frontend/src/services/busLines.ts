@@ -8,7 +8,6 @@ import {
   GEO_WORKSPACE,
 } from '@/utils/constants'
 
-/** ➊ función interna: ahora admite cqlFilter */
 const _getLines = async (cqlFilter?: string) => {
   const params: Record<string, string> = {
     typeName: `${GEO_WORKSPACE}:ft_bus_line`,
@@ -23,7 +22,6 @@ const _getLines = async (cqlFilter?: string) => {
   return data.features
 }
 
-/** ➋ export público, sigue debounced pero reenvía el argumento */
 export const getLines = debounce(
   async (cqlFilter?: string) => _getLines(cqlFilter),
   1000,

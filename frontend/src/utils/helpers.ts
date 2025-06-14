@@ -56,7 +56,15 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'line':
+    case 'stopLine': {
+      const { busStopName } = data as FilterData['stopLine']
+      return `id IN (
+        SELECT sl.bus_line_id 
+        FROM stop_line sl
+        JOIN ft_bus_stop s ON sl.bus_stop_id = s.id
+        WHERE s.name ILIKE '${busStopName}'
+      )`
+    }
 
     case 'polygon': {
       const polygon = data as FilterData['polygon']
