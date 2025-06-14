@@ -5,11 +5,26 @@ import { Button } from '../ui/button'
 import Modal from '@/components/atoms/Modal'
 import BusLineTable from '@/components/atoms/BusLineTable' // Ajustá el path si es distinto
 import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { useGeoContext } from "@/contexts/GeoContext"
 
 const BusLineSelector = () => {
   const [busLines, setBusLines] = useState<BusLineFeature[]>([])
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
+  const { toogleEndUserFilter } = useGeoContext()
+
+  const onSearch = async () => {
+        if (!origin || !destination) return
+        toogleEndUserFilter({
+            name: 'origin-destination',
+            isActive: true,
+            data: {
+                origin: origin,
+                destination: destination
+            },
+        })
+
+    }
 
   useEffect(() => {
     const fetchLines = async () => {
@@ -19,6 +34,7 @@ const BusLineSelector = () => {
 
     fetchLines()
   }, [])
+  
 
   const origins = Array.from(
     new Set(busLines.map((line) => line.properties.origin))
@@ -86,15 +102,19 @@ const BusLineSelector = () => {
       </div>
 
       {/* Botón para abrir el modal */}
-      <Modal
+      {/* <Modal
         type="busLines"
-        trigger={
-          <Button  disabled={!origin || !destination}>
+        trigger={ */}
+          <Button  
+          disabled={!origin || !destination}
+          onClick={onSearch}
+          variant="default"
+          >
             Buscar líneas
           </Button>
-        }
+        {/* }
         body={<BusLineTable lines={filteredLines} />}
-      />
+      /> */}
     </div>
   )
 }

@@ -8,29 +8,26 @@ import {
   GEO_WORKSPACE,
 } from '@/utils/constants'
 
+/** ➊ función interna: ahora admite cqlFilter */
+const _getLines = async (cqlFilter?: string) => {
+  const params: Record<string, string> = {
+    typeName: `${GEO_WORKSPACE}:ft_bus_line`,
+    outputFormat: 'application/json',
+  }
+  if (cqlFilter) params.CQL_FILTER = cqlFilter
 
-
-
-const _getLines = async () => {
   const { data }: AxiosResponse<BusLineFeatureCollection> = await geoApi.get(
     '',
-    {
-      params: {
-        typeName: 'ne:ft_bus_line'
-        
-      },
-    },
+    { params },
   )
   return data.features
 }
 
+/** ➋ export público, sigue debounced pero reenvía el argumento */
 export const getLines = debounce(
-  async () => _getLines(),
+  async (cqlFilter?: string) => _getLines(cqlFilter),
   1000,
-  {
-    leading: true,
-    trailing: true,
-  },
+  { leading: true, trailing: true },
 )
 
 

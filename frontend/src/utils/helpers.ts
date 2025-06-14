@@ -40,6 +40,12 @@ export function turnCapitalizedDepartment(str: string) {
 
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
+function latLngsToWktPolygon(points: [number, number][]): string {
+  const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
+  const [firstLat, firstLng] = points[0]
+  return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
+}
+
 export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
@@ -51,7 +57,20 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         : `schedule = '${schedule.lowerTime}'`
     }
     case 'line':
-      
+
+    case 'polygon': {
+      const polygon = data as FilterData['polygon']
+      const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
+      return `INTERSECTS(geometry, ${wktPolygon})`
+    }
+    
+    case 'origin-destination': {
+      const { origin, destination } = data as FilterData['origin-destination']
+      const originFilter = origin ? `origin='${origin}'` : ''
+      const destinationFilter = destination ? `destination='${destination}'` : ''
+      return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
+    }
+
     default:
       return ''
   }
