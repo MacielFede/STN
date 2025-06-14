@@ -13,18 +13,15 @@ const BusLineSelector = () => {
   const [destination, setDestination] = useState('')
   const { toogleEndUserFilter } = useGeoContext()
 
-  const onSearch = async () => {
-        if (!origin || !destination) return
-        toogleEndUserFilter({
-            name: 'origin-destination',
-            isActive: true,
-            data: {
-                origin: origin,
-                destination: destination
-            },
-        })
-
+  const onSearch = () => {
+    if (origin || destination) {
+      toogleEndUserFilter({
+        name: 'origin-destination',
+        isActive: true,
+        data: { origin, destination },
+      })
     }
+  }
 
   useEffect(() => {
     const fetchLines = async () => {
@@ -43,16 +40,23 @@ const BusLineSelector = () => {
   const destinations = Array.from(
     new Set(
       busLines
-        .filter((line) => line.properties.origin === origin)
+        .filter((line) =>
+          origin ? line.properties.origin === origin : true
+        )
         .map((line) => line.properties.destination)
     )
   )
 
-  const filteredLines = busLines.filter(
-    (line) =>
-      line.properties.origin === origin &&
-      line.properties.destination === destination
-  )
+  // const filteredLines = busLines.filter(
+  //   (line) =>
+  //     line.properties.origin === origin &&
+  //     line.properties.destination === destination
+  // )
+  const filteredLines = busLines.filter((line) => {
+    const matchOrigin = origin ? line.properties.origin === origin : true
+    const matchDestination = destination ? line.properties.destination === destination : true
+    return matchOrigin && matchDestination
+  })
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full">
@@ -88,7 +92,7 @@ const BusLineSelector = () => {
           className="border rounded px-3 py-2"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          disabled={!origin}
+          // disabled={!origin}
         >
           <option value="">Seleccionar destino</option>
           {destinations
@@ -106,7 +110,7 @@ const BusLineSelector = () => {
         type="busLines"
         trigger={ */}
           <Button  
-          disabled={!origin || !destination}
+          disabled={!origin && !destination}
           onClick={onSearch}
           variant="default"
           >
