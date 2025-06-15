@@ -73,3 +73,9 @@ export async function getStopLines(stop: number) {
 
 
 
+export const getLinesByStop = async (): Promise<Array<BusStopLine>> => {
+  const { data } = await api.get('/stop-lines', {})
+  return data
+}
+
+

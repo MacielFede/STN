@@ -9,9 +9,11 @@ import {
 import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '@/components/ui/button'
 import useLines from '@/hooks/useLines'
+import useAllLines from '@/hooks/useAllLines'
 import Modal from '@/components/atoms/Modal'
 import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
+import useStopLines from '@/hooks/useStopLines'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -24,10 +26,25 @@ export default function BusLinetable({
   displayedRoutes,
   activeStopId,
 }: BusLineTableProps) {
-  const { lines } = useLines()
   const { companies } = useCompanies()
+  const {busStopLines} = useStopLines()
+  const { lines: filteredLines } = useLines()
 
-  return lines && lines.length > 0 ? (
+  const { lines: allLines } = useAllLines()
+
+console.log(  busStopLines)
+
+
+  const linesToShow = activeStopId
+  ? allLines?.filter(line =>
+      busStopLines?.some(
+        rel => rel.lineId === Number(line.id) && Number(rel.stopId) === activeStopId
+      )
+    )
+  : filteredLines
+
+
+  return linesToShow && linesToShow.length > 0 ? (
     <>
       <h2 className="px-2 font-bold">Lineas filtradas</h2>
       <Table>
@@ -43,7 +60,7 @@ export default function BusLinetable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {lines.map((line) => (
+          {linesToShow.map((line) => (
             <TableRow key={line.id}>
               <TableCell>{line.properties.number}</TableCell>
               <TableCell>{line.properties.origin}</TableCell>
