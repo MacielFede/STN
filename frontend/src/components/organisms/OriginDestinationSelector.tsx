@@ -23,7 +23,7 @@ const BusLineSelector = () => {
   useEffect(() => {
     const fetchLines = async () => {
       try {
-        const lines = await getLines()
+        const lines = await getLines(' ')
         setBusLines(lines ?? [])
       } catch (e) {
         console.error("Error obteniendo líneas:", e)
@@ -60,12 +60,6 @@ const BusLineSelector = () => {
       isActive: false,
     })
   }
-
-  const filteredLines = busLines.filter((line) => {
-    const matchOrigin = origin ? line.properties.origin === origin : true
-    const matchDestination = destination ? line.properties.destination === destination : true
-    return matchOrigin && matchDestination
-  })
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full">
