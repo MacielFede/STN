@@ -1,33 +1,24 @@
-import debounce from 'lodash.debounce'
 import type { AxiosResponse } from 'axios'
 import { api, geoApi } from '@/api/config'
-import type { BusLineProperties, BusStopLine } from "../models/database"
-import type { FeatureCollection , BusLineFeature, BusLineFeatureCollection } from "../models/geoserver"
+import type { BusStopLine } from "../models/database"
+import type { BusLineFeature, FeatureCollection } from "../models/geoserver"
 import {
   DISTANCE_BETWEEN_STOPS_AND_STREET,
   GEO_WORKSPACE,
 } from '@/utils/constants'
 
-const _getLines = async (cqlFilter?: string) => {
-  const params: Record<string, string> = {
-    typeName: `${GEO_WORKSPACE}:ft_bus_line`,
-    outputFormat: 'application/json',
-  }
-  if (cqlFilter) params.CQL_FILTER = cqlFilter
 
-  const { data }: AxiosResponse<BusLineFeatureCollection> = await geoApi.get(
-    '',
-    { params },
-  )
+export const getLines = async (cqlFilter?: string) => {
+  if (!cqlFilter) return []
+  const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_bus_line`,
+        CQL_FILTER: cqlFilter,
+      },
+    })
   return data.features
 }
-
-export const getLines = debounce(
-  async (cqlFilter?: string) => _getLines(cqlFilter),
-  1000,
-  { leading: true, trailing: true },
-)
-
 
 
 
