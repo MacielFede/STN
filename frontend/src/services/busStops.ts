@@ -4,14 +4,10 @@ import type {
   BusStopFeature,
   FeatureCollection,
   PointGeometry,
-  StreetFeature,
 } from '@/models/geoserver'
 import type { BusStopProperties } from '@/models/database'
 import { api, geoApi } from '@/api/config'
-import {
-  DISTANCE_BETWEEN_STOPS_AND_STREET,
-  GEO_WORKSPACE,
-} from '@/utils/constants'
+import { GEO_WORKSPACE } from '@/utils/constants'
 
 const _getStops = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -51,21 +47,4 @@ export const updateStop = async (
 
 export const deleteStop = async (id: number) => {
   return await api.delete(`bus-stops/${id}`)
-}
-export const streetStopContext = async ({
-  lon,
-  lat,
-}: {
-  lon: number
-  lat: number
-}) => {
-  const { data }: AxiosResponse<FeatureCollection<StreetFeature>> =
-    await geoApi.get('', {
-      params: {
-        typeName: `${GEO_WORKSPACE}:ft_street`,
-        CQL_FILTER: `DWITHIN(geom, POINT(${lon} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`,
-      },
-    })
-
-  return data.features.length > 0 ? data.features[0] : null
 }

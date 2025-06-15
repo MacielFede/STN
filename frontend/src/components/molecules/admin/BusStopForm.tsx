@@ -7,12 +7,8 @@ import { Label } from '../../ui/label'
 import { Input } from '../../ui/input'
 import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
-import {
-  createStop,
-  deleteStop,
-  streetStopContext,
-  updateStop,
-} from '@/services/busStops'
+import { createStop, deleteStop, updateStop } from '@/services/busStops'
+import { streetContext } from '@/services/street'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
@@ -30,7 +26,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetStopContext({
+        const stopContext = await streetContext({
           lon: data.geometry.coordinates[1],
           lat: data.geometry.coordinates[0],
         })
@@ -74,7 +70,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetStopContext({
+        const stopContext = await streetContext({
           lon: data.geometry.coordinates[1],
           lat: data.geometry.coordinates[0],
         })
