@@ -55,7 +55,7 @@ export type Department =
   | 'Treinta y Tres'
 
 
-type FilterName = 'company' | 'origin-destination' | 'schedule' | 'polygon'| 'line'
+type FilterName = 'company' | 'origin-destination' | 'schedule' | 'polygon'| 'stopLine'
 
 export type FilterData = {
   company: {
@@ -73,9 +73,8 @@ export type FilterData = {
   polygon: {
     polygonPoints: [number, number][]
   }
-  line: {
-    id: number
-    name: string
+  stopLine: {
+    busStopName: string
   }
 }
 

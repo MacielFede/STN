@@ -42,7 +42,7 @@ import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 const geoJsonStyle = {
-  color: 'pink',
+  color: 'blue',
   weight: 3,
   opacity: 0.8,
 }
