@@ -26,12 +26,12 @@ type BusLineContextType = {
     saveEditedLine: () => void
     busLineStep: BusLineStep | null
     setBusLineStep: React.Dispatch<React.SetStateAction<BusLineStep | null>>
-    originStop: { id: number | null, estimatedTime: string | null }
-    setOriginStop: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }>>
-    destinationStop: { id: number | null, estimatedTime: string | null }
-    setDestinationStop: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }>>
-    intermediateStops: { id: number | null, estimatedTime: string | null }[]
-    setIntermediateStops: React.Dispatch<React.SetStateAction<{ id: number | null, estimatedTime: string | null }[]>>
+    originStop: { stop: BusStopFeature | null, estimatedTimes: Array<string> }
+    setOriginStop: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>
+    destinationStop: { stop: BusStopFeature | null, estimatedTimes: Array<string> }
+    setDestinationStop: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>
+    intermediateStops: { stop: BusStopFeature | null, estimatedTimes: Array<string> }[]
+    setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }[]>>
     cleanStopFromAssignments: (
         stopId: number,
         originId: number | null,
@@ -52,9 +52,9 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [busLineStep, setBusLineStep] = useState<BusLineStep | null>(null);
     const [newBusLine, setNewBusLine] = useState<BusLineFeature | null>(null)
     const [canSave, setCanSave] = useState<boolean>(false)
-    const [originStop, setOriginStop] = useState<{ id: number | null, estimatedTime: string | null }>({ id: null, estimatedTime: null })
-    const [destinationStop, setDestinationStop] = useState<{ id: number | null, estimatedTime: string | null }>({ id: null, estimatedTime: null })
-    const [intermediateStops, setIntermediateStops] = useState<{ id: number | null, estimatedTime: string | null }[]>([]);
+    const [originStop, setOriginStop] = useState<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>({ stop: null, estimatedTimes: [] })
+    const [destinationStop, setDestinationStop] = useState<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>({ stop: null, estimatedTimes: [] })
+    const [intermediateStops, setIntermediateStops] = useState<Array<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>([]);
     const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
@@ -88,7 +88,6 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, []);
 
     const cleanUpBusLineStates = useCallback(() => {
-        debugger;
         setBusLineStep(null);
         setNewBusLine(null);
         setCanSave(false);
@@ -110,8 +109,8 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         onEditedRef.current = false;
         featureGroupRef.current = null;
         editHandlerRef.current = null;
-        setOriginStop({ id: null, estimatedTime: null });
-        setDestinationStop({ id: null, estimatedTime: null });
+        setOriginStop({ stop: null, estimatedTimes: [] });
+        setDestinationStop({ stop: null, estimatedTimes: [] });
         setIntermediateStops([]);
         setSelectedStops(new Map());
     }, []);
@@ -153,11 +152,11 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         stopId: number,
         originId: number | null,
         destinationId: number | null,
-        intermediates: number[]
+        intermediates: (number | null)[]
     ) => {
         let newOrigin = originId === stopId ? null : originId;
         let newDestination = destinationId === stopId ? null : destinationId;
-        let newIntermediates = intermediates.filter(id => id !== stopId);
+        let newIntermediates = intermediates.filter(id => id !== null && id !== stopId);
 
         return { newOrigin, newDestination, newIntermediates };
     };

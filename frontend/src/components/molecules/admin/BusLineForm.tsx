@@ -8,7 +8,6 @@ import { toast } from 'react-toastify'
 import { createBusLine, deleteBusLine, deleteStopLine, getStopLineByBusLineId, isBusLineOnStreets, updateBusLine } from '@/services/busLines'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { useEffect, useState } from 'react'
-import StopAssignmentModal from './StopAssignmentDrawer'
 import { getCompanies } from '@/services/companies'
 import type { Company } from '@/models/database'
 
@@ -130,12 +129,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           position: 'top-left',
           toastId: 'update-line-toast',
         });
-        setOriginStop({ id: null, estimatedTime: null });
-        setDestinationStop({ id: null, estimatedTime: null });
-        setIntermediateStops([]);
         setBusLineStep('show-selection-popup');
       } catch (error) {
-        debugger;
         toast.error('Error al actualizar la línea', {
           closeOnClick: true,
           position: 'top-left',

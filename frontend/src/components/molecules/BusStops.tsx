@@ -50,43 +50,69 @@ const BusStops = ({
     if (busLineStep === 'show-selection-popup') return
     const cleaned = cleanStopFromAssignments(
       id,
-      originStop.id,
-      destinationStop.id,
-      intermediateStops.map((intermediate) => intermediate.id).filter((id): id is number => id !== null)
+      originStop.stop?.id,
+      destinationStop.stop?.id,
+      intermediateStops.map((intermediate) => intermediate.stop?.properties.id ?? null)
     );
 
-    setOriginStop({ id: cleaned.newOrigin, estimatedTime: null });
-    setDestinationStop({ id: cleaned.newDestination, estimatedTime: null });
-    setIntermediateStops(cleaned.newIntermediates.map((id) => ({ id, estimatedTime: null })));
+    setOriginStop((prev) => ({
+      ...prev,
+      stop: { ...prev.stop, id: cleaned.newOrigin },
+      estimatedTimes: [prev.estimatedTimes[0] || ''],
+    }));
+    setDestinationStop((prev) => ({
+      ...prev,
+      stop: { ...prev.stop, id: cleaned.newDestination },
+      estimatedTimes: [prev.estimatedTimes[0] || ''],
+    }));
+    setIntermediateStops((prev) =>
+      prev.map((intermediate) => ({
+        ...intermediate,
+        stop: cleaned.newIntermediates.includes(intermediate.stop?.properties?.id || null)
+          ? intermediate.stop
+          : null,
+      }))
+    );
 
     if (busLineStep === "select-origin") {
       if (!newBusLine) return;
       if (!await isOriginStopOnStreet(stop, newBusLine)) {
         toast.error("La parada seleccionada no es valida como origen de la linea");
-        setOriginStop({ id: null, estimatedTime: null });
+        setOriginStop({ stop: null, estimatedTimes: [] });
         return;
       }
-      setOriginStop({ id, estimatedTime: null });
+      setOriginStop((prev) => ({
+        ...prev,
+        stop: { ...stop, id: cleaned.newOrigin },
+        estimatedTimes: [prev.estimatedTimes[0] || ''],
+      }));
       setBusLineStep('show-selection-popup');
       cacheStop(stop);
     } else if (busLineStep === "select-destination") {
       if (!newBusLine) return;
       if (!await isDestinationStopOnStreet(stop, newBusLine)) {
         toast.error("La parada seleccionada no es valida como destino de la linea");
-        setDestinationStop({ id: null, estimatedTime: null });
+        setDestinationStop({ stop: null, estimatedTimes: [] });
         return;
       }
-      setDestinationStop({ id, estimatedTime: null });
+      setDestinationStop((prev) => ({
+        ...prev,
+        stop: { ...stop, id: cleaned.newDestination },
+        estimatedTimes: [prev.estimatedTimes[0] || ''],
+      }));
       setBusLineStep('show-selection-popup');
       cacheStop(stop);
     } else if (busLineStep === "select-intermediate") {
       if (!newBusLine) return;
       if (!await isIntermediateStopOnStreet(stop, newBusLine)) {
         toast.error("La parada seleccionada no es valida como parada intermedia de la linea");
-        setIntermediateStops((prev) => prev.filter((intermediate) => intermediate.id !== id));
+        setIntermediateStops((prev) => prev.filter((intermediate) => intermediate.stop?.properties.id !== id));
         return;
       }
-      setIntermediateStops((prev) => [...prev, { id, estimatedTime: null }]);
+      setIntermediateStops((prev) => [
+        ...prev,
+        { stop: stop, estimatedTimes: [] }
+      ]);
       cacheStop(stop);
     }
   };
