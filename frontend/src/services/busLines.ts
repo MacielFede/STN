@@ -7,8 +7,7 @@ import {
   GEO_WORKSPACE,
 } from '@/utils/constants'
 
-export const getLines = async (cqlFilter?: string) => {
-  if (!cqlFilter) return []
+export const getLines = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
     await geoApi.get('', {
       params: {
@@ -43,9 +42,6 @@ export async function fetchBusLinesByPoint([lng, lat]: [
   }
 }
 
-/**
- * Obtiene las líneas específicas de una parada
- */
 export async function getStopLines(
   stopId: number,
 ): Promise<Array<BusStopLine>> {
@@ -60,9 +56,6 @@ export async function getStopLines(
   }
 }
 
-/**
- * Obtiene todas las relaciones parada-línea
- */
 export const getLinesByStop = async (): Promise<Array<BusStopLine>> => {
   try {
     const { data } = await api.get('/stop-lines', {})

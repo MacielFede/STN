@@ -4,7 +4,7 @@ import { getLines } from '@/services/busLines'
 const useAllLines = () => {
   const { data: lines } = useQuery({
     queryKey: ['allLines'],
-    queryFn: () => getLines(), // sin filtros
+    queryFn: () => getLines(''),
   })
 
   return { lines }
