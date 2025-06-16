@@ -6,7 +6,8 @@ import React, {
   useState,
 } from 'react'
 import type { EndUserFilter, FilterData } from '@/models/database'
-import { buildCqlFilter, getCqlFilterFromData } from '@/utils/helpers'
+import type { BBox } from '@/models/geoserver'
+import { buildCqlFilter, getLinesCqlFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
   endUserFilters: Array<EndUserFilter>
@@ -17,11 +18,14 @@ type GeoContextType = {
   setBusLinesInStreetFilter: (
     newStreetCode: { streetCode: string } | undefined,
   ) => void
+  userBBox: BBox
+  setUserBBox: (newBBox: BBox) => void
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
 
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
+  const [userBBox, setUserBBox] = useState<BBox>({})
   const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
   const [busLinesInStreetFilter, setBusLinesInStreetFilter] =
@@ -49,7 +53,10 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         endUserFilters
           .map((filter) =>
             filter.isActive
-              ? getCqlFilterFromData({ name: filter.name, data: filter.data })
+              ? getLinesCqlFilterFromData({
+                  name: filter.name,
+                  data: filter.data,
+                })
               : '',
           )
           .filter((filter) => filter !== ''),
@@ -66,6 +73,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         busLinesCqlFilter,
         busLinesInStreetFilter,
         setBusLinesInStreetFilter,
+        userBBox,
+        setUserBBox,
       }}
     >
       {children}

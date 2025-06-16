@@ -198,7 +198,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           />
         </label>
         <label>
-          Descripción:
+          Observaciones:
           <Input
             disabled={loadingFormAction}
             type="text"
