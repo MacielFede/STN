@@ -1,21 +1,18 @@
 import type { EndUserFilter, FilterData } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
-
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
-
 export const buildCqlFilter = (filters: any) => {
   if (!Array.isArray(filters)) return ''
-  
+
   return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
       ? filters[0]
       : ''
 }
-
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -37,10 +34,9 @@ export function turnCapitalizedDepartment(str: string) {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
 }
 
-
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
-function latLngsToWktPolygon(points: [number, number][]): string {
+function latLngsToWktPolygon(points: Array<[number, number]>): string {
   const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
   const [firstLat, firstLng] = points[0]
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
@@ -56,26 +52,19 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'stopLine': {
-      const { busStopName } = data as FilterData['stopLine']
-      return `id IN (
-        SELECT sl.bus_line_id 
-        FROM stop_line sl
-        JOIN ft_bus_stop s ON sl.bus_stop_id = s.id
-        WHERE s.name ILIKE '${busStopName}'
-      )`
-    }
 
     case 'polygon': {
       const polygon = data as FilterData['polygon']
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
-    
+
     case 'origin-destination': {
       const { origin, destination } = data as FilterData['origin-destination']
       const originFilter = origin ? `origin='${origin}'` : ''
-      const destinationFilter = destination ? `destination='${destination}'` : ''
+      const destinationFilter = destination
+        ? `destination='${destination}'`
+        : ''
       return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
     }
 
@@ -84,13 +73,11 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
   }
 }
 
-
 export function getHoursAndMinutes(isoString: string): string {
   const date = new Date(isoString)
   if (isNaN(date.getTime())) {
     throw new Error('Invalid date format')
   }
-
 
   const hours = String(date.getUTCHours()).padStart(2, '0')
   const minutes = String(date.getUTCMinutes()).padStart(2, '0')
