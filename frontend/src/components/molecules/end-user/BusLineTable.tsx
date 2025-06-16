@@ -32,17 +32,12 @@ export default function BusLinetable({
   const { lines: allLines } = useAllLines()
 
 
-  const extractIdNumber = (id: string) => {
-    const match = id.match(/\d+$/)
-    return match ? Number(match[0]) : null
-  }
   
 
-  // Determinar qué líneas mostrar
   const linesToShow = activeStopId && stopSpecificLines
     ? allLines?.filter(line =>
         stopSpecificLines.some(
-          rel => rel.lineId === extractIdNumber(line.id)
+          rel => rel.lineId === line.properties.id
         )
       )
     : filteredLines
@@ -68,10 +63,8 @@ export default function BusLinetable({
               <TableHead className="font-bold">Empresa</TableHead>
             )}
             <TableHead className="font-bold">Horario de salida</TableHead>
-            <TableHead className="font-bold">Acciones</TableHead>
-            {activeStopId && (
-              <TableHead className="font-bold">Horarios</TableHead>
-            )}
+            <TableHead className="font-bold">Recorrido</TableHead>
+        
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -96,7 +89,7 @@ export default function BusLinetable({
                 <TableCell>
                   {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell >
                   <Button
                     variant="outline"
                     className={
@@ -112,33 +105,6 @@ export default function BusLinetable({
                       : 'Ver Recorrido'}
                   </Button>
                 </TableCell>
-                {activeStopId && (
-                  <TableCell className="text-right">
-                    <Modal
-                      trigger={
-                        <Button variant="outline" size="sm">
-                          Ver horarios
-                        </Button>
-                      }
-                      body={
-                        <div className="p-4">
-                          <h3 className="font-bold mb-2">
-                            Horarios de línea {line.properties.number}
-                          </h3>
-                          {lineStopInfo ? (
-                            <div>
-                              <p><strong>Tiempo estimado:</strong> {lineStopInfo.estimatedTime}</p>
-                              <p><strong>Horario general:</strong> {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}</p>
-                            </div>
-                          ) : (
-                            <p>Horario: {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}</p>
-                          )}
-                        </div>
-                      }
-                      type="Lines"
-                    />
-                  </TableCell>
-                )}
               </TableRow>
             )
           })}
