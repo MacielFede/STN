@@ -34,7 +34,7 @@ const BusStops = ({
       const bounds = map.getBounds()
       const sw = bounds.getSouthWest()
       const ne = bounds.getNorthEast()
-      setBusStopsCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
+      setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
     },
   })
   const { stops } = useStops(busStopsCqlFilter, true)
@@ -44,10 +44,10 @@ const BusStops = ({
     const bounds = map.getBounds()
     const sw = bounds.getSouthWest()
     const ne = bounds.getNorthEast()
-    setBusStopsCqlFilter(buildCqlFilter(buildBBoxFilter({ sw, ne })))
+    setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
   }, [map, setBusStopsCqlFilter])
-  console.log('Filter CQL:', busStopsCqlFilter)
-console.log('Stops:', stops)
+  //console.log('Filter CQL:', busStopsCqlFilter)
+//console.log('Stops:', stops)
 
   return stops?.map((stop) => {
     return (

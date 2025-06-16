@@ -1,12 +1,11 @@
 import type { AxiosResponse } from 'axios'
+import type { BusStopLine } from '../models/database'
+import type { BusLineFeature, FeatureCollection } from '../models/geoserver'
 import { api, geoApi } from '@/api/config'
-import type { BusStopLine } from "../models/database"
-import type { BusLineFeature, FeatureCollection } from "../models/geoserver"
 import {
   DISTANCE_BETWEEN_STOPS_AND_STREET,
   GEO_WORKSPACE,
 } from '@/utils/constants'
-
 
 export const getLines = async (cqlFilter?: string) => {
   if (!cqlFilter) return []
@@ -20,21 +19,22 @@ export const getLines = async (cqlFilter?: string) => {
   return data.features
 }
 
-export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promise<BusLineFeature[]> {
-
-  const cql = `DWITHIN(geometry, POINT(${lng} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+export async function fetchBusLinesByPoint([lng, lat]: [
+  number,
+  number,
+]): Promise<Array<BusLineFeature>> {
+  const cql = `DWITHIN(geometry, POINT(${lng} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
   const params = {
     typename: `${GEO_WORKSPACE}:ft_bus_line`,
     outputFormat: 'application/json',
-    CQL_FILTER: cql
+    CQL_FILTER: cql,
   }
 
   try {
-    const response: AxiosResponse<{ features: BusLineFeature[] }> = await geoApi.get(
-      '', 
-      {
-      params,
-    })
+    const response: AxiosResponse<{ features: Array<BusLineFeature> }> =
+      await geoApi.get('', {
+        params,
+      })
 
     return response.data.features
   } catch (error) {
@@ -43,20 +43,32 @@ export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promis
   }
 }
 
-
-
-
-export async function getStopLines(stop: number) {
-
-   const { data }: AxiosResponse<BusStopLine> = await api.post(
-      '/stop-lines/by-line/',
-      {
-        stopId: stop
-      },
+/**
+ * Obtiene las líneas específicas de una parada
+ */
+export async function getStopLines(
+  stopId: number,
+): Promise<Array<BusStopLine>> {
+  try {
+    const { data }: AxiosResponse<Array<BusStopLine>> = await api.get(
+      `/stop-lines/by-stop/${stopId}`,
     )
     return data
+  } catch (error) {
+    console.error('Error al obtener líneas de la parada:', error)
+    return []
   }
+}
 
-
-
-
+/**
+ * Obtiene todas las relaciones parada-línea
+ */
+export const getLinesByStop = async (): Promise<Array<BusStopLine>> => {
+  try {
+    const { data } = await api.get('/stop-lines', {})
+    return data
+  } catch (error) {
+    console.error('Error al obtener relaciones parada-línea:', error)
+    return []
+  }
+}

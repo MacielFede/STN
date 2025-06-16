@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/companies").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus-lines").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus-stops").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stop-lines").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stop-lines/by-stop/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)

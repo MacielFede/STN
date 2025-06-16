@@ -152,7 +152,9 @@ function EndUserMap() {
               <>
                 <BusStopTable stop={activeStop} />
                 <Separator className="my-4 bg-black" decorative />
+              
               </>
+              
             )}
             <BusLinetable
               onDisplayRoute={handleDisplayRoute}
