@@ -20,8 +20,6 @@ export const getLines = async (cqlFilter?: string) => {
   return data.features
 }
 
-
-
 export async function fetchBusLinesByPoint([lng, lat]: [number, number]): Promise<BusLineFeature[]> {
 
   const cql = `DWITHIN(geometry, POINT(${lng} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;

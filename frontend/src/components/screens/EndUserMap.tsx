@@ -92,7 +92,7 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
-        <OriginDestinationSelector></OriginDestinationSelector>
+        <OriginDestinationSelector />
         <ScheduleSelector />
         <CompanySelector />
         <PolygonSelector
