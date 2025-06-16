@@ -1,8 +1,9 @@
-import { use, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getLines } from '@/services/busLines'
 import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '../ui/button'
 import { useGeoContext } from "@/contexts/GeoContext"
+import useAllLines from '@/hooks/useAllLines'
 
 const BusLineSelector = () => {
   const [busLines, setBusLines] = useState<BusLineFeature[]>([])
@@ -32,7 +33,11 @@ const BusLineSelector = () => {
     }
     fetchLines()
   }, [])
-  
+ 
+  // const { lines } = useAllLines()
+  // setBusLines(lines ?? [])
+
+
 
   const origins = useMemo(() => {
     return Array.from(
