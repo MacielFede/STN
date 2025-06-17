@@ -42,10 +42,10 @@ function latLngsToWktPolygon(points: Array<[number, number]>): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-export function getFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
-      return `company_id=${(data as FilterData['company']).id}` // AND DWITHIN(geometry, POINT(${-56.16532803} ${-34.89276006}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
+      return `company_id=${(data as FilterData['company']).id}`
     case 'schedule': {
       const schedule = data as FilterData['schedule']
       return schedule.upperTime
@@ -68,6 +68,7 @@ export function getFilterFromData({ name, data }: HalfEndUserFilter) {
       return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
     }
 
+    case 'street': // No puede ir por aca este filtro
     default:
       return ''
   }

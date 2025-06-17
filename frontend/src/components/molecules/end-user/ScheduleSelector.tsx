@@ -10,7 +10,7 @@ const ScheduleSelector = () => {
   const [upperTime, setUpperTime] = useState<string>('')
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full h-fit">
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-fit max-w-[300px] h-fit">
       <h3 className="font-semibold">Filtrar lineas por horario de salida</h3>
       <div className="flex flex-row justify-between">
         <Label htmlFor="lowerTime">A partir de las:</Label>
@@ -38,34 +38,36 @@ const ScheduleSelector = () => {
       {lowerTime !== '' && (
         <Button
           onClick={() => {
-            const [lowHours, lowMinutes, lowSeconds] = lowerTime
-              .split(':')
-              .map(Number)
-            const [upHours, upMinutes, upSeconds] = upperTime
-              .split(':')
-              .map(Number)
-            if (
-              lowHours > upHours ||
-              (lowHours === upHours && lowMinutes > upMinutes) ||
-              (lowHours === upHours &&
-                lowMinutes === upMinutes &&
-                lowSeconds > upSeconds)
-            ) {
-              toast.error(
-                'El horario inicial debe ser menor que el final en el rango',
-                {
-                  position: 'top-left',
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                  progress: undefined,
-                  theme: 'colored',
-                  toastId: 'schedule-error',
-                },
-              )
-              return
+            if (upperTime) {
+              const [lowHours, lowMinutes, lowSeconds] = lowerTime
+                .split(':')
+                .map(Number)
+              const [upHours, upMinutes, upSeconds] = upperTime
+                .split(':')
+                .map(Number)
+              if (
+                lowHours > upHours ||
+                (lowHours === upHours && lowMinutes > upMinutes) ||
+                (lowHours === upHours &&
+                  lowMinutes === upMinutes &&
+                  lowSeconds > upSeconds)
+              ) {
+                toast.error(
+                  'El horario inicial debe ser menor que el final en el rango',
+                  {
+                    position: 'top-left',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'colored',
+                    toastId: 'schedule-error',
+                  },
+                )
+                return
+              }
             }
             toogleEndUserFilter({
               name: 'schedule',
