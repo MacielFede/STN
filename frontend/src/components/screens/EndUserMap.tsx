@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-
+import { useEffect, useState } from 'react'
 import {
   CircleMarker,
   GeoJSON,
@@ -9,7 +8,6 @@ import {
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
-
 import '@/styles/Map.css'
 import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
 import { Button } from '../ui/button'
@@ -18,29 +16,23 @@ import Modal from '../atoms/Modal'
 
 import BusStopInfo from '../atoms/BusStopInfo'
 import BusStopLines from '../atoms/BusStopLines'
-
-
-
-import { useUserLocation } from '@/hooks/useUserLocation'
-import useLines from '@/hooks/useLines'
-
-import type { BusStopFeature, BusLineFeature } from '@/models/geoserver'
-
+import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import CommandPallete from '../atoms/CommandPallete'
-
 import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
 import BusStopTable from '../molecules/end-user/BusStopTable'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import ScheduleSelector from '../molecules/end-user/ScheduleSelector'
 import PolygonSelector from '../molecules/end-user/PolygonSelector'
-
-import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import { Separator } from '../ui/separator'
-
 import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
+import StreetSelector from '../molecules/end-user/StreetSelector'
+import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import useLines from '@/hooks/useLines'
+import { useUserLocation } from '@/hooks/useUserLocation'
+
 const geoJsonStyle = {
   color: 'blue',
   weight: 3,
@@ -49,13 +41,16 @@ const geoJsonStyle = {
 
 function EndUserMap() {
   const position = useUserLocation()
-  const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([])
+  const [polygonPoints, setPolygonPoints] = useState<Array<[number, number]>>(
+    [],
+  )
   const [isDrawing, setIsDrawing] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
+  const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>(
+    [],
+  )
   const { lines } = useLines()
-
 
   function handleDisplayRoute(route: BusLineFeature) {
     setDisplayedRoutes((prev) => {
@@ -79,7 +74,7 @@ function EndUserMap() {
   }, [lines])
 
   useEffect(() => {
-    if (activeStop || lines?.length) setIsOpen(true)
+    if (activeStop || lines.length) setIsOpen(true)
     else setIsOpen(false)
   }, [activeStop, lines])
 
@@ -93,6 +88,7 @@ function EndUserMap() {
     <>
       <CommandPallete yPosition="top" xPosition="right">
         <OriginDestinationSelector></OriginDestinationSelector>
+        <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
         <PolygonSelector
@@ -100,7 +96,6 @@ function EndUserMap() {
           polygonPoints={polygonPoints}
           onToggleDrawing={onToggleDrawing}
         />
-
       </CommandPallete>
       <MapContainer
         preferCanvas
@@ -108,7 +103,6 @@ function EndUserMap() {
         zoom={13}
         className="leaflet-container"
       >
-
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
@@ -129,16 +123,19 @@ function EndUserMap() {
         >
           <Popup>Estás aquí</Popup>
         </CircleMarker>
-        <PolygonFilterUtilities isDrawing={isDrawing} polygonPoints={polygonPoints} setPolygonPoints={setPolygonPoints} />
-
+        <PolygonFilterUtilities
+          isDrawing={isDrawing}
+          polygonPoints={polygonPoints}
+          setPolygonPoints={setPolygonPoints}
+        />
       </MapContainer>
 
-      {((lines && lines.length > 0) || activeStop) && (
+      {(lines.length > 0 || activeStop) && (
         <Drawer
           open={isOpen}
           onClose={handleCloseDrawer}
           position="bottom"
-          className="z-3000 bg-gray-200 max-h-50 p-0"
+          className="z-3000 bg-gray-200 p-0"
           edge
         >
           <DrawerHeader
@@ -147,7 +144,7 @@ function EndUserMap() {
             onClick={() => setIsOpen(!isOpen)}
             className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
           />
-          <DrawerItems>
+          <DrawerItems className=" max-h-50 ">
             {activeStop && (
               <>
                 <BusStopTable stop={activeStop} />
