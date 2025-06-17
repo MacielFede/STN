@@ -1,21 +1,18 @@
 import type { EndUserFilter, FilterData } from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
-
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
-
 export const buildCqlFilter = (filters: any) => {
   if (!Array.isArray(filters)) return ''
-  
+
   return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
       ? filters[0]
       : ''
 }
-
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -37,7 +34,6 @@ export function turnCapitalizedDepartment(str: string) {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
 }
 
-
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
 function latLngsToWktPolygon(points: Array<[number, number]>): string {
@@ -56,18 +52,19 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'line':
 
     case 'polygon': {
       const polygon = data as FilterData['polygon']
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
-    
+
     case 'origin-destination': {
       const { origin, destination } = data as FilterData['origin-destination']
       const originFilter = origin ? `origin='${origin}'` : ''
-      const destinationFilter = destination ? `destination='${destination}'` : ''
+      const destinationFilter = destination
+        ? `destination='${destination}'`
+        : ''
       return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
     }
 
@@ -77,13 +74,11 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   }
 }
 
-
 export function getHoursAndMinutes(isoString: string): string {
   const date = new Date(isoString)
   if (isNaN(date.getTime())) {
     throw new Error('Invalid date format')
   }
-
 
   const hours = String(date.getUTCHours()).padStart(2, '0')
   const minutes = String(date.getUTCMinutes()).padStart(2, '0')

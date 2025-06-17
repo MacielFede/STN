@@ -54,14 +54,12 @@ export type Department =
   | 'Tacuarembó'
   | 'Treinta y Tres'
 
-
 type FilterName =
   | 'company'
   | 'origin-destination'
   | 'schedule'
   | 'polygon'
-  | 'street'
-  | 'line'
+  | 'stopLine'
 
 export type FilterData = {
   company: {
@@ -82,9 +80,8 @@ export type FilterData = {
   street: {
     streetCode: string
   }
-  line: {
-    id: number
-    name: string
+  stopLine: {
+    busStopName: string
   }
 }
 
@@ -105,12 +102,9 @@ export type LoginTransactionResponse = {
   token: string
 }
 
-
 export type BusStopLine = {
-
-  id: number,
-  stopId: string,
-  lineId: number,
+  id: number
+  stopId: string
+  lineId: number
   estimatedTime: string
 }
-

@@ -9,14 +9,8 @@ import {
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
-import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
-import { Button } from '../ui/button'
-import Modal from '../atoms/Modal'
-
-
-import BusStopInfo from '../atoms/BusStopInfo'
-import BusStopLines from '../atoms/BusStopLines'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
+import OriginDestinationSelector from '../organisms/OriginDestinationSelector'
 import CommandPallete from '../atoms/CommandPallete'
 import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
@@ -87,7 +81,7 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
-        <OriginDestinationSelector></OriginDestinationSelector>
+        <OriginDestinationSelector />
         <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
@@ -149,9 +143,7 @@ function EndUserMap() {
               <>
                 <BusStopTable stop={activeStop} />
                 <Separator className="my-4 bg-black" decorative />
-              
               </>
-              
             )}
             <BusLinetable
               onDisplayRoute={handleDisplayRoute}
