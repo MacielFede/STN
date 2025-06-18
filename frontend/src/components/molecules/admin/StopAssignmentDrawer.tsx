@@ -217,7 +217,7 @@ const StopAssignmentDrawer = ({
                     <div
                         className={`p-2 rounded ${busLineStep === "select-origin" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
-                        <p className={`font-semibold ${busLineStep === "select-origin" ? "text-blue-800" : ""}`}>1. Origen:</p>
+                        <p className={`font-semibold ${busLineStep === "select-origin" ? "text-blue-800" : ""}`}>Origen:</p>
                         <Button
                             variant={busLineStep === "select-origin" ? "default" : "outline"}
                             onClick={() => setBusLineStep("select-origin")}
@@ -280,78 +280,11 @@ const StopAssignmentDrawer = ({
                         </div>
                     </div>
 
-                    {/* DESTINATION STOP */}
-                    <div
-                        className={`p-2 rounded ${busLineStep === "select-destination" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
-                    >
-                        <p className={`font-semibold ${busLineStep === "select-destination" ? "text-blue-800" : ""}`}>2. Destino:</p>
-                        <Button
-                            variant={busLineStep === "select-destination" ? "default" : "outline"}
-                            onClick={() => setBusLineStep("select-destination")}
-                        >
-                            Seleccionar en el mapa
-                        </Button>
-                        <div className={getStopStyle(destinationStop.stop?.properties?.id)}>
-                            {selectedStops.has(destinationStop.stop?.properties?.id) ? (
-                                <>
-                                    <p>{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.name}</p>
-                                    <p className="text-xs text-gray-500">{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.description}</p>
-                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStop.stop?.properties?.id)?.properties.hasShelter ? "Sí" : "No"}</p>
-
-                                    <div className="mt-2">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="text-sm font-medium">Horarios estimados:</label>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => addEstimatedTime('destination')}
-                                            >
-                                                + Agregar horario
-                                            </Button>
-                                        </div>
-                                        {destinationStop.estimatedTimes.map((time, index) => (
-                                            <div key={index} className="flex gap-2 mb-2">
-                                                <Input
-                                                    type="time"
-                                                    value={time ? time.substring(0, 5) : ""}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        updateEstimatedTime('destination', index, e.target.value)
-                                                    }
-                                                    className="border-black flex-1"
-                                                />
-                                                {destinationStop.estimatedTimes.length > 1 && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => removeEstimatedTime('destination', index)}
-                                                    >
-                                                        ❌
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        ))}
-                                        {destinationStop.estimatedTimes.length === 0 && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => addEstimatedTime('destination')}
-                                            >
-                                                Agregar primer horario
-                                            </Button>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                "⬜ No seleccionado"
-                            )}
-                        </div>
-                    </div>
-
                     {/* INTERMEDIATE STOPS */}
                     <div
                         className={`p-2 rounded ${busLineStep === "select-intermediate" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
-                        <p className={`font-semibold ${busLineStep === "select-intermediate" ? "text-blue-800" : ""}`}>3. Paradas intermedias:</p>
+                        <p className={`font-semibold ${busLineStep === "select-intermediate" ? "text-blue-800" : ""}`}>Paradas intermedias:</p>
                         <Button
                             variant={busLineStep === "select-intermediate" ? "default" : "outline"}
                             onClick={() => setBusLineStep("select-intermediate")}
@@ -431,6 +364,74 @@ const StopAssignmentDrawer = ({
                             )}
                         </ul>
                     </div>
+
+                    {/* DESTINATION STOP */}
+                    <div
+                        className={`p-2 rounded ${busLineStep === "select-destination" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
+                    >
+                        <p className={`font-semibold ${busLineStep === "select-destination" ? "text-blue-800" : ""}`}>Destino:</p>
+                        <Button
+                            variant={busLineStep === "select-destination" ? "default" : "outline"}
+                            onClick={() => setBusLineStep("select-destination")}
+                        >
+                            Seleccionar en el mapa
+                        </Button>
+                        <div className={getStopStyle(destinationStop.stop?.properties?.id)}>
+                            {selectedStops.has(destinationStop.stop?.properties?.id) ? (
+                                <>
+                                    <p>{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.name}</p>
+                                    <p className="text-xs text-gray-500">{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.description}</p>
+                                    <p className="text-xs text-gray-500">Refugio: {selectedStops.get(destinationStop.stop?.properties?.id)?.properties.hasShelter ? "Sí" : "No"}</p>
+
+                                    <div className="mt-2">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-medium">Horarios estimados:</label>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => addEstimatedTime('destination')}
+                                            >
+                                                + Agregar horario
+                                            </Button>
+                                        </div>
+                                        {destinationStop.estimatedTimes.map((time, index) => (
+                                            <div key={index} className="flex gap-2 mb-2">
+                                                <Input
+                                                    type="time"
+                                                    value={time ? time.substring(0, 5) : ""}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                        updateEstimatedTime('destination', index, e.target.value)
+                                                    }
+                                                    className="border-black flex-1"
+                                                />
+                                                {destinationStop.estimatedTimes.length > 1 && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removeEstimatedTime('destination', index)}
+                                                    >
+                                                        ❌
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {destinationStop.estimatedTimes.length === 0 && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => addEstimatedTime('destination')}
+                                            >
+                                                Agregar primer horario
+                                            </Button>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                "⬜ No seleccionado"
+                            )}
+                        </div>
+                    </div>
+
                 </div>
 
                 <div className="flex justify-end gap-2 mt-4">
