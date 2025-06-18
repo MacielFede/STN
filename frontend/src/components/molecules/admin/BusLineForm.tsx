@@ -195,6 +195,10 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
   const handleDeleteBusLine = () => {
     if (!newBusLine) return;
     if (!line.properties.id) return;
+
+    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta línea? Todos los recorridos asociados serán eliminados.");
+    if (!confirmed) return;
+
     deleteBusLineMutation.mutate(String(line.properties.id));
   }
 
