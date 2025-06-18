@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   Table,
   TableBody,
@@ -10,10 +11,10 @@ import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '@/components/ui/button'
 import useLines from '@/hooks/useLines'
 import useAllLines from '@/hooks/useAllLines'
-import Modal from '@/components/atoms/Modal'
 import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import useStopLines from '@/hooks/useStopLines'
+import Modal from '@/components/atoms/Modal'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -31,24 +32,21 @@ export default function BusLinetable({
   const { lines: filteredLines } = useLines()
   const { lines: allLines } = useAllLines()
 
+  const linesToShow = useMemo(
+    () =>
+      activeStopId && stopSpecificLines
+        ? allLines?.filter((line) =>
+            stopSpecificLines.some((rel) => rel.lineId === line.properties.id),
+          )
+        : filteredLines,
+    [filteredLines, allLines, stopSpecificLines, activeStopId],
+  )
 
-  
-
-  const linesToShow = activeStopId && stopSpecificLines
-    ? allLines?.filter(line =>
-        stopSpecificLines.some(
-          rel => rel.lineId === line.properties.id
-        )
-      )
-    : filteredLines
-    console.log("allLines", allLines?.map(l => l.id))
-    console.log("stopSpecificLines", stopSpecificLines?.map(s => s.lineId))
-    
-
-
-  const tableTitle = activeStopId 
-    ? `Líneas que pasan por esta parada`
-    : 'Líneas filtradas'
+  const tableTitle = useMemo(
+    () =>
+      activeStopId ? `Líneas que pasan por esta parada` : 'Líneas filtradas',
+    [activeStopId],
+  )
 
   return linesToShow && linesToShow.length > 0 ? (
     <>
@@ -59,24 +57,18 @@ export default function BusLinetable({
             <TableHead className="font-bold">Línea</TableHead>
             <TableHead className="font-bold">Origen</TableHead>
             <TableHead className="font-bold">Destino</TableHead>
-            {!!companies && (
-              <TableHead className="font-bold">Empresa</TableHead>
-            )}
-            <TableHead className="font-bold">Horario de salida</TableHead>
+            <TableHead className="font-bold">Empresa</TableHead>
+            <TableHead className="font-bold">Horarios</TableHead>
             <TableHead className="font-bold">Recorrido</TableHead>
-        
           </TableRow>
         </TableHeader>
         <TableBody>
           {linesToShow.map((line) => {
-            // Obtener información específica de la línea en esta parada si existe
-            const lineStopInfo = activeStopId && stopSpecificLines
-              ? stopSpecificLines.find(rel => rel.lineId === Number(line.id))
-              : null
-
             return (
               <TableRow key={line.id}>
-                <TableCell className="font-medium">{line.properties.number}</TableCell>
+                <TableCell className="font-medium">
+                  {line.properties.number}
+                </TableCell>
                 <TableCell>{line.properties.origin}</TableCell>
                 <TableCell>{line.properties.destination}</TableCell>
                 <TableCell>
@@ -87,9 +79,25 @@ export default function BusLinetable({
                   }
                 </TableCell>
                 <TableCell>
-                  {line.properties.schedule && getHoursAndMinutes(line.properties.schedule)}
+                  <Modal
+                    trigger={
+                      <Button
+                        variant="outline"
+                        className="text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                      >
+                        Ver horarios
+                      </Button>
+                    }
+                    type="Schedule"
+                    body={
+                      <div>
+                        {line.properties.schedule &&
+                          `Horario de salida: ${getHoursAndMinutes(line.properties.schedule)}`}
+                      </div>
+                    }
+                  />
                 </TableCell>
-                <TableCell >
+                <TableCell>
                   <Button
                     variant="outline"
                     className={

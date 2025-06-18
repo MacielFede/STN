@@ -46,8 +46,6 @@ const BusStops = ({
     const ne = bounds.getNorthEast()
     setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
   }, [map, setBusStopsCqlFilter])
-  //console.log('Filter CQL:', busStopsCqlFilter)
-//console.log('Stops:', stops)
 
   return stops?.map((stop) => {
     return (
@@ -72,7 +70,7 @@ const BusStops = ({
                     ...prevState,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lng, position.lat]
+                      coordinates: [position.lng, position.lat],
                     },
                   }
                 else
@@ -80,7 +78,7 @@ const BusStops = ({
                     ...stop,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lng, position.lat]
+                      coordinates: [position.lng, position.lat],
                     },
                   }
               })

@@ -4,9 +4,7 @@ import type { BBox } from '@/models/geoserver'
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
-export const buildCqlFilter = (filters: any) => {
-  if (!Array.isArray(filters)) return ''
-
+export const buildCqlFilter = (filters: Array<string>) => {
   return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
@@ -18,14 +16,18 @@ function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
 }
 
-export function transformKeysToCamelCase(obj: any): any {
+export function transformKeysToCamelCase<T>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(transformKeysToCamelCase)
   } else if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      acc[toCamelCase(key)] = transformKeysToCamelCase(value)
-      return acc
-    }, {} as any)
+    return Object.entries(obj).reduce(
+      (acc, [key, value]) => {
+        ;(acc as { [key: string]: unknown })[toCamelCase(key)] =
+          transformKeysToCamelCase(value)
+        return acc
+      },
+      {} as { [key: string]: unknown },
+    )
   }
   return obj
 }

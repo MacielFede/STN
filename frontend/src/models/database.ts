@@ -59,6 +59,7 @@ type FilterName =
   | 'origin-destination'
   | 'schedule'
   | 'polygon'
+  | 'street'
   | 'stopLine'
 
 export type FilterData = {

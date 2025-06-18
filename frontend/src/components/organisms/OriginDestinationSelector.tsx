@@ -45,7 +45,7 @@ const BusLineSelector = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full">
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md">
       <div className="flex flex-col gap-2">
         <label className="font-semibold" htmlFor="origen">
           Origen
