@@ -31,9 +31,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     switchMode,
     setBusLineStep,
     cleanUpBusLineStates,
-    setOriginStop,
-    setDestinationStop,
-    setIntermediateStops
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const queryClient = useQueryClient();
@@ -94,7 +91,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
   const updateBusLineMutation = useMutation({
     mutationFn: async (data: BusLineFeature) => {
       try {
-        debugger;
         const stopContext = await isBusLineOnStreets(data.geometry);
         if (!stopContext) {
           toast.error(
@@ -111,20 +107,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
         await updateBusLine(newBusLine ?? line);
         updateBusLineData(data);
-
-        const associations = await getStopLineByBusLineId(String(data.properties.id));
-        if (associations.length > 0) {
-          associations.forEach(async (association) => {
-            await deleteStopLine(String(association.id));
-          });
-          setBusLineStep('show-selection-popup');
-          toast.success('Recorrido actualizado correctamente', {
-            closeOnClick: true,
-            position: 'top-left',
-            toastId: 'update-stop-toast',
-          })
-          return;
-        }
+        
         toast.success('Recorrido actualizada correctamente', {
           closeOnClick: true,
           position: 'top-left',
