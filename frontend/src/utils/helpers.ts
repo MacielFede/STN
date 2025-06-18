@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { DISTANCE_BETWEEN_STOPS_AND_STREET } from './constants'
-import type { EndUserFilter, FilterData } from '@/models/database'
+import type {
+  EndUserFilter,
+  FilterData,
+  StatusOptions,
+} from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lat}, ${sw.lng}, ${ne.lat}, ${ne.lng})` : ''
+
+export const buildStopStatusFilter = (status: StatusOptions) =>
+  status ? `status='${status}'` : ''
 
 export const buildCqlFilter = (filters: Array<string>) =>
   filters.length > 1
@@ -41,7 +48,7 @@ function latLngsToWktPolygon(points: Array<[number, number]>): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}`
@@ -56,6 +63,8 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
+    case 'status':
+      return `status='${(data as FilterData['status']).lineStatus}'`
     case 'street': // No puede ir por aca este filtro
     default:
       return ''

@@ -22,15 +22,11 @@ import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
+import StatusSelector from '../molecules/end-user/StatusSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
 import { useUserLocation } from '@/hooks/useUserLocation'
-
-const geoJsonStyle = {
-  color: 'blue',
-  weight: 3,
-  opacity: 0.8,
-}
+import { BUS_LINE_STYLES } from '@/utils/constants'
 
 function EndUserMap() {
   const position = useUserLocation()
@@ -80,6 +76,7 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
+        <StatusSelector />
         <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
@@ -102,7 +99,11 @@ function EndUserMap() {
 
         <BusStops setActiveStop={setActiveStop} />
         {displayedRoutes.map((line) => (
-          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
+          <GeoJSON
+            key={line.id}
+            data={line}
+            style={BUS_LINE_STYLES(line.properties.status === 'ACTIVE')}
+          />
         ))}
         <CircleMarker
           center={position}

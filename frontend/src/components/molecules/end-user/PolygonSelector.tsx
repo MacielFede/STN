@@ -34,7 +34,7 @@ function PolygonSelector({
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit">
       <div className="flex flex-col gap-2">
         <label className="font-semibold" htmlFor="company">
-          Hacete un dibujito dale
+          Filtrar por forma
         </label>
         <Button
           onClick={clearFilter}
