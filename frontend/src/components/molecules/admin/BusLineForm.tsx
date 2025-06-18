@@ -6,7 +6,7 @@ import type { BusLineProperties } from '@/models/database'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { createBusLine, deleteBusLine, deleteStopLine, getStopLineByBusLineId, isBusLineOnStreets, updateBusLine } from '@/services/busLines'
-import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { getHoursAndMinutes, turnCapitalizedDepartment } from '@/utils/helpers'
 import { useEffect, useState } from 'react'
 import { getCompanies } from '@/services/companies'
 import type { Company } from '@/models/database'
@@ -94,6 +94,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
   const updateBusLineMutation = useMutation({
     mutationFn: async (data: BusLineFeature) => {
       try {
+        debugger;
         const stopContext = await isBusLineOnStreets(data.geometry);
         if (!stopContext) {
           toast.error(
@@ -176,6 +177,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     if (!line.properties.id) {
       createBusLineMutation.mutate({
         ...newBusLine?.properties,
+        schedule: getHoursAndMinutes(newBusLine.properties.schedule),
         geometry: newBusLine?.geometry,
       })
     } else {
@@ -183,6 +185,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         ...newBusLine,
         properties: {
           ...newBusLine.properties,
+          schedule: getHoursAndMinutes(newBusLine.properties.schedule),
           id: line.properties.id,
         },
       })

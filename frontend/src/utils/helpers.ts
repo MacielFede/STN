@@ -8,7 +8,7 @@ export const buildBBoxFilter = ({ sw, ne }: BBox) =>
 
 export const buildCqlFilter = (filters: any) => {
   if (!Array.isArray(filters)) return ''
-  
+
   return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
@@ -63,7 +63,7 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
-    
+
     case 'origin-destination': {
       const { origin, destination } = data as FilterData['origin-destination']
       const originFilter = origin ? `origin='${origin}'` : ''
@@ -79,6 +79,9 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
 
 
 export function getHoursAndMinutes(isoString: string): string {
+  if (/^\d{2}:\d{2}:\d{2}$/.test(isoString)) {
+    return isoString
+  }
   const date = new Date(isoString)
   if (isNaN(date.getTime())) {
     throw new Error('Invalid date format')

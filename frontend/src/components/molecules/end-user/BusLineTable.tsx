@@ -14,6 +14,8 @@ import Modal from '@/components/atoms/Modal'
 import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import useStopLines from '@/hooks/useStopLines'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -30,23 +32,22 @@ export default function BusLinetable({
   const { stopSpecificLines } = useStopLines(activeStopId)
   const { lines: filteredLines } = useLines()
   const { lines: allLines } = useAllLines()
-
-
-  
+  const { isAdmin } = useAuthContext();
+  const { setBusLineStep, setNewBusLine, loadBusLineForEdit} = useBusLineContext();
 
   const linesToShow = activeStopId && stopSpecificLines
     ? allLines?.filter(line =>
-        stopSpecificLines.some(
-          rel => rel.lineId === line.properties.id
-        )
+      stopSpecificLines.some(
+        rel => rel.lineId === line.properties.id
       )
+    )
     : filteredLines
-    console.log("allLines", allLines?.map(l => l.id))
-    console.log("stopSpecificLines", stopSpecificLines?.map(s => s.lineId))
-    
+  console.log("allLines", allLines?.map(l => l.id))
+  console.log("stopSpecificLines", stopSpecificLines?.map(s => s.lineId))
 
 
-  const tableTitle = activeStopId 
+
+  const tableTitle = activeStopId
     ? `Líneas que pasan por esta parada`
     : 'Líneas filtradas'
 
@@ -64,7 +65,7 @@ export default function BusLinetable({
             )}
             <TableHead className="font-bold">Horario de salida</TableHead>
             <TableHead className="font-bold">Recorrido</TableHead>
-        
+
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -105,6 +106,20 @@ export default function BusLinetable({
                       : 'Ver Recorrido'}
                   </Button>
                 </TableCell>
+                {isAdmin && (
+                  <TableCell >
+                    <Button
+                      variant="outline"
+                      className={
+                        'text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white'
+                      }
+                      size="sm"
+                      onClick={() => loadBusLineForEdit(line)}
+                    >
+                      Editar Recorrido
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             )
           })}

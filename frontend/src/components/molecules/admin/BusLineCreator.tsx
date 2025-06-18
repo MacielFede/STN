@@ -13,7 +13,7 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 
 const BusLineCreator = () => {
-  const { featureGroupRef, onCreationRef, onEditedRef, editHandlerRef, newBusLine, setNewBusLine, updateBusLineData } = useBusLineContext();
+  const { featureGroupRef, onCreationRef, onEditedRef, editHandlerRef, newBusLine, setNewBusLine, updateBusLineData, pendingGeometry, setPendingGeometry } = useBusLineContext();
   const map = useMap();
 
   const handleCreated = (e: any) => {
@@ -67,9 +67,22 @@ const BusLineCreator = () => {
     setNewBusLine(null)
   }
 
+  const enableEditMode = () => {
+    if (map && featureGroupRef.current) {
+      const editHandler = new L.EditToolbar.Edit(map, {
+        featureGroup: featureGroupRef.current,
+      })
+      editHandler.enable()
+      editHandlerRef.current = editHandler;
+      onEditedRef.current = true;
+      onCreationRef.current = true;
+    }
+  }
+
   useEffect(() => {
     if (!map) return;
 
+    if (onEditedRef.current) return;
     if (onCreationRef.current) return;
 
     const polylineDrawer = new L.Draw.Polyline(map, {
@@ -80,12 +93,38 @@ const BusLineCreator = () => {
   }, [map])
 
   useEffect(() => {
-    console.log('New bus line updated:', { ...newBusLine })
-  }, [newBusLine])
+    if (pendingGeometry && featureGroupRef.current) {
+      console.log('Loading pending geometry:', pendingGeometry)
+
+      // Clear existing layers
+      featureGroupRef.current.clearLayers()
+
+      // Create polyline from pending geometry
+      const coords = pendingGeometry.coordinates.map(coord => [coord[1], coord[0]]) // Swap lng/lat to lat/lng
+      const polyline = L.polyline(coords, {
+        color: newBusLine?.properties?.color || '#3388ff',
+        weight: 4,
+        opacity: 0.8
+      })
+
+      // Add to feature group
+      featureGroupRef.current.addLayer(polyline)
+
+      enableEditMode()
+
+      // Fit map bounds to the line
+      if (map) {
+        map.fitBounds(polyline.getBounds(), { padding: [20, 20] })
+      }
+
+      // Clear pending geometry
+      setPendingGeometry(null)
+    }
+  }, [pendingGeometry, featureGroupRef.current, map, newBusLine?.properties?.color, setPendingGeometry])
 
   return (
     <FeatureGroup ref={featureGroupRef}>
-      <div style={{display: 'none'}}>
+      <div style={{ display: 'none' }}>
         <EditControl
           position="topleft"
           onCreated={handleCreated}

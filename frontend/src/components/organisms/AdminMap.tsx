@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useCookies } from 'react-cookie'
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import { Button } from '../ui/button'
 import Modal from '../atoms/Modal'
@@ -18,6 +18,13 @@ import { BASIC_LINE_FEATURE, BASIC_STOP_FEATURE } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
+import BusLinetable from '../molecules/end-user/BusLineTable'
+
+const geoJsonStyle = {
+  color: 'blue',
+  weight: 3,
+  opacity: 0.8,
+}
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
@@ -25,6 +32,20 @@ const AdminMap = () => {
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
   const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
   const { lines } = useLines()
+  const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([]);
+
+  function handleDisplayRoute(route: BusLineFeature) {
+    setDisplayedRoutes((prev) => {
+      const exists = prev.some((r) => r.id === route.id)
+      if (exists) {
+        // Quitarla
+        return prev.filter((r) => r.id !== route.id)
+      } else {
+        // Agregarla
+        return [...prev, route]
+      }
+    })
+  }
 
   const handleCloseDrawer = useCallback(() => {
     setIsOpen(false)
@@ -100,6 +121,9 @@ const AdminMap = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <BusStops setActiveStop={setActiveStop} />
+        {displayedRoutes.map((line) => (
+          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
+        ))}
         {activeStop && !activeStop.id && (
           <NewBusStopComponent
             setNewStop={setActiveStop}
@@ -120,7 +144,7 @@ const AdminMap = () => {
       >
         <DrawerHeader title="STN | Ver información de paradas y recorridos seleccionados" />
         <DrawerItems>
-          {activeStop && (
+          {!newBusLine && activeStop && (
             <>
               <BusStopForm
                 stop={activeStop}
@@ -131,7 +155,16 @@ const AdminMap = () => {
               {lines?.map((line) => <BusLineForm line={line} />)}
             </>
           )}
-          {newBusLine && busLineStep === null && <BusLineForm line={newBusLine} />}
+          {newBusLine && busLineStep === null
+            ?
+            <BusLineForm line={newBusLine} />
+            :
+            <BusLinetable
+              onDisplayRoute={handleDisplayRoute}
+              displayedRoutes={displayedRoutes}
+              activeStopId={activeStop?.properties.id}
+            />
+          }
         </DrawerItems>
       </Drawer>
 

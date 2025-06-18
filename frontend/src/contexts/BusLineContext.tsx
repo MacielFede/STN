@@ -2,6 +2,8 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react'
 import L, { type LatLngLiteral } from 'leaflet'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import { useMap } from 'react-leaflet/hooks';
+import { getHoursAndMinutes } from '@/utils/helpers';
 
 type BusLineStep =
     | 'show-selection-popup'
@@ -41,9 +43,12 @@ type BusLineContextType = {
         newOrigin: number | null,
         newDestination: number | null,
         newIntermediates: number[]
-    }
+    },
+    loadBusLineForEdit: (busLine: BusLineFeature) => void
     cacheStop: (stop: BusStopFeature) => void
     selectedStops: Map<number | null, BusStopFeature>
+    pendingGeometry: any
+    setPendingGeometry: React.Dispatch<React.SetStateAction<any>>
 }
 
 const BusLineContext = createContext<BusLineContextType | undefined>(undefined)
@@ -56,6 +61,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [destinationStop, setDestinationStop] = useState<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>({ stop: null, estimatedTimes: [] })
     const [intermediateStops, setIntermediateStops] = useState<Array<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>([]);
     const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
+    const [pendingGeometry, setPendingGeometry] = useState(null)
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
     const onEditedRef = useRef<boolean>(false)
@@ -65,6 +71,18 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         if (editHandlerRef.current) {
             editHandlerRef.current.disable()
             onEditedRef.current = false
+        }
+    }, [])
+
+    const loadBusLineForEdit = useCallback((busLine: BusLineFeature) => {
+        busLine.properties.schedule = getHoursAndMinutes(busLine.properties.schedule) + ':00';
+
+        setNewBusLine(busLine)
+        switchMode('edition')
+        setCanSave(true)
+
+        if (busLine.geometry) {
+            setPendingGeometry(busLine.geometry)
         }
     }, [])
 
@@ -113,6 +131,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         setDestinationStop({ stop: null, estimatedTimes: [] });
         setIntermediateStops([]);
         setSelectedStops(new Map());
+        setPendingGeometry(null);
     }, []);
 
     const updateBusLineData = useCallback((feature: BusLineFeature) => {
@@ -191,8 +210,11 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 intermediateStops,
                 setIntermediateStops,
                 cleanStopFromAssignments,
+                loadBusLineForEdit,
                 cacheStop,
-                selectedStops
+                selectedStops,
+                pendingGeometry,
+                setPendingGeometry
             }}
         >
             {children}
