@@ -55,7 +55,13 @@ export type Department =
   | 'Treinta y Tres'
 
 
-type FilterName = 'company' | 'origin-destination' | 'schedule' | 'polygon'
+type FilterName =
+  | 'company'
+  | 'origin-destination'
+  | 'schedule'
+  | 'polygon'
+  | 'street'
+  | 'line'
 
 export type FilterData = {
   company: {
@@ -71,7 +77,14 @@ export type FilterData = {
     upperTime: string
   }
   polygon: {
-    polygonPoints: [number, number][]
+    polygonPoints: Array<[number, number]>
+  }
+  street: {
+    streetCode: string
+  }
+  line: {
+    id: number
+    name: string
   }
 }
 
@@ -92,9 +105,12 @@ export type LoginTransactionResponse = {
   token: string
 }
 
-export type LineStopRelationship = {
-  id: number
-  stopId: number
-  lineId: number
-  estimatedTime: `${number}:${number}:${number}` // "HH:mm:ss"
+
+export type BusStopLine = {
+
+  id: number,
+  stopId: string,
+  lineId: number,
+  estimatedTime: string
 }
+

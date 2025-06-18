@@ -4,11 +4,24 @@ import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '../ui/button'
 import Modal from '@/components/atoms/Modal'
 import BusLineTable from '@/components/atoms/BusLineTable' // Ajustá el path si es distinto
+import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { useGeoContext } from "@/contexts/GeoContext"
 
 const BusLineSelector = () => {
   const [busLines, setBusLines] = useState<BusLineFeature[]>([])
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
+  const { toogleEndUserFilter } = useGeoContext()
+
+  const onSearch = () => {
+    if (origin || destination) {
+      toogleEndUserFilter({
+        name: 'origin-destination',
+        isActive: true,
+        data: { origin, destination },
+      })
+    }
+  }
 
   useEffect(() => {
     const fetchLines = async () => {
@@ -18,6 +31,7 @@ const BusLineSelector = () => {
 
     fetchLines()
   }, [])
+  
 
   const origins = Array.from(
     new Set(busLines.map((line) => line.properties.origin))
@@ -26,16 +40,23 @@ const BusLineSelector = () => {
   const destinations = Array.from(
     new Set(
       busLines
-        .filter((line) => line.properties.origin === origin)
+        .filter((line) =>
+          origin ? line.properties.origin === origin : true
+        )
         .map((line) => line.properties.destination)
     )
   )
 
-  const filteredLines = busLines.filter(
-    (line) =>
-      line.properties.origin === origin &&
-      line.properties.destination === destination
-  )
+  // const filteredLines = busLines.filter(
+  //   (line) =>
+  //     line.properties.origin === origin &&
+  //     line.properties.destination === destination
+  // )
+  const filteredLines = busLines.filter((line) => {
+    const matchOrigin = origin ? line.properties.origin === origin : true
+    const matchDestination = destination ? line.properties.destination === destination : true
+    return matchOrigin && matchDestination
+  })
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full">
@@ -71,7 +92,7 @@ const BusLineSelector = () => {
           className="border rounded px-3 py-2"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          disabled={!origin}
+          // disabled={!origin}
         >
           <option value="">Seleccionar destino</option>
           {destinations
@@ -85,15 +106,19 @@ const BusLineSelector = () => {
       </div>
 
       {/* Botón para abrir el modal */}
-      <Modal
+      {/* <Modal
         type="busLines"
-        trigger={
-          <Button  disabled={!origin || !destination}>
+        trigger={ */}
+          <Button  
+          disabled={!origin && !destination}
+          onClick={onSearch}
+          variant="default"
+          >
             Buscar líneas
           </Button>
-        }
+        {/* }
         body={<BusLineTable lines={filteredLines} />}
-      />
+      /> */}
     </div>
   )
 }

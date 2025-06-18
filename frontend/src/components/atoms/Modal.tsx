@@ -10,7 +10,7 @@ import {
 } from '../ui/dialog'
 import type { ReactNode } from 'react'
 
-type ModalType = 'Companies' | 'Lines' | 'EndUserLines' | 'busLines'
+type ModalType = 'Companies' | 'Lines' | 'busLines' | 'EndUserLines'
 type ModalProps = {
   trigger: ReactNode
   body: ReactNode
