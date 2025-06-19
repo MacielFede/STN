@@ -108,35 +108,34 @@ function EndUserMap() {
         />
       </MapContainer>
 
-      {(lines.length > 0 || activeStop) && (
-        <Drawer
-          open={isOpen}
-          onClose={handleCloseDrawer}
-          position="bottom"
-          className="z-3000 bg-gray-200 p-0"
-          edge
-        >
-          <DrawerHeader
-            title="STN | Ver información de paradas y recorridos seleccionados"
-            titleIcon={isOpen ? ArrowDown : ArrowTop}
-            onClick={() => setIsOpen(!isOpen)}
-            className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
+      <Drawer
+        open={isOpen}
+        onClose={handleCloseDrawer}
+        position="bottom"
+        className="z-3000 bg-gray-200 p-0"
+        edge
+      >
+        <DrawerHeader
+          title="STN | Ver información de paradas y recorridos seleccionados"
+          titleIcon={isOpen ? ArrowDown : ArrowTop}
+          onClick={() => setIsOpen(!isOpen)}
+          closeIcon={activeStop ? undefined : isOpen ? ArrowDown : ArrowTop}
+          className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
+        />
+        <DrawerItems className=" max-h-50 ">
+          {activeStop && (
+            <>
+              <BusStopTable stop={activeStop} />
+              <Separator className="my-4 bg-black" decorative />
+            </>
+          )}
+          <BusLinetable
+            onDisplayRoute={handleDisplayRoute}
+            displayedRoutes={displayedRoutes}
+            activeStopId={activeStop?.properties.id}
           />
-          <DrawerItems className=" max-h-50 ">
-            {activeStop && (
-              <>
-                <BusStopTable stop={activeStop} />
-                <Separator className="my-4 bg-black" decorative />
-              </>
-            )}
-            <BusLinetable
-              onDisplayRoute={handleDisplayRoute}
-              displayedRoutes={displayedRoutes}
-              activeStopId={activeStop?.properties.id}
-            />
-          </DrawerItems>
-        </Drawer>
-      )}
+        </DrawerItems>
+      </Drawer>
     </>
   )
 }

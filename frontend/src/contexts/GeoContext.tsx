@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react'
 import type { EndUserFilter, FilterData } from '@/models/database'
-import type { BBox } from '@/models/geoserver'
+import type { BBox, PointGeometry } from '@/models/geoserver'
 import { buildCqlFilter, getLinesCqlFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
@@ -17,6 +17,10 @@ type GeoContextType = {
   busLinesInStreetFilter: { streetCode: string } | undefined
   setBusLinesInStreetFilter: (
     newStreetCode: { streetCode: string } | undefined,
+  ) => void
+  busLineNearUserFilter: { userLocation: PointGeometry } | undefined
+  setBusLineNearUserFilter: (
+    newUserLocation: { userLocation: PointGeometry } | undefined,
   ) => void
   userBBox: BBox
   setUserBBox: (newBBox: BBox) => void
@@ -30,6 +34,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
   const [busLinesInStreetFilter, setBusLinesInStreetFilter] =
     useState<FilterData['street']>()
+  const [busLineNearUserFilter, setBusLineNearUserFilter] =
+    useState<FilterData['location']>()
 
   const toogleEndUserFilter = (filterToToogle: EndUserFilter) => {
     const filterExists = endUserFilters.some(
@@ -73,6 +79,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         busLinesCqlFilter,
         busLinesInStreetFilter,
         setBusLinesInStreetFilter,
+        busLineNearUserFilter,
+        setBusLineNearUserFilter,
         userBBox,
         setUserBBox,
       }}

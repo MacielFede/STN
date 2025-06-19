@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { getLines, getLinesInStreet } from '@/services/busLines'
+import { filterAndSortLinesByDistance } from '@/utils/helpers'
 
 const useLines = () => {
-  const { busLinesCqlFilter, busLinesInStreetFilter } = useGeoContext()
+  const { busLinesCqlFilter, busLinesInStreetFilter, busLineNearUserFilter } =
+    useGeoContext()
   const [lines, setLines] = useState<Array<BusLineFeature>>([])
   const { data: linesByCql } = useQuery({
     queryKey: ['linesByCql', busLinesCqlFilter],
@@ -20,10 +22,11 @@ const useLines = () => {
   })
 
   useEffect(() => {
+    let linesToSet
     if (!linesByCql || linesByCql.length === 0)
-      setLines(linesByStreetCode || [])
+      linesToSet = linesByStreetCode || []
     else if (!linesByStreetCode || linesByStreetCode.length === 0)
-      setLines(linesByCql)
+      linesToSet = linesByCql
     else {
       const mapedCqlLines = new Map(
         linesByCql.map((line) => [line.properties.id, line]),
@@ -36,10 +39,17 @@ const useLines = () => {
       mapedStreetLines.forEach((value, key) => {
         if (mapedCqlLines.has(key)) result.set(key, value)
       })
-
-      setLines(Array.from(result.values()))
+      linesToSet = Array.from(result.values())
     }
-  }, [linesByStreetCode, linesByCql])
+
+    const newLines = busLineNearUserFilter
+      ? filterAndSortLinesByDistance(
+          busLineNearUserFilter.userLocation,
+          linesToSet,
+        )
+      : linesToSet
+    setLines(newLines)
+  }, [linesByStreetCode, linesByCql, busLineNearUserFilter])
 
   return { lines }
 }
