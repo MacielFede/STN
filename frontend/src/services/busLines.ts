@@ -49,6 +49,19 @@ export const createStopLine = async (
   })
 }
 
+export const updateStopLine = async (
+  stopLineId: string,
+  stopId: string,
+  lineId: string,
+  estimatedTime: string
+) => {
+  return await api.put(`/stop-lines/${stopLineId}`, {
+    stopId,
+    lineId,
+    estimatedTime,
+  })
+}
+
 export const deleteStopLine = async (stopLineId: string) => {
   return await api.delete(`/stop-lines/${stopLineId}`)
 }

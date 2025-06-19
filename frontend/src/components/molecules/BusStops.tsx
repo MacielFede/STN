@@ -32,7 +32,7 @@ const BusStops = ({
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
 }) => {
   const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
-  const { newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop } = useBusLineContext()
+  const { newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
@@ -109,10 +109,13 @@ const BusStops = ({
         setIntermediateStops((prev) => prev.filter((intermediate) => intermediate.stop?.properties.id !== id));
         return;
       }
-      setIntermediateStops((prev) => [
-        ...prev,
-        { stop: stop, estimatedTimes: [] }
-      ]);
+      setIntermediateStops((prev) => {
+        const updated = [...prev, { stop: stop, estimatedTimes: [] }];
+        if (newBusLine.geometry?.coordinates) {
+          return sortIntermediateStopsByGeometry(updated);
+        }
+        return updated;
+      });
       cacheStop(stop);
     }
   };
@@ -124,7 +127,7 @@ const BusStops = ({
     setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
   }, [map, setBusStopsCqlFilter])
   //console.log('Filter CQL:', busStopsCqlFilter)
-//console.log('Stops:', stops)
+  //console.log('Stops:', stops)
 
   return stops?.map((stop) => {
     return (

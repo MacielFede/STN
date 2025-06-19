@@ -20,6 +20,17 @@ const _getStops = async (cqlFilter: string) => {
   return data.features
 }
 
+export const getStopGeoServer = async (id: number) => {
+  const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+        CQL_FILTER: `id = ${id}`,
+      },
+    })
+  return data.features[0]
+}
+
 export const getStops = debounce(
   async (cqlFilter: string) => _getStops(cqlFilter),
   1000,

@@ -34,6 +34,9 @@ type BusLineContextType = {
     setDestinationStop: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>
     intermediateStops: { stop: BusStopFeature | null, estimatedTimes: Array<string> }[]
     setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }[]>>
+    sortIntermediateStopsByGeometry: (
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
+    ) => Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
     cleanStopFromAssignments: (
         stopId: number,
         originId: number | null,
@@ -167,6 +170,20 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         finishEditingLine();
     }, [newBusLine, updateBusLineData, finishEditingLine]);
 
+    const sortIntermediateStopsByGeometry = (
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
+    ) => {
+        return [...intermediateStops].sort((a, b) => {
+            const aCoord = a.stop?.geometry?.coordinates;
+            const bCoord = b.stop?.geometry?.coordinates;
+            if (!aCoord || !bCoord) return 0;
+            if (aCoord[0] !== bCoord[0]) {
+                return aCoord[0] - bCoord[0];
+            }
+            return aCoord[1] - bCoord[1];
+        });
+    };
+
     const cleanStopFromAssignments = (
         stopId: number,
         originId: number | null,
@@ -210,6 +227,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 intermediateStops,
                 setIntermediateStops,
                 cleanStopFromAssignments,
+                sortIntermediateStopsByGeometry,
                 loadBusLineForEdit,
                 cacheStop,
                 selectedStops,
