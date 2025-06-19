@@ -20,7 +20,7 @@ type Geometry = {
 }[GeometryType]
 
 export type PointGeometry = Extract<Geometry, { type: 'Point' }>
-// type LineStringGeometry = Extract<Geometry, { type: 'Point' }>
+export type LineStringGeometry = Extract<Geometry, { type: 'LineString' }>
 export type MultiLineStringGeometry = Extract<
   Geometry,
   { type: 'MultiLineString' }
@@ -45,7 +45,7 @@ export type StreetFeature = {
 export type BusLineFeature = {
   type: 'Feature'
   id: string
-  geometry: PointGeometry
+  geometry: LineStringGeometry
   geometry_name: string
   properties: BusLineProperties
 }

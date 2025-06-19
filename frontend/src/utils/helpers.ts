@@ -1,9 +1,10 @@
+import * as turf from '@turf/turf'
 import type {
   EndUserFilter,
   FilterData,
   StatusOptions,
 } from '@/models/database'
-import type { BBox } from '@/models/geoserver'
+import type { BBox, BusLineFeature, PointGeometry } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
@@ -11,12 +12,13 @@ export const buildBBoxFilter = ({ sw, ne }: BBox) =>
 export const buildStopStatusFilter = (status: StatusOptions) =>
   status ? `status='${status}'` : ''
 
-export const buildCqlFilter = (filters: Array<string>) =>
-  filters.length > 1
+export const buildCqlFilter = (filters: Array<string>) => {
+  return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
       ? filters[0]
       : ''
+}
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -99,3 +101,21 @@ export function toCQLTime(time: string): string {
   // Add ":00" if only HH:MM is provided
   return time.length === 5 ? `${time}:00` : time
 }
+
+export const filterAndSortLinesByDistance = (
+  userPoint: PointGeometry,
+  lines: Array<BusLineFeature>,
+  radius = 1,
+) =>
+  lines
+    .map((line) => {
+      const distance = turf.pointToLineDistance(
+        [userPoint.coordinates[1], userPoint.coordinates[0]],
+        turf.lineString(line.geometry.coordinates),
+        { units: 'kilometers' },
+      )
+      return { line, distance }
+    })
+    .filter((entry) => entry.distance <= radius)
+    .sort((a, b) => a.distance - b.distance)
+    .map((entry) => entry.line)
