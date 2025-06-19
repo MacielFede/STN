@@ -73,7 +73,7 @@ const StreetSelector = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md max-w-[18vw] h-fit">
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit">
       <h3 className="font-semibold">Buscar Líneas por Calle</h3>
       <input
         type="text"

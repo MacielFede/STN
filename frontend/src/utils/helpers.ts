@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { DISTANCE_BETWEEN_STOPS_AND_STREET } from './constants'
 import type {
   EndUserFilter,
   FilterData,
@@ -8,7 +6,7 @@ import type {
 import type { BBox } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
-  sw && ne ? `BBOX(geometry, ${sw.lat}, ${sw.lng}, ${ne.lat}, ${ne.lng})` : ''
+  sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
 export const buildStopStatusFilter = (status: StatusOptions) =>
   status ? `status='${status}'` : ''
@@ -24,14 +22,18 @@ function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
 }
 
-export function transformKeysToCamelCase(obj: any): any {
+export function transformKeysToCamelCase<T>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(transformKeysToCamelCase)
   } else if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      acc[toCamelCase(key)] = transformKeysToCamelCase(value)
-      return acc
-    }, {} as any)
+    return Object.entries(obj).reduce(
+      (acc, [key, value]) => {
+        ;(acc as { [key: string]: unknown })[toCamelCase(key)] =
+          transformKeysToCamelCase(value)
+        return acc
+      },
+      {} as { [key: string]: unknown },
+    )
   }
   return obj
 }
@@ -58,11 +60,21 @@ export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
+
     case 'polygon': {
       const polygon = data as FilterData['polygon']
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
+    case 'origin-destination': {
+      const { origin, destination } = data as FilterData['origin-destination']
+      const originFilter = origin ? `origin='${origin}'` : ''
+      const destinationFilter = destination
+        ? `destination='${destination}'`
+        : ''
+      return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
+    }
+
     case 'status':
       return `status='${(data as FilterData['status']).lineStatus}'`
     case 'street': // No puede ir por aca este filtro

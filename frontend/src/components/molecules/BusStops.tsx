@@ -51,7 +51,7 @@ const BusStops = ({
     return (
       <Marker
         key={stop.id || stop.properties.id}
-        position={stop.geometry.coordinates}
+        position={[stop.geometry.coordinates[1], stop.geometry.coordinates[0]]}
         icon={
           stop.properties.status === 'ACTIVE'
             ? ActiveBusStopIcon
@@ -70,7 +70,7 @@ const BusStops = ({
                     ...prevState,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lat, position.lng],
+                      coordinates: [position.lng, position.lat],
                     },
                   }
                 else
@@ -78,7 +78,7 @@ const BusStops = ({
                     ...stop,
                     geometry: {
                       type: 'Point',
-                      coordinates: [position.lat, position.lng],
+                      coordinates: [position.lng, position.lat],
                     },
                   }
               })

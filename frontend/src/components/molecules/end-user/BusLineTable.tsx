@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react'
 import {
   Table,
   TableBody,
@@ -9,9 +10,11 @@ import {
 import type { BusLineFeature } from '@/models/geoserver'
 import { Button } from '@/components/ui/button'
 import useLines from '@/hooks/useLines'
-import Modal from '@/components/atoms/Modal'
+import useAllLines from '@/hooks/useAllLines'
 import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
+import useStopLines from '@/hooks/useStopLines'
+import Modal from '@/components/atoms/Modal'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -24,28 +27,73 @@ export default function BusLinetable({
   displayedRoutes,
   activeStopId,
 }: BusLineTableProps) {
-  const { lines } = useLines()
   const { companies } = useCompanies()
+  const { stopSpecificLines } = useStopLines(activeStopId)
+  const { lines: filteredLines } = useLines()
+  const { lines: allLines } = useAllLines()
 
-  return lines.length > 0 ? (
+  const validLineIds = useMemo(() => {
+    return activeStopId && stopSpecificLines
+      ? new Set(stopSpecificLines.map((rel) => rel.lineId))
+      : null
+  }, [activeStopId, stopSpecificLines])
+
+  const linesToShow = useMemo(() => {
+    return activeStopId && validLineIds
+      ? allLines?.filter((line) => validLineIds.has(line.properties.id))
+      : filteredLines
+  }, [filteredLines, allLines, validLineIds, activeStopId])
+
+  const lineScheduleMap = useMemo(() => {
+    const map = new Map<number, Array<string>>()
+    if (stopSpecificLines) {
+      stopSpecificLines.forEach((stopLine) => {
+        const schedule = stopLine.estimatedTime.slice(0, -3)
+        if (map.has(stopLine.lineId)) {
+          map.get(stopLine.lineId)?.push(schedule)
+        } else {
+          map.set(stopLine.lineId, [schedule])
+        }
+      })
+    }
+    return map
+  }, [stopSpecificLines])
+
+  const getLineSchedule = useCallback(
+    (line: BusLineFeature) => {
+      return lineScheduleMap.get(line.properties.id) || []
+    },
+    [lineScheduleMap],
+  )
+
+  const tableTitle = useMemo(() => {
+    return activeStopId
+      ? `Líneas que pasan por esta parada`
+      : 'Líneas filtradas'
+  }, [activeStopId])
+
+  return linesToShow && linesToShow.length > 0 ? (
     <>
-      <h2 className="px-2 font-bold">Lineas filtradas</h2>
+      <h2 className="px-2 font-bold">{tableTitle}</h2>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="font-bold">Línea</TableHead>
             <TableHead className="font-bold">Origen</TableHead>
             <TableHead className="font-bold">Destino</TableHead>
-            {!!companies && (
-              <TableHead className="font-bold">Empresa</TableHead>
-            )}
-            <TableHead className="font-bold">Horario de salida</TableHead>
+            <TableHead className="font-bold">Empresa</TableHead>
+            <TableHead className="font-bold">
+              {activeStopId ? 'Horarios' : 'Horario de salida'}
+            </TableHead>
+            <TableHead className="font-bold">Recorrido</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {lines.map((line) => (
+          {linesToShow.map((line) => (
             <TableRow key={line.id}>
-              <TableCell>{line.properties.number}</TableCell>
+              <TableCell className="font-medium">
+                {line.properties.number}
+              </TableCell>
               <TableCell>{line.properties.origin}</TableCell>
               <TableCell>{line.properties.destination}</TableCell>
               <TableCell>
@@ -56,10 +104,38 @@ export default function BusLinetable({
                 }
               </TableCell>
               <TableCell>
-                {line.properties.schedule &&
-                  getHoursAndMinutes(line.properties.schedule)}
+                {activeStopId ? (
+                  <Modal
+                    trigger={
+                      <Button
+                        variant="outline"
+                        className="text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                      >
+                        Ver horarios
+                      </Button>
+                    }
+                    type="Schedule"
+                    body={
+                      <div>
+                        {line.properties.schedule &&
+                          `Horario de salida: ${getHoursAndMinutes(line.properties.schedule)}`}
+                        <br />
+                        {'Horarios estimados: '}
+                        {getLineSchedule(line).map(
+                          (schedule, i, originalArray) =>
+                            originalArray.length - 1 > i
+                              ? `${schedule}, `
+                              : schedule,
+                        )}
+                      </div>
+                    }
+                  />
+                ) : (
+                  line.properties.schedule &&
+                  getHoursAndMinutes(line.properties.schedule)
+                )}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell>
                 <Button
                   variant="outline"
                   className={
@@ -71,27 +147,22 @@ export default function BusLinetable({
                   onClick={() => onDisplayRoute(line)}
                 >
                   {displayedRoutes.some((r) => r.id === line.id)
-                    ? 'Dejar de ver'
+                    ? 'Ocultar'
                     : 'Ver Recorrido'}
                 </Button>
               </TableCell>
-              {activeStopId && (
-                <TableCell className="text-right">
-                  <Modal
-                    trigger={
-                      <Button variant="outline" size="sm">
-                        Ver horarios
-                      </Button>
-                    }
-                    body={'Aca estan los horarios del bondi'}
-                    type="Lines"
-                  />
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </>
-  ) : null
+  ) : activeStopId ? (
+    <div className="px-2 py-4 text-center text-gray-500">
+      <p>No hay líneas disponibles para esta parada</p>
+    </div>
+  ) : (
+    <div className="px-2 py-4 text-center text-gray-500">
+      <p>No hay líneas que coincidan con los filtros seleccionados</p>
+    </div>
+  )
 }

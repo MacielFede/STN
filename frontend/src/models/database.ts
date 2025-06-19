@@ -62,6 +62,7 @@ type FilterName =
   | 'schedule'
   | 'polygon'
   | 'street'
+  | 'stopLine'
   | 'status'
 
 export type FilterData = {
@@ -82,6 +83,9 @@ export type FilterData = {
   }
   street: {
     streetCode: string
+  }
+  stopLine: {
+    busStopName: string
   }
   status: {
     lineStatus: StatusOptions
@@ -104,4 +108,11 @@ export type Company = {
 
 export type LoginTransactionResponse = {
   token: string
+}
+
+export type BusStopLine = {
+  id: number
+  stopId: string
+  lineId: number
+  estimatedTime: string
 }

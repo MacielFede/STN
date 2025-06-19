@@ -19,6 +19,8 @@ const BusStopTable = ({ stop }: { stop: BusStopFeature }) => {
             <TableHead className="font-bold">Estado</TableHead>
             <TableHead className="font-bold">Refugio</TableHead>
             <TableHead className="font-bold">Observaciones</TableHead>
+            <TableHead className="font-bold">Sentido</TableHead>
+
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -28,9 +30,14 @@ const BusStopTable = ({ stop }: { stop: BusStopFeature }) => {
               {stop.properties.status === 'ACTIVE'
                 ? 'Habilitada'
                 : 'Deshabilitada'}
-            </TableCell>
+            </TableCell>   
             <TableCell>{stop.properties.hasShelter ? 'Sí' : 'No'}</TableCell>
             <TableCell>{stop.properties.description}</TableCell>
+            <TableCell>
+              {stop.properties.direction === 'OUTBOUND'
+                ? 'VUELTA'
+                : 'IDA'}
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
