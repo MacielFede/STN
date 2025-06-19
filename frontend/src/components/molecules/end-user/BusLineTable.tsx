@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Table,
   TableBody,
@@ -32,21 +32,45 @@ export default function BusLinetable({
   const { lines: filteredLines } = useLines()
   const { lines: allLines } = useAllLines()
 
-  const linesToShow = useMemo(
-    () =>
-      activeStopId && stopSpecificLines
-        ? allLines?.filter((line) =>
-            stopSpecificLines.some((rel) => rel.lineId === line.properties.id),
-          )
-        : filteredLines,
-    [filteredLines, allLines, stopSpecificLines, activeStopId],
+  const validLineIds = useMemo(() => {
+    return activeStopId && stopSpecificLines
+      ? new Set(stopSpecificLines.map((rel) => rel.lineId))
+      : null
+  }, [activeStopId, stopSpecificLines])
+
+  const linesToShow = useMemo(() => {
+    return activeStopId && validLineIds
+      ? allLines?.filter((line) => validLineIds.has(line.properties.id))
+      : filteredLines
+  }, [filteredLines, allLines, validLineIds, activeStopId])
+
+  const lineScheduleMap = useMemo(() => {
+    const map = new Map<number, Array<string>>()
+    if (stopSpecificLines) {
+      stopSpecificLines.forEach((stopLine) => {
+        const schedule = stopLine.estimatedTime.slice(0, -3)
+        if (map.has(stopLine.lineId)) {
+          map.get(stopLine.lineId)?.push(schedule)
+        } else {
+          map.set(stopLine.lineId, [schedule])
+        }
+      })
+    }
+    return map
+  }, [stopSpecificLines])
+
+  const getLineSchedule = useCallback(
+    (line: BusLineFeature) => {
+      return lineScheduleMap.get(line.properties.id) || []
+    },
+    [lineScheduleMap],
   )
 
-  const tableTitle = useMemo(
-    () =>
-      activeStopId ? `Líneas que pasan por esta parada` : 'Líneas filtradas',
-    [activeStopId],
-  )
+  const tableTitle = useMemo(() => {
+    return activeStopId
+      ? `Líneas que pasan por esta parada`
+      : 'Líneas filtradas'
+  }, [activeStopId])
 
   return linesToShow && linesToShow.length > 0 ? (
     <>
@@ -58,27 +82,29 @@ export default function BusLinetable({
             <TableHead className="font-bold">Origen</TableHead>
             <TableHead className="font-bold">Destino</TableHead>
             <TableHead className="font-bold">Empresa</TableHead>
-            <TableHead className="font-bold">Horarios</TableHead>
+            <TableHead className="font-bold">
+              {activeStopId ? 'Horarios' : 'Horario de salida'}
+            </TableHead>
             <TableHead className="font-bold">Recorrido</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {linesToShow.map((line) => {
-            return (
-              <TableRow key={line.id}>
-                <TableCell className="font-medium">
-                  {line.properties.number}
-                </TableCell>
-                <TableCell>{line.properties.origin}</TableCell>
-                <TableCell>{line.properties.destination}</TableCell>
-                <TableCell>
-                  {
-                    companies?.find(
-                      (company) => company.id === line.properties.companyId,
-                    )?.name
-                  }
-                </TableCell>
-                <TableCell>
+          {linesToShow.map((line) => (
+            <TableRow key={line.id}>
+              <TableCell className="font-medium">
+                {line.properties.number}
+              </TableCell>
+              <TableCell>{line.properties.origin}</TableCell>
+              <TableCell>{line.properties.destination}</TableCell>
+              <TableCell>
+                {
+                  companies?.find(
+                    (company) => company.id === line.properties.companyId,
+                  )?.name
+                }
+              </TableCell>
+              <TableCell>
+                {activeStopId ? (
                   <Modal
                     trigger={
                       <Button
@@ -93,29 +119,40 @@ export default function BusLinetable({
                       <div>
                         {line.properties.schedule &&
                           `Horario de salida: ${getHoursAndMinutes(line.properties.schedule)}`}
+                        <br />
+                        {'Horarios estimados: '}
+                        {getLineSchedule(line).map(
+                          (schedule, i, originalArray) =>
+                            originalArray.length - 1 > i
+                              ? `${schedule}, `
+                              : schedule,
+                        )}
                       </div>
                     }
                   />
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="outline"
-                    className={
-                      displayedRoutes.some((r) => r.id === line.id)
-                        ? 'text-red-600 border-red-600 hover:bg-red-600 hover:text-white'
-                        : 'text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white'
-                    }
-                    size="sm"
-                    onClick={() => onDisplayRoute(line)}
-                  >
-                    {displayedRoutes.some((r) => r.id === line.id)
-                      ? 'Ocultar'
-                      : 'Ver Recorrido'}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
+                ) : (
+                  line.properties.schedule &&
+                  getHoursAndMinutes(line.properties.schedule)
+                )}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  className={
+                    displayedRoutes.some((r) => r.id === line.id)
+                      ? 'text-red-600 border-red-600 hover:bg-red-600 hover:text-white'
+                      : 'text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white'
+                  }
+                  size="sm"
+                  onClick={() => onDisplayRoute(line)}
+                >
+                  {displayedRoutes.some((r) => r.id === line.id)
+                    ? 'Ocultar'
+                    : 'Ver Recorrido'}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </>

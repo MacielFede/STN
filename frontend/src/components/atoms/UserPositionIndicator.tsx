@@ -3,12 +3,12 @@ import { useEffect } from 'react'
 import { useUserLocation } from '@/hooks/useUserLocation'
 
 const UserPositionIndicator = () => {
-  const position = useUserLocation()
+  const { position, error } = useUserLocation()
   const map = useMap()
 
   useEffect(() => {
-    map.flyTo(position, 13)
-  }, [position, map])
+    if (!error) map.flyTo(position, 13)
+  }, [position, map, error])
 
   return (
     <CircleMarker

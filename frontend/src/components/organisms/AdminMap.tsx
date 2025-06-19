@@ -11,7 +11,7 @@ import type { BusStopFeature } from '@/models/geoserver'
 import CommandPallete from '@/components/atoms/CommandPallete'
 import BusStopForm from '@/components/molecules/admin/BusStopForm'
 import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
-import { BASIC_STOP_FEATURE } from '@/utils/constants'
+import { BASIC_STOP_FEATURE, DEFAULT_MAP_LOCATION } from '@/utils/constants'
 
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
@@ -49,7 +49,7 @@ const AdminMap = () => {
 
       <MapContainer
         preferCanvas={false}
-        center={[-32.5, -56.164]}
+        center={DEFAULT_MAP_LOCATION}
         zoom={8}
         scrollWheelZoom
         zoomControl={false}

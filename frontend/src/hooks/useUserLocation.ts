@@ -3,16 +3,24 @@ import { toast } from 'react-toastify'
 
 export function useUserLocation() {
   const [position, setPosition] = useState<[number, number]>([-32.5, -56.164])
+  const [error, setError] = useState<undefined | 'unauthorized' | 'execution'>()
 
   useEffect(() => {
     let permissionStatus: PermissionStatus
 
     const getPosition = () => {
-      if (permissionStatus.state !== 'granted') return
+      if (permissionStatus.state !== 'granted') {
+        setError('unauthorized')
+        return
+      }
 
       navigator.geolocation.getCurrentPosition(
-        ({ coords }) => setPosition([coords.latitude, coords.longitude]),
+        ({ coords }) => {
+          setPosition([coords.latitude, coords.longitude])
+          setError(undefined)
+        },
         (err) => {
+          setError('execution')
           // eslint-disable-next-line no-console
           console.error('Error obteniendo ubicación:', err)
           toast.error('No se pudo determinar su ubicación', {
@@ -46,7 +54,8 @@ export function useUserLocation() {
         getPosition()
         permissionStatus.addEventListener('change', handlePermissionChange)
       })
-      .catch((error) => {
+      .catch((e) => {
+        setError('unauthorized')
         toast.error(
           'Error al obtener permiso de tu ubicación, deberás cambiarlo manualmente',
           {
@@ -62,7 +71,7 @@ export function useUserLocation() {
           },
         )
         // eslint-disable-next-line no-console
-        console.error(error)
+        console.error(e)
       })
 
     return () => {
@@ -73,5 +82,5 @@ export function useUserLocation() {
     }
   }, [])
 
-  return position
+  return { position, error }
 }
