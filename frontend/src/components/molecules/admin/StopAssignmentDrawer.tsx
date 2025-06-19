@@ -230,7 +230,7 @@ const StopAssignmentDrawer = ({
             const deleteRequests = toDeleteAssociations.map(assoc => deleteStopLine(String(assoc.id)));
 
             await Promise.all([...upsertRequests, ...deleteRequests]);
-            
+
             let someOrphaned = false;
             for (const association of toDeleteAssociations) {
                 const isOrphaned = await getByStop(String(association.stopId));
@@ -247,7 +247,7 @@ const StopAssignmentDrawer = ({
             }
 
             if (someOrphaned) {
-                toast.warning("Algunas paradas quedaron huérfanas, por favor revisa el mapa.", {
+                toast.warning("Algunas paradas quedaron huérfanas", {
                     autoClose: 8000,
                 });
             }
@@ -264,6 +264,36 @@ const StopAssignmentDrawer = ({
 
     useEffect(() => {
         if (!open || !newBusLine) return;
+
+        const verifyPossibleOrphanStops = async () => {
+            const stops = [originStop, destinationStop, ...intermediateStops];
+            const associations = await getStopLineByBusLineId(String(newBusLine.properties.id));
+            const associationMap = new Map<string, any>();
+            associations.forEach(assoc => {
+                associationMap.set(`${assoc.stopId}_${assoc.estimatedTime}`, assoc);
+            });
+
+            const newAssignments = stops.flatMap(stop =>
+                stop.estimatedTimes.map(estimatedTime => ({
+                    stopId: String(stop.stop?.properties.id),
+                    busLineId: String(newBusLine.properties.id),
+                    estimatedTime: String(estimatedTime),
+                }))
+            );
+            const newAssignmentKeys = new Set(
+                newAssignments.map(a => `${a.stopId}_${a.estimatedTime}`)
+            );
+
+            const toDeleteAssociations = associations.filter(assoc => {
+                return !newAssignmentKeys.has(`${assoc.stopId}_${assoc.estimatedTime}`);
+            });
+
+            if (toDeleteAssociations.length === 0) return;
+
+            // toast.warning(`Se desasociará/n ${toDeleteAssociations.length} parada/s no asociada/s a ninguna línea.`, {
+            //     autoClose: 8000,
+            // });
+        };
 
         const fetchAssociations = async () => {
             const busStopsForLine = await getStopLineByBusLineId(String(newBusLine?.properties.id));
@@ -318,6 +348,7 @@ const StopAssignmentDrawer = ({
             setIntermediateStops(newIntermediates);
         };
 
+        verifyPossibleOrphanStops();
         fetchAssociations();
     }, [open, newBusLine?.properties?.id]);
 

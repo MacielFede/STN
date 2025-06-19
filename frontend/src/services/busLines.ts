@@ -96,7 +96,6 @@ export const isOriginStopOnStreet = async (
   originStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if (originStop.properties.status === 'INACTIVE') return false;
   const [lineLon, lineLat] = busLine.geometry.coordinates[0]
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -114,7 +113,6 @@ export const isDestinationStopOnStreet = async (
   destinationStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if (destinationStop.properties.status === 'INACTIVE') return false;
   const [lineLon, lineLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
@@ -132,7 +130,6 @@ export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  if (intermediateStop.properties.status === 'INACTIVE') return false;
   const densified = densifyLineString(busLine.geometry.coordinates)
 
   const [originLon, originLat] = busLine.geometry.coordinates[0]
