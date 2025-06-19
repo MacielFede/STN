@@ -1,13 +1,15 @@
 import { CircleMarker, useMap } from 'react-leaflet'
 import { useEffect } from 'react'
 import { useUserLocation } from '@/hooks/useUserLocation'
+import { DEFAULT_COORDINATES } from '@/utils/constants'
 
 const UserPositionIndicator = () => {
   const { position, error } = useUserLocation()
   const map = useMap()
 
   useEffect(() => {
-    if (!error) map.flyTo(position, 13)
+    if (!error && !Object.is(position, DEFAULT_COORDINATES))
+      map.flyTo(position, 13)
   }, [position, map, error])
 
   return (

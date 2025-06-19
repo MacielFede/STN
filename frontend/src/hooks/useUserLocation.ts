@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { DEFAULT_COORDINATES } from '@/utils/constants'
 
 export function useUserLocation() {
-  const [position, setPosition] = useState<[number, number]>([-32.5, -56.164])
+  const [position, setPosition] =
+    useState<[number, number]>(DEFAULT_COORDINATES)
   const [error, setError] = useState<undefined | 'unauthorized' | 'execution'>()
 
   useEffect(() => {
@@ -11,7 +13,6 @@ export function useUserLocation() {
     const getPosition = () => {
       if (permissionStatus.state !== 'granted') {
         setError('unauthorized')
-        return
       }
 
       navigator.geolocation.getCurrentPosition(
@@ -37,22 +38,16 @@ export function useUserLocation() {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
           maximumAge: 0,
         },
       )
     }
-
-    const handlePermissionChange = () => {
-      getPosition()
-    }
-
     navigator.permissions
       .query({ name: 'geolocation' })
       .then((status) => {
         permissionStatus = status
         getPosition()
-        permissionStatus.addEventListener('change', handlePermissionChange)
+        permissionStatus.addEventListener('change', getPosition)
       })
       .catch((e) => {
         setError('unauthorized')
@@ -77,7 +72,7 @@ export function useUserLocation() {
     return () => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (permissionStatus) {
-        permissionStatus.removeEventListener('change', handlePermissionChange)
+        permissionStatus.removeEventListener('change', getPosition)
       }
     }
   }, [])

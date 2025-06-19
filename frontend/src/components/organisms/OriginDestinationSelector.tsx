@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
@@ -14,8 +14,8 @@ const BusLineSelector = () => {
   const { toogleEndUserFilter, setBusLineNearUserFilter } = useGeoContext()
   const { position: userLocation, error: locationError } = useUserLocation()
 
-  useEffect(() => {
-    if (locationError) {
+  const onSearch = () => {
+    if (useCurrentLocation && locationError) {
       toast.error(
         'No se pudo obtener tu ubicación. Por favor, revisa los permisos.',
         {
@@ -30,16 +30,14 @@ const BusLineSelector = () => {
           toastId: 'location-error-reminder',
         },
       )
+      return
     }
-  }, [locationError])
-
-  const onSearch = () => {
     toogleEndUserFilter({
       name: 'origin-destination',
       isActive: true,
       data: { origin, destination },
     })
-    if (useCurrentLocation && !locationError) {
+    if (useCurrentLocation) {
       setBusLineNearUserFilter({
         userLocation: { coordinates: userLocation, type: 'Point' },
       })
@@ -141,13 +139,7 @@ const BusLineSelector = () => {
       </div>
       {(useCurrentLocation ? destination : origin || destination) && (
         <>
-          <Button
-            disabled={!!locationError}
-            onClick={onSearch}
-            variant={locationError ? 'destructive' : 'default'}
-          >
-            Buscar líneas
-          </Button>
+          <Button onClick={onSearch}>Buscar líneas</Button>
 
           <Button onClick={clearFilter} variant="destructive">
             Limpiar filtro
