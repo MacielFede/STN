@@ -9,7 +9,7 @@ import type { BusStopProperties } from '@/models/database'
 import { api, geoApi } from '@/api/config'
 import { GEO_WORKSPACE } from '@/utils/constants'
 
-const _getStops = async (cqlFilter: string) => {
+export const _getStops = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
     await geoApi.get('', {
       params: {

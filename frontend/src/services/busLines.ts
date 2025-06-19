@@ -19,6 +19,12 @@ export const getLinesByStopId = async (stopId: number) => {
   return data.features
 }
 
+export const getByStop = async (stopId: string) => {
+  const { data }: AxiosResponse<Array<BusStopLine>> =
+    await api.get(`/stop-lines/by-stop/${stopId}`)
+  return data;
+}
+
 export const createBusLine = async (line: BusLineFeature) => {
   return await api.post('/bus-lines', {
     ...line.properties,

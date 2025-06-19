@@ -1,11 +1,11 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { createStopLine, deleteStopLine, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateStopLine } from '@/services/busLines'
+import { createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { Input } from '@/components/ui/input'
 import { useEffect } from 'react'
-import { getStopGeoServer } from '@/services/busStops'
+import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
 
 const StopAssignmentDrawer = ({
     open,
@@ -223,11 +223,34 @@ const StopAssignmentDrawer = ({
                 }
             });
 
-            const deleteRequests = associations
-                .filter(assoc => !newAssignmentKeys.has(`${assoc.stopId}_${assoc.estimatedTime}`))
-                .map(assoc => deleteStopLine(String(assoc.id)));
+            const toDeleteAssociations = associations.filter(assoc => {
+                return !newAssignmentKeys.has(`${assoc.stopId}_${assoc.estimatedTime}`);
+            });
+
+            const deleteRequests = toDeleteAssociations.map(assoc => deleteStopLine(String(assoc.id)));
 
             await Promise.all([...upsertRequests, ...deleteRequests]);
+            
+            let someOrphaned = false;
+            for (const association of toDeleteAssociations) {
+                const isOrphaned = await getByStop(String(association.stopId));
+                if (isOrphaned.length === 0) {
+                    const stop = await _getStops(`id = ${association.stopId}`);
+                    if (!stop || stop.length === 0) continue;
+                    stop[0].properties.status = 'INACTIVE';
+                    someOrphaned = true;
+                    await updateStop({
+                        ...stop[0].properties,
+                        geometry: stop[0].geometry,
+                    });
+                }
+            }
+
+            if (someOrphaned) {
+                toast.warning("Algunas paradas quedaron huérfanas, por favor revisa el mapa.", {
+                    autoClose: 8000,
+                });
+            }
 
             toast.success('Asignación de paradas guardada correctamente.');
             onClose();
