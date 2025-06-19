@@ -51,6 +51,7 @@ export const getLinesByStop = async () => {
   return data
 }
 
+
 export const getLinesInStreet = async (streetCode?: string) => {
   if (!streetCode) return
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
