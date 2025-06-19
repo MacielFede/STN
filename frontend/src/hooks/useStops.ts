@@ -1,24 +1,42 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import type { BusStopFeature } from '@/models/geoserver'
+import type { FilterData } from '@/models/database'
 import { getStops } from '@/services/busStops'
+import { useGeoContext } from '@/contexts/GeoContext'
+import {
+  buildBBoxFilter,
+  buildCqlFilter,
+  buildStopStatusFilter,
+} from '@/utils/helpers'
 
-const useStops = (cqlFilter?: string, enabled = false) => {
-  const queryClient = useQueryClient()
+const useStops = (enabled = false) => {
+  const { endUserFilters, userBBox } = useGeoContext()
+  const stopsFilter = useMemo(
+    () =>
+      buildCqlFilter(
+        [
+          buildStopStatusFilter(
+            (
+              endUserFilters.find(
+                (filter) => filter.name === 'status' && filter.isActive,
+              )?.data as FilterData['status'] | undefined
+            )?.stopStatus || '',
+          ),
+          buildBBoxFilter(userBBox),
+        ].filter((f) => f),
+      ),
+    [endUserFilters, userBBox],
+  )
   const {
     data: stops,
     refetch,
     isLoading,
     isError,
   } = useQuery<Array<BusStopFeature>>({
-    queryKey: ['stops', cqlFilter],
-    queryFn: () => {
-      if (cqlFilter) return getStops(cqlFilter)
-      else {
-        const cache = queryClient.getQueryData<Array<BusStopFeature>>(['stops'])
-        return cache || []
-      }
-    },
-    enabled: !!cqlFilter && enabled,
+    queryKey: ['stops', stopsFilter],
+    queryFn: () => getStops(stopsFilter),
+    enabled: !!stopsFilter && enabled,
     staleTime: Infinity,
     retry: 3,
   })

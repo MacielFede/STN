@@ -1,16 +1,22 @@
-import type { EndUserFilter, FilterData } from '@/models/database'
+import type {
+  EndUserFilter,
+  FilterData,
+  StatusOptions,
+} from '@/models/database'
 import type { BBox } from '@/models/geoserver'
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
-export const buildCqlFilter = (filters: Array<string>) => {
-  return filters.length > 1
+export const buildStopStatusFilter = (status: StatusOptions) =>
+  status ? `status='${status}'` : ''
+
+export const buildCqlFilter = (filters: Array<string>) =>
+  filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
       ? filters[0]
       : ''
-}
 
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
@@ -44,7 +50,7 @@ function latLngsToWktPolygon(points: Array<[number, number]>): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}`
@@ -60,7 +66,6 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
-
     case 'origin-destination': {
       const { origin, destination } = data as FilterData['origin-destination']
       const originFilter = origin ? `origin='${origin}'` : ''
@@ -70,6 +75,8 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
       return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
     }
 
+    case 'status':
+      return `status='${(data as FilterData['status']).lineStatus}'`
     case 'street': // No puede ir por aca este filtro
     default:
       return ''

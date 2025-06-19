@@ -27,3 +27,9 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
 export const DISTANCE_BETWEEN_STOPS_AND_STREET = 20
 
 export const DEFAULT_MAP_LOCATION: LatLngExpression = [-32.5, -56.164]
+
+export const BUS_LINE_STYLES = (isActive: boolean) => ({
+  color: isActive ? 'blue' : 'black',
+  weight: 3,
+  opacity: 0.8,
+})

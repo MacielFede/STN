@@ -9,6 +9,8 @@ export type BusStopProperties = {
   route: string
 }
 
+export type StatusOptions = BusStopProperties['status'] | ''
+
 export type StreetProperties = {
   id?: number
   sourceId: string
@@ -61,6 +63,7 @@ type FilterName =
   | 'polygon'
   | 'street'
   | 'stopLine'
+  | 'status'
 
 export type FilterData = {
   company: {
@@ -83,6 +86,10 @@ export type FilterData = {
   }
   stopLine: {
     busStopName: string
+  }
+  status: {
+    lineStatus: StatusOptions
+    stopStatus: StatusOptions
   }
 }
 

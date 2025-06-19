@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  CircleMarker,
-  GeoJSON,
-  MapContainer,
-  Popup,
-  TileLayer,
-} from 'react-leaflet'
+import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
@@ -24,16 +18,10 @@ import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
 import UserPositionIndicator from '../atoms/UserPositionIndicator'
+import StatusSelector from '../molecules/end-user/StatusSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
-import type { LatLng } from 'leaflet'
 import useLines from '@/hooks/useLines'
-import { DEFAULT_MAP_LOCATION } from '@/utils/constants'
-
-const geoJsonStyle = {
-  color: 'blue',
-  weight: 3,
-  opacity: 0.8,
-}
+import { BUS_LINE_STYLES, DEFAULT_MAP_LOCATION } from '@/utils/constants'
 
 function EndUserMap() {
   const [polygonPoints, setPolygonPoints] = useState<Array<[number, number]>>(
@@ -83,6 +71,7 @@ function EndUserMap() {
     <>
       <CommandPallete yPosition="top" xPosition="right">
         <OriginDestinationSelector />
+        <StatusSelector />
         <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
@@ -105,7 +94,11 @@ function EndUserMap() {
 
         <BusStops setActiveStop={setActiveStop} />
         {displayedRoutes.map((line) => (
-          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
+          <GeoJSON
+            key={line.id}
+            data={line}
+            style={BUS_LINE_STYLES(line.properties.status === 'ACTIVE')}
+          />
         ))}
         <UserPositionIndicator />
         <PolygonFilterUtilities
