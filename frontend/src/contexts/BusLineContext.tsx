@@ -6,6 +6,7 @@ import { useMap } from 'react-leaflet/hooks';
 import { getHoursAndMinutes } from '@/utils/helpers';
 
 type BusLineStep =
+    | 'show-crud'
     | 'show-selection-popup'
     | 'creation'
     | 'edition'

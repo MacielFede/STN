@@ -200,7 +200,7 @@ const streetPointContext = async ({
 }
 
 /** ➊ función interna: ahora admite cqlFilter */
-const _getLines = async (cqlFilter?: string) => {
+export const _getLines = async (cqlFilter?: string) => {
   const params: Record<string, string> = {
     typeName: `${GEO_WORKSPACE}:ft_bus_line`,
     outputFormat: 'application/json',
@@ -212,6 +212,50 @@ const _getLines = async (cqlFilter?: string) => {
     { params },
   )
   return data.features
+}
+
+export const getLineFromGraphHopper = async (
+  points: [number, number][],
+): Promise<BusLineFeature | null> => {
+  if (!points || points.length === 0 || points.some(point => point.length !== 2)) {
+    console.error('Puntos deben ser coordenadas válidas')
+    return null
+  }
+
+  const params = new URLSearchParams()
+  points.forEach(point => {
+    params.append('point', `${point[1]},${point[0]}`)
+  })
+  params.append('profile', 'car')
+  params.append('locale', 'es')
+  params.append('type', 'json')
+  params.append('key', 'c9900281-5f6e-483e-9159-1ef4103873d5')
+  params.append('points_encoded', 'false')
+
+  const url = `https://graphhopper.com/api/1/route?${params.toString()}`
+
+  try {
+    const response = await fetch(
+      url,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    const route = await response.json()
+
+    debugger;
+    if (!route || route.error) {
+      console.error('Error al obtener la ruta de GraphHopper:', route.error)
+      return null
+    }
+
+    return route.paths[0].points
+  } catch (error) {
+    console.error('Error al obtener la ruta de GraphHopper:', error)
+    return null
+  }
 }
 
 /** ➋ export público, sigue debounced pero reenvía el argumento */

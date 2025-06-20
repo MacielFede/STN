@@ -19,6 +19,7 @@ import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
 import BusLinetable from '../molecules/end-user/BusLineTable'
+import BusLinesCrud from '../molecules/admin/BusLinesCrud'
 
 const geoJsonStyle = {
   color: 'blue',
@@ -30,7 +31,7 @@ const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const { newBusLine, setNewBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
+  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
   const { lines } = useLines()
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([]);
 
@@ -79,10 +80,17 @@ const AdminMap = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={() => setNewBusLine(BASIC_LINE_FEATURE)}
+              onClick={() => {
+                if (busLineStep === 'show-crud') {
+                  handleCloseDrawer();
+                  return;
+                }
+                setBusLineStep('show-crud');
+              }}
+
               disabled={!!newBusLine || !!activeStop}
             >
-              Crear linea de omnibus
+              Lineas
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
@@ -109,8 +117,11 @@ const AdminMap = () => {
         scrollWheelZoom
         zoomControl={false}
       >
+        <BusLinesCrud
+          onClose={handleCloseDrawer}
+        />
         <StopAssignmentDrawer
-          open={busLineStep !== null}
+          open={busLineStep === 'show-selection-popup'}
           onClose={() => {
             setBusLineStep(null);
             switchMode('edition');
@@ -155,7 +166,7 @@ const AdminMap = () => {
               {lines?.map((line) => <BusLineForm line={line} />)}
             </>
           )}
-          {newBusLine && busLineStep === null
+          {newBusLine && busLineStep === 'creation'
             ?
             <BusLineForm line={newBusLine} />
             :
