@@ -96,7 +96,7 @@ const BusLineCreator = ({
   }, [calculatedRoute])
 
   useEffect(() => {
-    if(polylineRef.current === null || newBusLine?.geometry?.coordinates?.length) return;
+    if(!polylineRef.current || newBusLine?.geometry?.coordinates?.length) return;
       
     map.removeLayer(polylineRef.current)
     polylineRef.current = null;
