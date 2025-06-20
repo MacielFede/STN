@@ -45,7 +45,7 @@ export type StreetFeature = {
 export type BusLineFeature = {
   type: 'Feature'
   id: string
-  geometry: PointGeometry
+  geometry: LineStringGeometry
   geometry_name: string
   properties: BusLineProperties
 }

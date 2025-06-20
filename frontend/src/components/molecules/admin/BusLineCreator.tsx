@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FeatureGroup, Marker, Polyline, useMap, useMapEvents, Tooltip } from 'react-leaflet'
 import L, { point } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
 import { getLineFromGraphHopper } from '@/services/busLines'
-import type { BusLineFeature } from '@/models/geoserver'
+import type { BusLineFeature, LineStringGeometry } from '@/models/geoserver'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 
 const MAX_POINTS = 10
@@ -18,10 +19,12 @@ const BusLineCreator = ({
   const [points, setPoints] = useState<[number, number][]>([])
   const [mousePos, setMousePos] = useState<[number, number] | null>(null)
   const [finished, setFinished] = useState(false)
-  const [calculatedRoute, setCalculatedRoute] = useState<BusLineFeature | null>(null)
+  const [calculatedRoute, setCalculatedRoute] = useState<LineStringGeometry | null>(null)
   const [deleteClicks, setDeleteClicks] = useState<{ [idx: number]: number }>({})
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const { newBusLine, setNewBusLine, featureGroupRef } = useBusLineContext();
   const map = useMap()
+  const polylineRef = useRef<L.Polyline | null>(null)
 
   useMapEvents({
     click(e) {
@@ -62,6 +65,12 @@ const BusLineCreator = ({
     const calculateRoute = async () => {
       const coordinates = await getLineFromGraphHopper(points.map(p => [p[0], p[1]]))
       setCalculatedRoute(coordinates || null);
+      if (coordinates) {
+        setNewBusLine((prev) => ({
+          ...prev,
+          geometry: coordinates,
+        }))
+      }
     }
     calculateRoute();
   }, [finished])
@@ -77,6 +86,9 @@ const BusLineCreator = ({
     map.fitBounds(polyline.getBounds())
     setPoints([]);
     setFinished(false);
+
+    polylineRef.current = polyline;
+
     return () => {
       map.removeLayer(polyline)
     }
@@ -84,12 +96,24 @@ const BusLineCreator = ({
   }, [calculatedRoute])
 
   useEffect(() => {
+    if(polylineRef.current === null || newBusLine?.geometry?.coordinates?.length) return;
+      
+    map.removeLayer(polylineRef.current)
+    polylineRef.current = null;
+    setCalculatedRoute(null);
+  }, [newBusLine])
+
+  useEffect(() => {
     const mapContainer = map.getContainer()
-    mapContainer.style.cursor = `crosshair`
+    if (!calculatedRoute) {
+      mapContainer.style.cursor = `crosshair`
+      return;
+    }
+    mapContainer.style.cursor = ''
     return () => {
       mapContainer.style.cursor = ''
     }
-  }, [map])
+  }, [map, calculatedRoute])
 
   const handleReset = () => {
     setPoints([])
@@ -136,52 +160,58 @@ const BusLineCreator = ({
 
   return (
     <>
-      {!calculatedRoute && (
-
-    )}
-      <FeatureGroup>
-        {points.map(([lng, lat], idx) => (
-          <Marker
-            key={idx}
-            position={[lat, lng]}
-            icon={new L.Icon({
-              iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-            })}
-            eventHandlers={{
-              click: () => handleDeletePoint(idx),
-              mouseover: () => setHoveredIdx(idx),
-              mouseout: () => setHoveredIdx(null),
-            }}
-          >
-            <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>
-              {idx === 0
-                ? 'Origen (doble clic para borrar)'
-                : idx === points.length - 1
-                  ? hoveredIdx === idx
-                    ? <span style={{ color: 'green', fontWeight: 600 }}>Finalizar (clic)</span>
-                    : 'Destino (clic para finalizar)'
-                  : `Intermedio ${idx} (doble clic para borrar)`}
-            </Tooltip>
-          </Marker>
-        ))}
-        {points.length > 1 && (
-          <Polyline
-            positions={points.map(([lng, lat]) => [lat, lng])}
-            color="blue"
-            weight={4}
-          />
-        )}
-        {previewLine && (
-          <Polyline
-            positions={previewLine.map(([lng, lat]) => [lat, lng])}
-            color="gray"
-            weight={2}
-            dashArray="6"
-          />
-        )}
-      </FeatureGroup>
+      {!newBusLine?.geometry?.coordinates?.length && (
+        <BusLineGuide
+          points={points}
+          finished={finished}
+          maxPoints={MAX_POINTS}
+        />
+      )}
+      {!newBusLine?.geometry?.coordinates?.length && (
+        <FeatureGroup>
+          {points.map(([lng, lat], idx) => (
+            <Marker
+              key={idx}
+              position={[lat, lng]}
+              icon={new L.Icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              })}
+              eventHandlers={{
+                click: () => handleDeletePoint(idx),
+                mouseover: () => setHoveredIdx(idx),
+                mouseout: () => setHoveredIdx(null),
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>
+                {idx === 0
+                  ? 'Origen (doble clic para borrar)'
+                  : idx === points.length - 1
+                    ? hoveredIdx === idx
+                      ? <span style={{ color: 'green', fontWeight: 600 }}>Finalizar (clic)</span>
+                      : 'Destino (clic para finalizar)'
+                    : `Intermedio ${idx} (doble clic para borrar)`}
+              </Tooltip>
+            </Marker>
+          ))}
+          {points.length > 1 && (
+            <Polyline
+              positions={points.map(([lng, lat]) => [lat, lng])}
+              color="blue"
+              weight={4}
+            />
+          )}
+          {previewLine && (
+            <Polyline
+              positions={previewLine.map(([lng, lat]) => [lat, lng])}
+              color="gray"
+              weight={2}
+              dashArray="6"
+            />
+          )}
+        </FeatureGroup>
+      )}
     </>
   )
 }

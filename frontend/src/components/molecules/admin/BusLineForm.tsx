@@ -363,7 +363,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           </Button>
         )}
         {!line.properties.id && (
-          <Button disabled={!canSave} onClick={handleDeleted}>
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted}>
             Eliminar recorrido
           </Button>
         )}

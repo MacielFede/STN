@@ -106,7 +106,10 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, []);
 
     const handleDeleted = useCallback(() => {
-        cleanUpBusLineStates();
+        setNewBusLine((prev) => ({
+            ...prev,
+            geometry: null,
+        }))
     }, []);
 
     const cleanUpBusLineStates = useCallback(() => {

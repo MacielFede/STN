@@ -216,7 +216,7 @@ export const _getLines = async (cqlFilter?: string) => {
 
 export const getLineFromGraphHopper = async (
   points: [number, number][],
-): Promise<BusLineFeature | null> => {
+): Promise<LineStringGeometry | null> => {
   if (!points || points.length === 0 || points.some(point => point.length !== 2)) {
     console.error('Puntos deben ser coordenadas válidas')
     return null
@@ -245,7 +245,6 @@ export const getLineFromGraphHopper = async (
     )
     const route = await response.json()
 
-    debugger;
     if (!route || route.error) {
       console.error('Error al obtener la ruta de GraphHopper:', route.error)
       return null
