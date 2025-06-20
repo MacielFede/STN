@@ -16,7 +16,7 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
   properties: {
     name: 'Nueva parada',
     description: 'Direccion de la parada',
-    status: 'ACTIVE',
+    status: 'INACTIVE',
     hasShelter: false,
     department: 'Montevideo',
     direction: 'BIDIRECTIONAL',
