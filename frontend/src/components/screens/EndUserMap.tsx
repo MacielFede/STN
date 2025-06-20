@@ -92,7 +92,7 @@ function EndUserMap() {
           attribution="&copy; OpenStreetMap contributors"
         />
 
-        <BusStops setActiveStop={setActiveStop} />
+        <BusStops setActiveStop={setActiveStop} activeStop={activeStop} />
         {displayedRoutes.map((line) => (
           <GeoJSON
             key={line.id}

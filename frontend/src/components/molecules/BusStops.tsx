@@ -49,9 +49,7 @@ const BusStops = ({
     setUserBBox({ sw, ne })
   }, [map, setUserBBox])
 
-  console.log(stops)
-
-  return stops && stops?.length > 0
+  return stops && stops.length > 0
     ? stops.map((stop) => {
         return (
           <Marker
