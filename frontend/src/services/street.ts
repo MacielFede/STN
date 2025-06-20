@@ -17,7 +17,7 @@ export const streetContext = async ({
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_street`,
-        CQL_FILTER: `DWITHIN(geom, POINT(${lon} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`,
+        CQL_FILTER: `DWITHIN(geom, POINT(${lat} ${lon}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`,
       },
     })
 

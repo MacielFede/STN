@@ -25,8 +25,10 @@ const InactiveBusStopIcon = L.icon({
 
 const BusStops = ({
   setActiveStop,
+  activeStop,
 }: {
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
+  activeStop: BusStopFeature | null
 }) => {
   const { setUserBBox } = useGeoContext()
   const map = useMapEvents({
@@ -47,47 +49,85 @@ const BusStops = ({
     setUserBBox({ sw, ne })
   }, [map, setUserBBox])
 
-  return stops?.map((stop) => {
-    return (
-      <Marker
-        key={stop.id || stop.properties.id}
-        position={[stop.geometry.coordinates[1], stop.geometry.coordinates[0]]}
-        icon={
-          stop.properties.status === 'ACTIVE'
-            ? ActiveBusStopIcon
-            : InactiveBusStopIcon
-        }
-        eventHandlers={{
-          click: () => {
-            setActiveStop(stop)
-          },
-          dragend: (event) => {
-            const position = event.target.getLatLng()
-            if (position)
-              setActiveStop((prevState) => {
-                if (prevState)
-                  return {
-                    ...prevState,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lng, position.lat],
-                    },
-                  }
-                else
-                  return {
-                    ...stop,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lng, position.lat],
-                    },
-                  }
-              })
-          },
-        }}
-        draggable={location.pathname === ADMIN_PATHNAME}
-      />
-    )
-  })
+  console.log(stops)
+
+  return stops && stops?.length > 0
+    ? stops.map((stop) => {
+        return (
+          <Marker
+            key={stop.id || stop.properties.id}
+            position={
+              activeStop && stop.properties.id === activeStop.properties.id
+                ? [
+                    activeStop.geometry.coordinates[1],
+                    activeStop.geometry.coordinates[0],
+                  ]
+                : [stop.geometry.coordinates[1], stop.geometry.coordinates[0]]
+            }
+            icon={
+              stop.properties.status === 'ACTIVE'
+                ? ActiveBusStopIcon
+                : InactiveBusStopIcon
+            }
+            eventHandlers={{
+              click: () => {
+                setActiveStop(stop)
+              },
+              dragend: (event) => {
+                const position = event.target.getLatLng()
+                if (position)
+                  setActiveStop((prevState) => {
+                    if (prevState)
+                      return {
+                        ...prevState,
+                        geometry: {
+                          type: 'Point',
+                          coordinates: [position.lng, position.lat],
+                        },
+                      }
+                    else
+                      return {
+                        ...stop,
+                        geometry: {
+                          type: 'Point',
+                          coordinates: [position.lng, position.lat],
+                        },
+                      }
+                  })
+              },
+            }}
+            draggable={location.pathname === ADMIN_PATHNAME}
+          />
+        )
+      })
+    : activeStop && (
+        <Marker
+          key={activeStop.id || activeStop.properties.id}
+          position={[
+            activeStop.geometry.coordinates[1],
+            activeStop.geometry.coordinates[0],
+          ]}
+          icon={
+            activeStop.properties.status === 'ACTIVE'
+              ? ActiveBusStopIcon
+              : InactiveBusStopIcon
+          }
+          eventHandlers={{
+            dragend: (event) => {
+              const position = event.target.getLatLng()
+              if (position)
+                setActiveStop({
+                  ...activeStop,
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [position.lng, position.lat],
+                  },
+                })
+            },
+          }}
+          draggable={location.pathname === ADMIN_PATHNAME}
+        />
+      )
 }
 
 export default BusStops

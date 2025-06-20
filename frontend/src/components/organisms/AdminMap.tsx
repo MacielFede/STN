@@ -58,7 +58,7 @@ const AdminMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <BusStops setActiveStop={setActiveStop} />
+        <BusStops setActiveStop={setActiveStop} activeStop={activeStop} />
         {activeStop && !activeStop.id && (
           <NewBusStopComponent
             setNewStop={setActiveStop}
