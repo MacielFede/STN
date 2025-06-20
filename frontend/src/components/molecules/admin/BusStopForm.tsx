@@ -215,33 +215,6 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
             className="border-black"
           />
         </label>
-       {/*< div>
-          <label>Estado:</label>
-          <div className="flex flex-col gap-1">
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="ACTIVE"
-                checked={stop.properties.status === 'ACTIVE'}
-                onChange={() => updateProperty('status', 'ACTIVE')}
-              />
-              Activa
-            </label>
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="INACTIVE"
-                checked={stop.properties.status === 'INACTIVE'}
-                onChange={() => updateProperty('status', 'INACTIVE')}
-              />
-              Inactiva
-            </label>
-          </div>
-        </div> */}
         <div>
           <label>Refugio:</label>
           <div className="flex flex-col gap-1">
