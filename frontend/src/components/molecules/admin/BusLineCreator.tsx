@@ -22,7 +22,7 @@ const BusLineCreator = ({
   const [calculatedRoute, setCalculatedRoute] = useState<LineStringGeometry | null>(null)
   const [deleteClicks, setDeleteClicks] = useState<{ [idx: number]: number }>({})
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-  const { newBusLine, setNewBusLine, featureGroupRef } = useBusLineContext();
+  const { newBusLine, setNewBusLine, busLineStep } = useBusLineContext();
   const map = useMap()
   const polylineRef = useRef<L.Polyline | null>(null)
 
@@ -30,7 +30,6 @@ const BusLineCreator = ({
     click(e) {
       if (finished || points.length >= MAX_POINTS) return
 
-      // Si hay al menos 2 puntos y el usuario hace click cerca del destino, finalizar
       if (
         points.length > 1 &&
         mousePos &&
@@ -105,7 +104,7 @@ const BusLineCreator = ({
 
   useEffect(() => {
     const mapContainer = map.getContainer()
-    if (!calculatedRoute) {
+    if (!calculatedRoute && busLineStep === 'creation') {
       mapContainer.style.cursor = `crosshair`
       return;
     }
