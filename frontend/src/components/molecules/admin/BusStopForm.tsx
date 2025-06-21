@@ -27,8 +27,8 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
     ) => {
       try {
         const stopContext = await streetContext({
-          lon: data.geometry.coordinates[1],
-          lat: data.geometry.coordinates[0],
+          lon: data.geometry.coordinates[0],
+          lat: data.geometry.coordinates[1],
         })
         if (!stopContext) {
           toast.error(
@@ -43,6 +43,10 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
         }
         await createStop({
           ...data,
+          geometry:{
+            type: 'Point',
+            coordinates: [data.geometry.coordinates[1], data.geometry.coordinates[0]]
+          },
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
           ) as Department,
