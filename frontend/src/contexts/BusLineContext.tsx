@@ -141,6 +141,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         setIntermediateStops([]);
         setSelectedStops(new Map());
         setPendingGeometry(null);
+        busLineCreation.handleReset();
     }, []);
 
     const updateBusLineData = useCallback((feature: BusLineFeature) => {

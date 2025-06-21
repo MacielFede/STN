@@ -20,7 +20,6 @@ const useLines = () => {
   })
 
   useEffect(() => {
-    // debugger
     if (!linesByCql || linesByCql.length === 0)
       setLines(linesByStreetCode || [])
     else if (!linesByStreetCode || linesByStreetCode.length === 0)
