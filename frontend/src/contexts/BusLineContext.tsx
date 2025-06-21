@@ -111,6 +111,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
             ...prev,
             geometry: null,
         }))
+        busLineCreation.handleReset();
     }, []);
 
     const cleanUpBusLineStates = useCallback(() => {

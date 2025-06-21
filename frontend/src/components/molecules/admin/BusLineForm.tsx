@@ -27,12 +27,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     onCreationRef,
     handleDeleted,
     canSave,
-    saveEditedLine,
+    editing,
     updateBusLineData,
     newBusLine,
     switchMode,
     busLineStep,
     setBusLineStep,
+    startEditing,
     cleanUpBusLineStates,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
@@ -366,7 +367,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           </Button>
         )}
         {!line.properties.id && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={() => {}}>
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length || editing} onClick={startEditing}>
             Editar recorrido
           </Button>
         )}

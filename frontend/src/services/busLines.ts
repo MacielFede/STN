@@ -250,6 +250,8 @@ export const getLineFromGraphHopper = async (
       return null
     }
 
+    debugger;
+
     return route.paths[0].points
   } catch (error) {
     console.error('Error al obtener la ruta de GraphHopper:', error)

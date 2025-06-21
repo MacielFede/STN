@@ -1,11 +1,14 @@
+import type { LineStringGeometry } from '@/models/geoserver';
 import { _getStops } from '@/services/busStops';
 import { DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 export type BusLineCreationType = {
     points: [number, number][];
     setPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
+    calculatedRoute: [number, number][];
+    setCalculatedRoute: React.Dispatch<React.SetStateAction<[number, number][]>>;
     hoveredIdx: number | null;
     setHoveredIdx: React.Dispatch<React.SetStateAction<number | null>>;
     finished: boolean;
@@ -17,22 +20,33 @@ export type BusLineCreationType = {
     MAX_POINTS: number;
     handleFinished: () => Promise<void>;
     handleDeletePoint: (idx: number) => void;
+    editing: boolean;
+    startEditing: () => void;
+    stopEditing: () => void;
+    updatePointsFromDraw: (latlngs: Array<{ lat: number; lng: number }>) => void;
+    polylineRef: React.MutableRefObject<L.Polyline | null>;
+    featureGroupRef: React.MutableRefObject<L.FeatureGroup>;
+    drawControlRef: React.MutableRefObject<L.Control.Draw | null>;
 };
 
 const MAX_POINTS = 10;
 
 export function useBusLineCreation() {
     const [points, setPoints] = useState<[number, number][]>([]);
+    const [calculatedRoute, setCalculatedRoute] = useState<LineStringGeometry | null>(null);
     const [finished, setFinished] = useState(false);
     const [mousePos, setMousePos] = useState<[number, number] | null>(null);
     const [deleteClicks, setDeleteClicks] = useState<{ [idx: number]: number }>({});
-    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+    const [editing, setEditing] = useState(false);
+    const polylineRef = useRef<L.Polyline | null>(null)
+    const featureGroupRef = useRef<L.FeatureGroup>(null);
+    const drawControlRef = useRef<L.Control.Draw | null>(null);
 
     const addPoint = useCallback((lng: number, lat: number) => {
         if (points.length >= MAX_POINTS) return;
         setPoints(prev => (prev.length < MAX_POINTS ? [...prev, [lng, lat]] : prev));
-    }, [finished, points, mousePos]);
+    }, [points]);
 
     const handleDeletePoint = useCallback((idx: number) => {
         setDeleteClicks(prev => {
@@ -56,11 +70,7 @@ export function useBusLineCreation() {
                 return prev
             })
         }, 1500)
-    }, [points]);
-
-    function distance(a: [number, number], b: [number, number]) {
-        return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
-    }
+    }, []);
 
     const handleReset = useCallback(() => {
         setPoints([]);
@@ -68,6 +78,23 @@ export function useBusLineCreation() {
         setDeleteClicks({});
         setMousePos(null);
         setHoveredIdx(null);
+        setEditing(false);
+        setCalculatedRoute(null);
+
+        if (polylineRef.current) {
+            polylineRef.current.remove();
+            polylineRef.current = null;
+        }
+
+        if (featureGroupRef.current) {
+            featureGroupRef.current.clearLayers();
+            featureGroupRef.current = null;
+        }
+
+        if (drawControlRef.current) {
+            drawControlRef.current.disable();
+            drawControlRef.current = null;
+        }
     }, []);
 
     const handleFinished = useCallback(async () => {
@@ -90,11 +117,19 @@ export function useBusLineCreation() {
         }
     }, [points]);
 
+    const startEditing = useCallback(() => setEditing(true), []);
+    const stopEditing = useCallback(() => setEditing(false), []);
+    const updatePointsFromDraw = useCallback((latlngs: Array<{ lat: number; lng: number }>) => {
+        setPoints(latlngs.map(({ lng, lat }) => [lng, lat]));
+    }, []);
+
     return {
         points,
         setPoints,
         finished,
         setFinished,
+        calculatedRoute,
+        setCalculatedRoute,
         mousePos,
         setMousePos,
         addPoint,
@@ -104,5 +139,12 @@ export function useBusLineCreation() {
         MAX_POINTS,
         hoveredIdx,
         setHoveredIdx,
+        editing,
+        startEditing,
+        stopEditing,
+        updatePointsFromDraw,
+        polylineRef,
+        featureGroupRef,
+        drawControlRef
     };
 }
