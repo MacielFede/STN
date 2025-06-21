@@ -22,18 +22,14 @@ type PartialBusLineProperties = Omit<BusLineProperties, 'department' | 'route'>
 const BusLineForm = ({ line }: BusLineFormProps) => {
   const {
     points,
-    setFinished,
-    onEditedRef,
-    onCreationRef,
+    mode,
+    setMode,
     handleDeleted,
     canSave,
-    editing,
     updateBusLineData,
     newBusLine,
-    switchMode,
     busLineStep,
     setBusLineStep,
-    startEditing,
     cleanUpBusLineStates,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
@@ -53,7 +49,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'create-stop-toast-street',
             },
           )
-          switchMode('edition');
+          setMode('editing');
           return
         }
         const response = await createBusLine({
@@ -105,13 +101,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'update-stop-toast-street',
             },
           )
-          switchMode('edition');
+          setMode('editing');
           return
         }
         await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
         await updateBusLine(newBusLine ?? line);
         updateBusLineData(data);
-        
+
         toast.success('Recorrido actualizada correctamente', {
           closeOnClick: true,
           position: 'top-left',
@@ -356,18 +352,18 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         </Select>
       </label>
       <div className="flex gap-2 mt-2">
-        {busLineStep === 'creation' && (
-          <Button disabled={points?.length < 2} onClick={() => setFinished(true)}>
+        {busLineStep === 'creation' && mode !== 'finished' && (
+          <Button disabled={points?.length < 2} onClick={() => setMode('finished')}>
             Finalizar recorrido
           </Button>
         )}
-        {onCreationRef.current && !onEditedRef.current && (
+        {busLineStep === 'creation' && mode === 'finished' && (
           <Button disabled={loadingFormAction || !canSave} type="submit">
             Guardar cambios
           </Button>
         )}
         {!line.properties.id && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length || editing} onClick={startEditing}>
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length || mode === 'editing'} onClick={() => setMode('editing')}>
             Editar recorrido
           </Button>
         )}
@@ -390,7 +386,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         )}
       </div>
     </form>
-
   )
 }
 
