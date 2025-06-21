@@ -23,7 +23,6 @@ const BusLineCreator = () => {
     mousePos,
     setMousePos,
     newBusLine,
-    setNewBusLine,
     busLineStep,
     handleDeletePoint,
     handleFinished,
@@ -31,6 +30,7 @@ const BusLineCreator = () => {
     polylineRef,
     featureGroupRef,
     drawControlRef,
+    updateBusLineData,
   } = useBusLineContext();
   const map = useMap();
 
@@ -142,13 +142,13 @@ const BusLineCreator = () => {
     clearAllMapLayers();
 
     if (newBusLine?.geometry?.coordinates?.length) {
-      setNewBusLine(prev => ({
-        ...prev,
+      updateBusLineData({
+        ...newBusLine,
         geometry: {
           type: 'LineString',
           coordinates: points.map(([lng, lat]) => [lng, lat]),
         },
-      }));
+      });
       return;
     }
 
@@ -157,10 +157,10 @@ const BusLineCreator = () => {
       const coordinates = await getLineFromGraphHopper(points.map(p => [p[0], p[1]]));
       setCalculatedRoute(coordinates || null);
       if (coordinates) {
-        setNewBusLine((prev) => ({
-          ...prev,
+        updateBusLineData({
+          ...newBusLine,
           geometry: coordinates,
-        }));
+        });
         setPoints(coordinates.coordinates.map(([lng, lat]) => [lng, lat]));
       }
     };
