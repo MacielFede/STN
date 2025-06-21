@@ -2,8 +2,8 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react'
 import L, { type LatLngLiteral } from 'leaflet'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
-import { useMap } from 'react-leaflet/hooks';
 import { getHoursAndMinutes } from '@/utils/helpers';
+import { useBusLineCreation, type BusLineCreationType } from '@/hooks/useBusLineCreation';
 
 type BusLineStep =
     | 'show-crud'
@@ -53,7 +53,7 @@ type BusLineContextType = {
     selectedStops: Map<number | null, BusStopFeature>
     pendingGeometry: any
     setPendingGeometry: React.Dispatch<React.SetStateAction<any>>
-}
+} & BusLineCreationType;
 
 const BusLineContext = createContext<BusLineContextType | undefined>(undefined)
 
@@ -70,6 +70,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const onCreationRef = useRef<boolean>(false)
     const onEditedRef = useRef<boolean>(false)
     const editHandlerRef = useRef<L.EditToolbar.Edit | null>(null)
+    const busLineCreation = useBusLineCreation();
 
     const finishEditingLine = useCallback(() => {
         if (editHandlerRef.current) {
@@ -236,7 +237,8 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 cacheStop,
                 selectedStops,
                 pendingGeometry,
-                setPendingGeometry
+                setPendingGeometry,
+                ...busLineCreation,
             }}
         >
             {children}

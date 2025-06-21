@@ -32,7 +32,7 @@ const BusStops = ({
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
 }) => {
   const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
-  const { newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
+  const { addPoint, setPoints, newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
@@ -44,7 +44,7 @@ const BusStops = ({
   const { stops } = useStops(busStopsCqlFilter, true)
   const location = useLocation()
 
-  const handleAssoaciationClick = async (stop: BusStopFeature) => {
+  const handleAssociationClick = async (stop: BusStopFeature) => {
     const id = stop.properties.id;
     if (!id) return;
     if (busLineStep === 'show-selection-popup') return
@@ -143,9 +143,11 @@ const BusStops = ({
           click: () => {
             if (newBusLine === null) {
               setActiveStop(stop)
+              return;
             }
-            else {
-              handleAssoaciationClick(stop)
+            if (busLineStep === 'creation') {
+              addPoint(stop.geometry.coordinates[1], stop.geometry.coordinates[0])
+              return;
             }
           },
           dragend: (event) => {

@@ -7,44 +7,38 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import { getLineFromGraphHopper } from '@/services/busLines'
 import type { BusLineFeature, LineStringGeometry } from '@/models/geoserver'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-
-
-const MAX_POINTS = 10
+import { Button } from 'flowbite-react'
 
 const BusLineCreator = ({
   onChange,
 }: {
   onChange?: (coords: [number, number][]) => void
 }) => {
-  const [points, setPoints] = useState<[number, number][]>([])
-  const [mousePos, setMousePos] = useState<[number, number] | null>(null)
-  const [finished, setFinished] = useState(false)
   const [calculatedRoute, setCalculatedRoute] = useState<LineStringGeometry | null>(null)
-  const [deleteClicks, setDeleteClicks] = useState<{ [idx: number]: number }>({})
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-  const { newBusLine, setNewBusLine, busLineStep } = useBusLineContext();
+  const {
+    finished,
+    setFinished,
+    points,
+    setPoints,
+    hoveredIdx,
+    setHoveredIdx,
+    addPoint,
+    mousePos,
+    setMousePos,
+    newBusLine,
+    setNewBusLine,
+    busLineStep,
+    handleDeletePoint,
+    handleReset,
+    handleFinished,
+    MAX_POINTS
+  } = useBusLineContext();
   const map = useMap()
   const polylineRef = useRef<L.Polyline | null>(null)
 
   useMapEvents({
     click(e) {
-      if (finished || points.length >= MAX_POINTS) return
-
-      if (
-        points.length > 1 &&
-        mousePos &&
-        distance(mousePos, points[points.length - 1]) < 0.0002 // ~20m
-      ) {
-        setFinished(true)
-        return
-      }
-
-      setPoints(prev => {
-        if (prev.length < MAX_POINTS) {
-          return [...prev, [e.latlng.lng, e.latlng.lat]]
-        }
-        return prev
-      })
+      addPoint(e.latlng.lng, e.latlng.lat);
     },
     mousemove(e) {
       setMousePos([e.latlng.lng, e.latlng.lat])
@@ -62,6 +56,7 @@ const BusLineCreator = ({
     if (!finished) return
 
     const calculateRoute = async () => {
+      await handleFinished();
       const coordinates = await getLineFromGraphHopper(points.map(p => [p[0], p[1]]))
       setCalculatedRoute(coordinates || null);
       if (coordinates) {
@@ -95,8 +90,8 @@ const BusLineCreator = ({
   }, [calculatedRoute])
 
   useEffect(() => {
-    if(!polylineRef.current || newBusLine?.geometry?.coordinates?.length) return;
-      
+    if (!polylineRef.current || newBusLine?.geometry?.coordinates?.length) return;
+
     map.removeLayer(polylineRef.current)
     polylineRef.current = null;
     setCalculatedRoute(null);
@@ -114,48 +109,10 @@ const BusLineCreator = ({
     }
   }, [map, calculatedRoute])
 
-  const handleReset = () => {
-    setPoints([])
-    setFinished(false)
-    setDeleteClicks({})
-  }
-
-  const handleDeletePoint = (idx: number) => {
-    setDeleteClicks(prev => {
-      const clicks = (prev[idx] || 0) + 1
-      if (points.length > 1 && idx === points.length - 1 && clicks === 1) {
-        setFinished(true)
-        return { ...prev, [idx]: clicks }
-      }
-      if (clicks >= 2) {
-        setPoints(points => points.filter((_, i) => i !== idx))
-        setFinished(false)
-        const newClicks = { ...prev }
-        delete newClicks[idx]
-        return newClicks
-      }
-      return { ...prev, [idx]: clicks }
-    })
-    setTimeout(() => {
-      setDeleteClicks(prev => {
-        if (prev[idx] === 1) {
-          const newClicks = { ...prev }
-          delete newClicks[idx]
-          return newClicks
-        }
-        return prev
-      })
-    }, 1500)
-  }
-
   const previewLine =
     !finished && points.length > 0 && mousePos && points.length < MAX_POINTS
       ? [...points, mousePos]
       : null
-
-  function distance(a: [number, number], b: [number, number]) {
-    return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
-  }
 
   return (
     <>
@@ -163,6 +120,7 @@ const BusLineCreator = ({
         <BusLineGuide
           points={points}
           finished={finished}
+          handleReset={handleReset}
           maxPoints={MAX_POINTS}
         />
       )}
@@ -187,9 +145,7 @@ const BusLineCreator = ({
                 {idx === 0
                   ? 'Origen (doble clic para borrar)'
                   : idx === points.length - 1
-                    ? hoveredIdx === idx
-                      ? <span style={{ color: 'green', fontWeight: 600 }}>Finalizar (clic)</span>
-                      : 'Destino (clic para finalizar)'
+                    ? 'Destino (doble clic para borrar)'
                     : `Intermedio ${idx} (doble clic para borrar)`}
               </Tooltip>
             </Marker>
@@ -218,10 +174,11 @@ const BusLineCreator = ({
 interface BusLineGuideProps {
   points: [number, number][]
   finished: boolean
+  handleReset: () => void
   maxPoints?: number
 }
 
-const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, finished, maxPoints = 10 }) => {
+const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, finished, handleReset, maxPoints = 10 }) => {
   return (
     <div className="absolute top-2 left-2 z-[1100] bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-lg max-w-xs text-sm border border-blue-200">
       <div className="mb-3 flex items-center gap-2">
@@ -268,6 +225,16 @@ const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, finished, maxPoints
           <span className="text-green-700 font-bold">¡Destino marcado! Línea finalizada.</span>
         )}
       </div>
+      {points.length > 0 && !finished && (
+        <Button
+          color="red"
+          size="xs"
+          onClick={handleReset}
+          className="w-full"
+        >
+          Limpiar puntos
+        </Button>
+      )}
     </div>
   )
 }

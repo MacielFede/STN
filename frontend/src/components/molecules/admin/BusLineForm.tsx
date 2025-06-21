@@ -21,6 +21,8 @@ type PartialBusLineProperties = Omit<BusLineProperties, 'department' | 'route'>
 
 const BusLineForm = ({ line }: BusLineFormProps) => {
   const {
+    points,
+    setFinished,
     onEditedRef,
     onCreationRef,
     handleDeleted,
@@ -29,6 +31,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     updateBusLineData,
     newBusLine,
     switchMode,
+    busLineStep,
     setBusLineStep,
     cleanUpBusLineStates,
   } = useBusLineContext();
@@ -352,14 +355,19 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         </Select>
       </label>
       <div className="flex gap-2 mt-2">
-        {onCreationRef.current && onEditedRef.current && (
-          <Button disabled={loadingFormAction || !canSave} onClick={saveEditedLine}>
+        {busLineStep === 'creation' && (
+          <Button disabled={points?.length < 2} onClick={() => setFinished(true)}>
             Finalizar recorrido
           </Button>
         )}
         {onCreationRef.current && !onEditedRef.current && (
           <Button disabled={loadingFormAction || !canSave} type="submit">
             Guardar cambios
+          </Button>
+        )}
+        {!line.properties.id && (
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={() => {}}>
+            Editar recorrido
           </Button>
         )}
         {!line.properties.id && (
