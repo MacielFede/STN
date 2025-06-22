@@ -4,7 +4,6 @@ import type { BusStopLine } from '@/models/database'
 import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
 import { api, geoApi } from '@/api/config'
 import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
-import { getHoursAndMinutes } from '@/utils/helpers'
 
 export const getLinesByStopId = async (stopId: number) => {
   const { data: linesInStop }: AxiosResponse<Array<BusStopLine>> =
@@ -29,7 +28,6 @@ export const getByStop = async (stopId: string) => {
 export const createBusLine = async (line: BusLineFeature) => {
   return await api.post('/bus-lines', {
     ...line.properties,
-    schedule: getHoursAndMinutes(line.properties.schedule, true),
     geometry: line.geometry,
   })
 }
@@ -37,7 +35,6 @@ export const createBusLine = async (line: BusLineFeature) => {
 export const updateBusLine = async (line: BusLineFeature) => {
   return await api.put(`/bus-lines/${line.properties.id}`, {
     ...line.properties,
-    schedule: getHoursAndMinutes(line.properties.schedule, true),
     geometry: line.geometry,
   })
 }
@@ -91,7 +88,7 @@ export const isBusLineOnStreets = async (
   }
   const errorPoints: number[][] = [];
   const densified = densifyLineString(geometry.coordinates)
-  for (const [lon, lat] of densified) {
+  for (const [lon, lat] of geometry.coordinates) {
     const street = await streetPointContext({ lon, lat })
     if (!street) {
       errorPoints.push([lon, lat]);
@@ -105,7 +102,6 @@ export const isBusLineOnStreets = async (
   response.status = true;
   return response;
 }
-
 export const isOriginStopOnStreet = async (
   originStop: BusStopFeature,
   busLine: BusLineFeature
@@ -226,46 +222,6 @@ export const _getLines = async (cqlFilter?: string) => {
     { params },
   )
   return data.features
-}
-
-/**
- * Reduce la cantidad de puntos de una línea, dejando solo los que estén separados al menos minDistance metros.
- * Usa Haversine para calcular la distancia real.
- */
-function rarefyLineString(
-  coordinates: [number, number][],
-  minDistanceMeters = 30
-): [number, number][] {
-  if (coordinates.length < 2) return coordinates;
-  const result: [number, number][] = [coordinates[0]];
-  let last = coordinates[0];
-
-  for (let i = 1; i < coordinates.length - 1; i++) {
-    const current = coordinates[i];
-    const dist = haversineDistance(last, current);
-    if (dist >= minDistanceMeters) {
-      result.push(current);
-      last = current;
-    }
-  }
-  // Siempre agregar el último punto
-  result.push(coordinates[coordinates.length - 1]);
-  return result;
-}
-
-// Calcula distancia Haversine en metros entre dos puntos [lon, lat]
-function haversineDistance(a: [number, number], b: [number, number]): number {
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const R = 6371000; // radio de la Tierra en metros
-  const dLat = toRad(b[1] - a[1]);
-  const dLon = toRad(b[0] - a[0]);
-  const lat1 = toRad(a[1]);
-  const lat2 = toRad(b[1]);
-  const aVal =
-    Math.sin(dLat / 2) ** 2 +
-    Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-  const c = 2 * Math.atan2(Math.sqrt(aVal), Math.sqrt(1 - aVal));
-  return R * c;
 }
 
 export const getLineFromGraphHopper = async (

@@ -245,7 +245,7 @@ const BusLineCreator = () => {
             weight={4}
           />
         )}
-        {errorPoints.length > 1 && (
+        {errorPoints?.length > 1 && (
           <Polyline
             positions={errorPoints.map(([lng, lat]) => [lat, lng])}
             color="red"
