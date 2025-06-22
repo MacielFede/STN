@@ -1,7 +1,7 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { createBusLine, createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateStopLine } from '@/services/busLines'
+import { createBusLine, createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateBusLine, updateStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { Input } from '@/components/ui/input'
 import { useEffect } from 'react'
@@ -217,7 +217,24 @@ const StopAssignmentDrawer = ({
                 console.error("Error creating bus line:", error);
                 return;
             }
-
+        }
+        else {
+            debugger;
+            const response = await updateBusLine({
+                geometry: newBusLine.geometry,
+                properties: { ...newBusLine.properties },
+            });
+            if (!response || !response.data || !response.data.id) {
+                toast.error("Error al actualizar la línea de bus, intenta nuevamente.");
+                return;
+            }
+            updateBusLineData({
+                ...newBusLine,
+                properties: {
+                    ...newBusLine.properties,
+                    id: response.data.id,
+                },
+            });
         }
 
         try {

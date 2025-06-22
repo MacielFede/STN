@@ -12,7 +12,7 @@ const BusLinesCrud = ({ onClose }: {
     onClose: () => void
 }) => {
     const [busLines, setBusLines] = useState<Array<BusLineFeature>>([])
-    const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, cleanUpBusLineStates } = useBusLineContext()
+    const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, setPoints } = useBusLineContext()
     const queryClient = useQueryClient()
 
     const deleteBusLineMutation = useMutation({
@@ -54,6 +54,12 @@ const BusLinesCrud = ({ onClose }: {
         if (!confirmed) return;
 
         deleteBusLineMutation.mutate(id);
+    }
+
+    const handleEditLine = (line: BusLineFeature) => {
+        setNewBusLine(line);
+        setBusLineStep('creation');
+        setPoints(line.geometry.coordinates);
     }
 
     const fetchBusLines = async () => {
@@ -109,7 +115,7 @@ const BusLinesCrud = ({ onClose }: {
                                     <Button
                                         color="blue"
                                         size="xs"
-                                        onClick={() => console.log(`Edit line ${line.id}`)}
+                                        onClick={() => handleEditLine(line)}
                                     >
                                         Editar
                                     </Button>

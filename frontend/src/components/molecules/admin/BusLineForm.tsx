@@ -32,7 +32,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     setBusLineStep,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
-  const queryClient = useQueryClient();
   const createBusLineMutation = useMutation({
     mutationFn: async (
       data: PartialBusLineProperties & { geometry: LineStringGeometry },
@@ -51,6 +50,14 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           setMode('editing');
           return
         }
+        updateBusLineData({
+          ...newBusLine,
+          properties: {
+            ...newBusLine.properties,
+            ...data,
+            schedule: getHoursAndMinutes(data.schedule, true),
+          },
+        });
         setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error intentando crear la ruta', {
@@ -78,15 +85,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           setMode('editing');
           return
         }
-        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
-        await updateBusLine(newBusLine ?? line);
         updateBusLineData(data);
-
-        toast.success('Recorrido actualizada correctamente', {
-          closeOnClick: true,
-          position: 'top-left',
-          toastId: 'update-line-toast',
-        });
         setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error al actualizar la línea', {
@@ -104,7 +103,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     if (!line.properties.id) {
       createBusLineMutation.mutate({
         ...newBusLine?.properties,
-        schedule: getHoursAndMinutes(newBusLine.properties.schedule),
+        schedule: getHoursAndMinutes(newBusLine.properties.schedule, true),
         geometry: newBusLine?.geometry,
       })
     } else {
@@ -112,7 +111,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         ...newBusLine,
         properties: {
           ...newBusLine.properties,
-          schedule: getHoursAndMinutes(newBusLine.properties.schedule),
+          schedule: getHoursAndMinutes(newBusLine.properties.schedule, true),
           id: line.properties.id,
         },
       })
@@ -198,7 +197,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         <Input
           disabled={loadingFormAction}
           type="time"
-          value={line.properties.schedule}
+          value={getHoursAndMinutes(line.properties.schedule)}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Convert HH:MM to HH:MM:SS format
             const timeValue = e.target.value;
@@ -296,16 +295,17 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             Continuar
           </Button>
         )}
-        {!line.properties.id && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length || mode === 'editing'} onClick={() => setMode('editing')}>
+        {mode !== 'editing' && (
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={() => setMode('editing')}>
             Editar recorrido
           </Button>
         )}
-        {!line.properties.id && (
+        {mode === 'editing' && (
           <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-red-500 hover:bg-red-700'>
             Redefinir recorrido
           </Button>
         )}
+
       </div>
     </form>
   )

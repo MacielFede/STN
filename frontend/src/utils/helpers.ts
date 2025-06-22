@@ -78,20 +78,30 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
 }
 
 
-export function getHoursAndMinutes(isoString: string): string {
-  if (/^\d{2}:\d{2}:\d{2}$/.test(isoString)) {
-    return isoString
+export function getHoursAndMinutes(
+  input: string,
+  withSeconds: boolean = false
+): string {
+  const timeMatch = input.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if (timeMatch) {
+    const [, hh, mm, ss] = timeMatch;
+    if (withSeconds) {
+      return `${hh}:${mm}:${ss ?? '00'}`;
+    }
+    return `${hh}:${mm}`;
   }
-  const date = new Date(isoString)
-  if (isNaN(date.getTime())) {
-    throw new Error('Invalid date format')
+
+  const date = new Date(input);
+  if (!isNaN(date.getTime())) {
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    return withSeconds
+      ? `${hours}:${minutes}:${seconds}`
+      : `${hours}:${minutes}`;
   }
 
-
-  const hours = String(date.getUTCHours()).padStart(2, '0')
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-
-  return `${hours}:${minutes}`
+  throw new Error('Invalid date or time format');
 }
 
 export function toCQLTime(time: string): string {

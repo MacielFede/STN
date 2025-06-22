@@ -123,8 +123,7 @@ const AdminMap = () => {
         <StopAssignmentDrawer
           open={busLineStep === 'show-selection-popup'}
           onClose={() => {
-            setBusLineStep(null);
-            switchMode('edition');
+            handleCloseDrawer();
           }}
         />
         <TileLayer

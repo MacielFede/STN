@@ -236,7 +236,7 @@ const BusLineCreator = () => {
           />
         )}
 
-        {mode === 'finished' && points.length > 1 && (
+        {points.length > 1 && (
           <Polyline
             positions={points.map(([lng, lat]) => [lat, lng])}
             color="green"
