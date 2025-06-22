@@ -124,12 +124,13 @@ const BusLineCreator = () => {
   useEffect(() => {
     if (mode !== 'finished') return;
 
+    let newPoints = points;
     if (featureGroupRef.current) {
       const layers = featureGroupRef.current.getLayers();
       if (layers.length) {
         const polyline = layers[0] as L.Polyline;
         const latlngs = polyline.getLatLngs() as L.LatLng[];
-        const newPoints = latlngs.map((latlng) => [latlng.lng, latlng.lat] as [number, number]);
+        newPoints = latlngs.map((latlng: L.LatLng) => [latlng.lng, latlng.lat]);
 
         if (JSON.stringify(points) !== JSON.stringify(newPoints)) {
           setPoints(newPoints);
@@ -144,7 +145,7 @@ const BusLineCreator = () => {
         ...newBusLine,
         geometry: {
           type: 'LineString',
-          coordinates: points.map(([lng, lat]) => [lng, lat]),
+          coordinates: newPoints.map(([lng, lat]) => [lng, lat]),
         },
       });
       return;
