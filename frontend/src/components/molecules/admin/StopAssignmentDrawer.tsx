@@ -1,11 +1,12 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateStopLine } from '@/services/busLines'
+import { createBusLine, createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { Input } from '@/components/ui/input'
 import { useEffect } from 'react'
 import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
+import { DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
 
 const StopAssignmentDrawer = ({
     open,
@@ -15,6 +16,7 @@ const StopAssignmentDrawer = ({
     onClose: () => void
 }) => {
     const {
+        points,
         newBusLine,
         busLineStep,
         setBusLineStep,
@@ -27,6 +29,7 @@ const StopAssignmentDrawer = ({
         setDestinationStop,
         setIntermediateStops,
         cacheStop,
+        updateBusLineData,
     } = useBusLineContext()
 
     const getStopStyle = (id: number | null) => {
@@ -54,7 +57,8 @@ const StopAssignmentDrawer = ({
         const timesLength = originStop.estimatedTimes.length;
         if (
             timesLength === 0 ||
-            allStops.some(stop => stop.estimatedTimes.length !== timesLength)
+            allStops.some(stop => stop.estimatedTimes.length !== timesLength) ||
+            allStops.some(stop => stop.estimatedTimes.some(time => !time || time.trim() === ''))
         ) {
             return false;
         }
@@ -148,7 +152,7 @@ const StopAssignmentDrawer = ({
             toast.error("Por favor, selecciona un origen y un destino antes de guardar.");
             return;
         }
-        if (!newBusLine?.properties.number || !newBusLine.properties.id) return;
+        if (!newBusLine?.geometry?.coordinates?.length) return;
 
         const stops = [originStop, destinationStop, ...intermediateStops];
         if (stops.length < 2) {
@@ -188,6 +192,32 @@ const StopAssignmentDrawer = ({
         if (originStop.estimatedTimes.length !== destinationStop.estimatedTimes.length) {
             toast.error("El número de horarios estimados debe ser el mismo para origen y destino.");
             return;
+        }
+
+        if (!newBusLine.properties.id) {
+            try {
+                const response = await createBusLine({
+                    geometry: newBusLine.geometry,
+                    properties: { ...newBusLine.properties },
+                });
+                if (!response || !response.data || !response.data.id) {
+                    toast.error("Error al crear la línea de bus, intenta nuevamente.");
+                    return;
+                }
+                updateBusLineData({
+                    ...newBusLine,
+                    properties: {
+                        ...newBusLine.properties,
+                        id: response.data.id,
+                    },
+                });
+                newBusLine.properties.id = response.data.id;
+            } catch (error) {
+                toast.error("Error al crear la línea de bus, intenta nuevamente.");
+                console.error("Error creating bus line:", error);
+                return;
+            }
+
         }
 
         try {
@@ -252,7 +282,7 @@ const StopAssignmentDrawer = ({
                 });
             }
 
-            toast.success('Asignación de paradas guardada correctamente.');
+            toast.success('Linea creada correctamente');
             onClose();
             cleanUpBusLineStates();
         } catch (error) {
@@ -348,9 +378,45 @@ const StopAssignmentDrawer = ({
             setIntermediateStops(newIntermediates);
         };
 
-        verifyPossibleOrphanStops();
-        fetchAssociations();
-    }, [open, newBusLine?.properties?.id]);
+        const fetchPointsFromCreation = async () => {
+            const origin = points[0];
+            const destination = points[points.length - 1];
+            if (!origin || !destination) return;
+
+            const cqlFilter = `DWITHIN(geometry, POINT(${origin[1]} ${origin[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+            const originData = await _getStops(cqlFilter);
+            if (!originData || originData.length === 0) {
+                toast.error("No se encontró una parada de origen cerca del punto inicial.");
+                return;
+            }
+            const destinationCqlFilter = `DWITHIN(geometry, POINT(${destination[1]} ${destination[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+            const destinationData = await _getStops(destinationCqlFilter);
+            if (!destinationData || destinationData.length === 0) {
+                toast.error("No se encontró una parada de destino cerca del punto final.");
+                return;
+            }
+            cacheStop(originData[0]);
+            cacheStop(destinationData[0]);
+            setOriginStop({
+                stop: originData[0],
+                estimatedTimes: [],
+            });
+            setDestinationStop({
+                stop: destinationData[0],
+                estimatedTimes: [],
+            });
+        }
+
+        // If bus line is in edit mode
+        if (newBusLine?.properties?.id) {
+            verifyPossibleOrphanStops();
+            fetchAssociations();
+        }
+        else {
+            fetchPointsFromCreation();
+        }
+
+    }, [open, newBusLine]);
 
     return (
         <Drawer
@@ -362,7 +428,6 @@ const StopAssignmentDrawer = ({
         >
             <div className="p-4 space-y-4">
                 <h2 className="text-xl font-bold text-center">🚌 Asignación de paradas</h2>
-                <p className="text-green-700 font-medium text-center">✅ Línea creada correctamente</p>
                 <p className="text-sm text-center text-gray-600">
                     Seleccioná las paradas asociadas al recorrido dibujado:
                 </p>
@@ -382,12 +447,6 @@ const StopAssignmentDrawer = ({
                         className={`p-2 rounded ${busLineStep === "select-origin" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
                         <p className={`font-semibold ${busLineStep === "select-origin" ? "text-blue-800" : ""}`}>Origen:</p>
-                        <Button
-                            variant={busLineStep === "select-origin" ? "default" : "outline"}
-                            onClick={() => setBusLineStep("select-origin")}
-                        >
-                            Seleccionar en el mapa
-                        </Button>
                         <div className={getStopStyle(originStop.stop?.properties?.id)}>
                             {selectedStops.has(originStop.stop?.properties?.id) ? (
                                 <>
@@ -534,12 +593,6 @@ const StopAssignmentDrawer = ({
                         className={`p-2 rounded ${busLineStep === "select-destination" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
                         <p className={`font-semibold ${busLineStep === "select-destination" ? "text-blue-800" : ""}`}>Destino:</p>
-                        <Button
-                            variant={busLineStep === "select-destination" ? "default" : "outline"}
-                            onClick={() => setBusLineStep("select-destination")}
-                        >
-                            Seleccionar en el mapa
-                        </Button>
                         <div className={getStopStyle(destinationStop.stop?.properties?.id)}>
                             {selectedStops.has(destinationStop.stop?.properties?.id) ? (
                                 <>

@@ -69,18 +69,18 @@ const BusLinesCrud = ({ onClose }: {
                                         Editar
                                     </Button>
                                     <Button
-                                        color="red"
+                                        color="blue"
                                         size="xs"
                                         onClick={() => console.log(`Delete line ${line.id}`)}
                                     >
                                         Editar paradas
                                     </Button>
                                     <Button
-                                        color="green"
+                                        color="red"
                                         size="xs"
-                                        onClick={() => console.log(`View details of line ${line.id}`)}
+                                        onClick={() => console.log(`Delete line ${line.id}`)}
                                     >
-                                        Agregar parada
+                                        Eliminar
                                     </Button>
                                 </td>
                             </tr>

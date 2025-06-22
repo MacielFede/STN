@@ -54,7 +54,6 @@ const BusLineCreator = () => {
 
   // HANDLE EDIT MODE
   useEffect(() => {
-    debugger;
     if (mode !== 'editing' || !map || !featureGroupRef.current || points.length < 2) return;
 
     featureGroupRef.current.clearLayers();
@@ -86,7 +85,6 @@ const BusLineCreator = () => {
     }
 
     const onEdited = (e: any) => {
-      debugger;
       const layers = e.layers;
       layers.eachLayer((layer: any) => {
         if (layer instanceof L.Polyline) {

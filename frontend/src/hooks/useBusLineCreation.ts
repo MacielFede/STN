@@ -116,7 +116,6 @@ export function useBusLineCreation(): BusLineCreationType {
     }, [points]);
 
     const updatePointsFromDraw = useCallback((latlngs: Array<{ lat: number; lng: number }>) => {
-        debugger;
         setPoints(latlngs.map(({ lng, lat }) => [lng, lat]));
     }, []);
 

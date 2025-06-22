@@ -52,31 +52,32 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           setMode('editing');
           return
         }
-        const response = await createBusLine({
-          ...newBusLine,
-          properties: {
-            ...data,
-            origin: turnCapitalizedDepartment(
-              newBusLine.properties.origin,
-            ),
-            destination: turnCapitalizedDepartment(
-              newBusLine.properties.destination,
-            ),
-          },
-        })
-        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
-        updateBusLineData({
-          ...newBusLine,
-          properties: {
-            ...newBusLine.properties,
-            id: response.data.id,
-          },
-        })
-        toast.success('Ruta creada correctamente', {
-          closeOnClick: true,
-          position: 'top-left',
-          toastId: 'create-route-toast',
-        })
+        //TODO: verificar si no guardarla al principio esta bien
+        // const response = await createBusLine({
+        //   ...newBusLine,
+        //   properties: {
+        //     ...data,
+        //     origin: turnCapitalizedDepartment(
+        //       newBusLine.properties.origin,
+        //     ),
+        //     destination: turnCapitalizedDepartment(
+        //       newBusLine.properties.destination,
+        //     ),
+        //   },
+        // })
+        // await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+        // updateBusLineData({
+        //   ...newBusLine,
+        //   properties: {
+        //     ...newBusLine.properties,
+        //     id: response.data.id,
+        //   },
+        // })
+        // toast.success('Ruta creada correctamente', {
+        //   closeOnClick: true,
+        //   position: 'top-left',
+        //   toastId: 'create-route-toast',
+        // })
         setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error intentando crear la ruta', {
@@ -359,7 +360,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         )}
         {busLineStep === 'creation' && mode === 'finished' && (
           <Button disabled={loadingFormAction || !canSave} type="submit">
-            Guardar cambios
+            Continuar
           </Button>
         )}
         {!line.properties.id && (
@@ -368,8 +369,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           </Button>
         )}
         {!line.properties.id && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted}>
-            Eliminar recorrido
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-red-500 hover:bg-red-700'>
+            Redefinir recorrido
           </Button>
         )}
         {line.properties.id && (
