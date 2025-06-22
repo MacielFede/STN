@@ -9,6 +9,8 @@ export type CreatorMode = 'idle' | 'drawing' | 'editing' | 'finished';
 export type BusLineCreationType = {
     points: [number, number][];
     setPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
+    errorPoints: [number, number][];
+    setErrorPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
     calculatedRoute: LineStringGeometry | null;
     setCalculatedRoute: React.Dispatch<React.SetStateAction<LineStringGeometry | null>>;
     hoveredIdx: number | null;
@@ -32,6 +34,7 @@ const MAX_POINTS = 10;
 
 export function useBusLineCreation(): BusLineCreationType {
     const [points, setPoints] = useState<[number, number][]>([]);
+    const [errorPoints, setErrorPoints] = useState<[number, number][]>([]);
     const [calculatedRoute, setCalculatedRoute] = useState<LineStringGeometry | null>(null);
     const [mousePos, setMousePos] = useState<[number, number] | null>(null);
     const [deleteClicks, setDeleteClicks] = useState<{ [idx: number]: number }>({});
@@ -77,6 +80,7 @@ export function useBusLineCreation(): BusLineCreationType {
     }, []);
 
     const handleReset = useCallback(() => {
+        setErrorPoints([]);
         setPoints([]);
         setCalculatedRoute(null);
         setDeleteClicks({});
@@ -139,5 +143,7 @@ export function useBusLineCreation(): BusLineCreationType {
         polylineRef,
         featureGroupRef,
         drawControlRef,
+        errorPoints,
+        setErrorPoints,
     };
 }

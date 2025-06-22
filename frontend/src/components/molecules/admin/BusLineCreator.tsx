@@ -31,6 +31,7 @@ const BusLineCreator = () => {
     featureGroupRef,
     drawControlRef,
     updateBusLineData,
+    errorPoints,
   } = useBusLineContext();
   const map = useMap();
 
@@ -242,6 +243,14 @@ const BusLineCreator = () => {
             positions={points.map(([lng, lat]) => [lat, lng])}
             color="green"
             weight={4}
+          />
+        )}
+        {errorPoints.length > 1 && (
+          <Polyline
+            positions={errorPoints.map(([lng, lat]) => [lat, lng])}
+            color="red"
+            weight={4}
+            dashArray="6"
           />
         )}
       </FeatureGroup>

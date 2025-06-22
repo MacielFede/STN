@@ -30,6 +30,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     newBusLine,
     busLineStep,
     setBusLineStep,
+    setErrorPoints,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const createBusLineMutation = useMutation({
@@ -38,7 +39,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     ) => {
       try {
         const stopContext = await isBusLineOnStreets(data.geometry);
-        if (!stopContext || !newBusLine) {
+        if (!stopContext.status || !newBusLine) {
+          setErrorPoints(stopContext.errorPoints);
           toast.error(
             'Error intentando crear la ruta, recorrido mal formado o calles no encontradas',
             {
@@ -73,7 +75,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     mutationFn: async (data: BusLineFeature) => {
       try {
         const stopContext = await isBusLineOnStreets(data.geometry);
-        if (!stopContext) {
+        if (!stopContext.status) {
+          setErrorPoints(stopContext.errorPoints);
           toast.error(
             'Error intentando actualizar la ruta, recorrido mal formado o calles no encontradas',
             {
