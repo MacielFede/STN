@@ -1,7 +1,7 @@
 import { Button, Drawer } from 'flowbite-react'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineFeature } from '@/models/geoserver'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { GeoJSON } from 'react-leaflet'
 import { _getLines, deleteBusLine, deleteStopLine, getStopLineByBusLineId } from '@/services/busLines'
 import { getHoursAndMinutes } from '@/utils/helpers'
@@ -9,26 +9,51 @@ import { BASIC_LINE_FEATURE } from '@/utils/constants'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 
-const BusLinesCrud = ({ onClose }: {
-    onClose: () => void
-}) => {
+// Paleta de colores base
+const ROUTE_COLORS = [
+    '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+    '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+    '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+    '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'
+];
+
+// Genera un color aleatorio HEX que no esté en uso
+function getRandomColor(usedColors: string[]): string {
+    let color;
+    do {
+        color = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    } while (usedColors.includes(color));
+    return color;
+}
+
+const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
     const [busLines, setBusLines] = useState<Array<BusLineFeature>>([])
     const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, setPoints } = useBusLineContext()
     const queryClient = useQueryClient()
     const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
 
+    // Asigna un color único a cada línea visualizada
+    const routeColors = useMemo(() => {
+        const usedColors: string[] = [];
+        const colorMap: Record<string, string> = {};
+        displayedRoutes.forEach((line) => {
+            let color = ROUTE_COLORS.find(c => !usedColors.includes(c));
+            if (!color) color = getRandomColor(usedColors);
+            colorMap[line.id] = color;
+            usedColors.push(color);
+        });
+        return colorMap;
+    }, [displayedRoutes]);
+
     const deleteBusLineMutation = useMutation({
         mutationFn: async (id: string) => {
             try {
                 const stopsAssociations = await getStopLineByBusLineId(id);
-
                 stopsAssociations.forEach(async (association) => {
                     await deleteStopLine(String(association.id));
                 });
-
                 await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
                 await queryClient.invalidateQueries({ queryKey: ['stops'] })
-
                 await deleteBusLine(id);
                 toast.success('Línea eliminada correctamente', {
                     closeOnClick: true,
@@ -51,10 +76,8 @@ const BusLinesCrud = ({ onClose }: {
 
     const handleDeleteBusLine = (id: string) => {
         if (!id) return;
-
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta línea? Todos los recorridos asociados serán eliminados.");
         if (!confirmed) return;
-
         deleteBusLineMutation.mutate(id);
     }
 
@@ -95,7 +118,11 @@ const BusLinesCrud = ({ onClose }: {
     return (
         <>
             {displayedRoutes.map((line) => (
-                <GeoJSON key={line.id} data={line} style={{ color: 'blue' }} />
+                <GeoJSON
+                    key={line.id}
+                    data={line}
+                    style={{ color: routeColors[line.id] || '#000', weight: 5 }}
+                />
             ))}
             <Drawer
                 open={busLineStep === 'show-crud'}
@@ -138,8 +165,9 @@ const BusLinesCrud = ({ onClose }: {
                                     <td className='p-2'>{getHoursAndMinutes(line.properties.schedule)}</td>
                                     <td className="p-2 flex gap-2 justify-center">
                                         <Button
-                                            color="blue"
+                                            color={displayedRoutes.some(r => r.id === line.id) ? 'gray' : 'blue'}
                                             size="xs"
+                                            style={{ minWidth: '100px', border: routeColors[line.id] ? `2px solid ${routeColors[line.id]}` : '1px solid #ccc' }}
                                             onClick={() => handleViewLine(line)}
                                         >
                                             {displayedRoutes.some(r => r.id === line.id) ? 'Ocultar' : 'Ver Recorrido'}
