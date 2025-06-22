@@ -6,5 +6,6 @@ public record StopLineResponse(
         Long id,
         Long stopId,
         Long lineId,
-        Time estimatedTime
+        Time estimatedTime,
+        Boolean isEnabled
 ) {}

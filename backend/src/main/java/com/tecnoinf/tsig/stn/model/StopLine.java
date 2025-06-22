@@ -26,4 +26,7 @@ public class StopLine {
 
     @Column(name = "estimated_time", nullable = false)
     private Time estimatedTime;
+
+    @Column(name = "is_enabled", nullable = false)
+    private Boolean isEnabled;
 }
