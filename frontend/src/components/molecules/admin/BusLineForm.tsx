@@ -49,7 +49,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'create-stop-toast-street',
             },
           )
-          setMode('editing');
           return
         }
         updateBusLineData({
@@ -85,7 +84,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'update-stop-toast-street',
             },
           )
-          setMode('editing');
           return
         }
         updateBusLineData(data);

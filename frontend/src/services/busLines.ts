@@ -88,7 +88,7 @@ export const isBusLineOnStreets = async (
   }
   const errorPoints: number[][] = [];
   const densified = densifyLineString(geometry.coordinates)
-  for (const [lon, lat] of geometry.coordinates) {
+  for (const [lon, lat] of densified) {
     const street = await streetPointContext({ lon, lat })
     if (!street) {
       errorPoints.push([lon, lat]);

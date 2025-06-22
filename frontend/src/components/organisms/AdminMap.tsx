@@ -72,7 +72,7 @@ const AdminMap = () => {
           body={<CompanyCRUD />}
         />
         <Button
-          disabled={!!newBusLine || !!activeStop}
+          disabled={!!newBusLine || !!activeStop || busLineStep === 'show-crud'}
           onClick={() => setActiveStop(BASIC_STOP_FEATURE)}
         >
           Crear parada de omnibus
