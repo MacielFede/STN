@@ -50,6 +50,7 @@ type BusLineContextType = {
     },
     loadBusLineForEdit: (busLine: BusLineFeature) => void
     cacheStop: (stop: BusStopFeature) => void
+    cacheStopRemove: (stopId: number) => void
     selectedStops: Map<number | null, BusStopFeature>
     pendingGeometry: any
     setPendingGeometry: React.Dispatch<React.SetStateAction<any>>
@@ -210,6 +211,15 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         setSelectedStops(prev => new Map(prev).set(stopId, stop));
     };
 
+    const cacheStopRemove = (stopId: number) => {
+        setSelectedStops(prev => {
+            if (!prev.has(stopId)) return prev;
+            const newMap = new Map(prev);
+            newMap.delete(stopId);
+            return newMap;
+        });
+    };
+
     return (
         <BusLineContext.Provider
             value={{
@@ -237,6 +247,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 sortIntermediateStopsByGeometry,
                 loadBusLineForEdit,
                 cacheStop,
+                cacheStopRemove,
                 selectedStops,
                 pendingGeometry,
                 setPendingGeometry,

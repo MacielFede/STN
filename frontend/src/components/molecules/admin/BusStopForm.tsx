@@ -9,16 +9,14 @@ import type { BusStopProperties, Department } from '@/models/database'
 import { createStop, deleteStop, updateStop } from '@/services/busStops'
 import { streetContext } from '@/services/street'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { useBusStopContext } from '@/contexts/BusStopContext'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
 
-interface BusStopFormProps {
-  stop: BusStopFeature
-  setStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
-  resetActiveStop: () => void
-}
-
-const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
+const BusStopForm = () => {
+  const { stop, setStop, cleanUpStopState } = useBusStopContext();
+  const { cacheStop, busLineStep, setBusLineStep } = useBusLineContext();
   const queryClient = useQueryClient()
   const createStopMutation = useMutation({
     mutationFn: async (
@@ -40,13 +38,23 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           )
           return
         }
-        await createStop({
+        const response = await createStop({
           ...data,
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
           ) as Department,
           route: stopContext.properties.name,
         })
+        if (busLineStep === 'select-intermediate') {
+          cacheStop({
+            geometry: data.geometry,
+            properties: {
+              ...data,
+              id: response.data.id,
+            },
+          })
+          setBusLineStep('show-selection-popup')
+        }
         setStop(null)
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada creada correctamente', {
@@ -112,7 +120,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
       if (!id) return
       try {
         await deleteStop(id)
-        resetActiveStop()
+        cleanUpStopState()
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada eliminada correctamente', {
           closeOnClick: true,

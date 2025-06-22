@@ -1,12 +1,14 @@
 import { Drawer } from 'flowbite-react'
 import { Button } from '@/components/ui/button'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { createBusLine, createStopLine, deleteStopLine, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateBusLine, updateStopLine } from '@/services/busLines'
+import { createBusLine, createStopLine, deleteStopLine, fetchBusLinesByPoint, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateBusLine, updateStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { Input } from '@/components/ui/input'
 import { useEffect } from 'react'
 import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
-import { DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
+import { BASIC_STOP_FEATURE, DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
+import { useMapEvents } from 'react-leaflet'
+import { useBusStopContext } from '@/contexts/BusStopContext'
 
 const StopAssignmentDrawer = ({
     open,
@@ -29,8 +31,13 @@ const StopAssignmentDrawer = ({
         setDestinationStop,
         setIntermediateStops,
         cacheStop,
+        cacheStopRemove,
         updateBusLineData,
     } = useBusLineContext()
+    const {
+        stop: activeStop,
+        setStop,
+    } = useBusStopContext();
 
     const getStopStyle = (id: number | null) => {
         if (!id) return "";
@@ -301,8 +308,33 @@ const StopAssignmentDrawer = ({
         }
     }
 
+    useMapEvents({
+        click: async (e) => {
+            if (busLineStep !== 'select-intermediate' || !newBusLine?.geometry) return;
+
+            const { lat, lng } = e.latlng
+            const linesNearby = await fetchBusLinesByPoint([lng, lat]);
+            if (!linesNearby || linesNearby.length === 0) {
+                toast.error("Por favor, crea una parada en la trayectoria de la línea");
+                return;
+            }
+            const isCorrectLine = linesNearby.filter(line => line.properties.id === newBusLine.properties.id);
+            if (isCorrectLine.length === 0) {
+                toast.error("Por favor, crea una parada en la trayectoria de la línea");
+                return;
+            }
+            setStop({
+                ...BASIC_STOP_FEATURE,
+                geometry: {
+                    type: "Point",
+                    coordinates: [lat, lng],
+                },
+            })
+        },
+    })
+
     useEffect(() => {
-        if (!open || !newBusLine) return;
+        if (!open || !newBusLine || activeStop) return;
 
         const verifyPossibleOrphanStops = async () => {
             const stops = [originStop, destinationStop, ...intermediateStops];
@@ -350,6 +382,15 @@ const StopAssignmentDrawer = ({
             let newDestination = null;
             let newIntermediates: Array<{ stop: any, estimatedTimes: string[] }> = [];
 
+            const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
+                id => !stopsFromGeoServer.has(Number(id))
+            );
+            if (missingSelectedStopIds?.length) {
+                const missingStops = await _getStops(`id IN (${missingSelectedStopIds.join(',')})`);
+                for (const stop of missingStops) {
+                    stopsFromGeoServer.set(stop.properties.id, stop);
+                }
+            }
             for (const [id, stop] of stopsFromGeoServer.entries()) {
                 const estimatedTimes = busStopsForLine
                     .filter(assoc => Number(assoc.stopId) === id)
@@ -538,6 +579,7 @@ const StopAssignmentDrawer = ({
                                                     size="icon"
                                                     onClick={() => {
                                                         setIntermediateStops(prev => prev.filter((_, index) => index !== stopIndex));
+                                                        cacheStopRemove(stop?.stop?.properties?.id);
                                                     }}
                                                 >
                                                     ❌

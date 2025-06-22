@@ -9,17 +9,18 @@ import NewBusStopComponent from '../molecules/admin/NewBusStop'
 import { Separator } from '../ui/separator'
 import BusLineForm from '../molecules/admin/BusLineForm'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import type { BusLineFeature } from '@/models/geoserver'
 import BusLineCreator from '@/components/molecules/admin/BusLineCreator'
 import CommandPallete from '@/components/atoms/CommandPallete'
 import BusStopForm from '@/components/molecules/admin/BusStopForm'
 import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
-import { BASIC_LINE_FEATURE, BASIC_STOP_FEATURE } from '@/utils/constants'
+import { BASIC_STOP_FEATURE } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import BusLinesCrud from '../molecules/admin/BusLinesCrud'
+import { useBusStopContext } from '@/contexts/BusStopContext'
 
 const geoJsonStyle = {
   color: 'blue',
@@ -30,8 +31,8 @@ const geoJsonStyle = {
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
-  const [activeStop, setActiveStop] = useState<BusStopFeature | null>(null)
-  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, switchMode } = useBusLineContext();
+  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep } = useBusLineContext();
+  const { stop: activeStop, setStop: setActiveStop, cleanUpStopState } = useBusStopContext();
   const { lines } = useLines()
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([]);
 
@@ -52,6 +53,7 @@ const AdminMap = () => {
     setIsOpen(false)
     setActiveStop(null)
     cleanUpBusLineStates();
+    cleanUpStopState();
   }, [])
 
   useEffect(() => {
@@ -121,7 +123,7 @@ const AdminMap = () => {
           onClose={handleCloseDrawer}
         />
         <StopAssignmentDrawer
-          open={busLineStep === 'show-selection-popup' || busLineStep === 'select-intermediate'}
+          open={busLineStep === 'show-selection-popup'}
           onClose={() => {
             handleCloseDrawer();
           }}
@@ -154,13 +156,9 @@ const AdminMap = () => {
       >
         <DrawerHeader title="STN | Ver información de paradas y recorridos seleccionados" />
         <DrawerItems>
-          {!newBusLine && activeStop && (
+          {activeStop && busLineStep !== 'show-selection-popup' && (
             <>
-              <BusStopForm
-                stop={activeStop}
-                setStop={setActiveStop}
-                resetActiveStop={() => setActiveStop(null)}
-              />
+              <BusStopForm />
               <Separator className="my-4 bg-black" decorative />
               {lines?.map((line) => <BusLineForm line={line} />)}
             </>

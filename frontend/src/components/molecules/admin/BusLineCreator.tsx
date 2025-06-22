@@ -186,14 +186,12 @@ const BusLineCreator = () => {
 
   return (
     <>
-      {!newBusLine?.geometry?.coordinates?.length && (
-        <BusLineGuide
-          points={points}
-          mode={mode}
-          handleReset={handleReset}
-          maxPoints={MAX_POINTS}
-        />
-      )}
+      <BusLineGuide
+        points={points}
+        mode={mode}
+        handleReset={handleReset}
+        maxPoints={MAX_POINTS}
+      />
       <FeatureGroup ref={featureGroupRef} />
       <FeatureGroup>
         {mode === 'drawing' && points.map(([lng, lat], idx) => (
@@ -266,7 +264,30 @@ interface BusLineGuideProps {
 }
 
 const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, mode, handleReset, maxPoints = 10 }) => {
+  const {
+    busLineStep,
+  } = useBusLineContext();
   const finished = mode === 'finished';
+
+  if (busLineStep === "select-intermediate") {
+    return (
+      <div className="absolute top-2 left-2 z-[1100] bg-blue-50 border-l-4 border-blue-400 p-4 rounded-xl shadow-lg max-w-xs text-sm">
+        <div className="mb-2 font-bold text-blue-800">¿Cómo agregar paradas intermedias?</div>
+        <ul className="list-disc ml-5 mb-2 space-y-1">
+          <li>
+            <b>Click en una parada existente:</b> se agregará como intermedia.
+          </li>
+          <li>
+            <b>Click sobre el recorrido:</b> se creará una nueva parada en ese punto.
+          </li>
+        </ul>
+        <div className="text-xs text-blue-700 mb-2">
+          Solo puedes agregar paradas sobre el recorrido marcado.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute top-2 left-2 z-[1100] bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-lg max-w-xs text-sm border border-blue-200">
       <div className="mb-3 flex items-center gap-2">

@@ -107,6 +107,7 @@ const BusStops = ({
       if (!await isIntermediateStopOnStreet(stop, newBusLine)) {
         toast.error("La parada seleccionada no es valida como parada intermedia de la linea");
         setIntermediateStops((prev) => prev.filter((intermediate) => intermediate.stop?.properties.id !== id));
+        setBusLineStep('show-selection-popup')
         return;
       }
       setIntermediateStops((prev) => {
@@ -117,6 +118,7 @@ const BusStops = ({
         return updated;
       });
       cacheStop(stop);
+      setBusLineStep('show-selection-popup')
     }
   };
 

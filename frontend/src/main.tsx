@@ -21,6 +21,7 @@ import { GeoProvider } from './contexts/GeoContext.tsx'
 import { BusLineProvider } from './contexts/BusLineContext.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
+import { BusStopProvider } from './contexts/BusStopContext.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -72,10 +73,12 @@ if (rootElement && !rootElement.innerHTML) {
           <GeoProvider>
             <AuthProvider>
               <BusLineProvider>
-                <TooltipProvider>
-                  <RouterProvider router={router} />
-                  <ToastContainer />
-                </TooltipProvider>
+                <BusStopProvider>
+                  <TooltipProvider>
+                    <RouterProvider router={router} />
+                    <ToastContainer />
+                  </TooltipProvider>
+                </BusStopProvider>
               </BusLineProvider>
             </AuthProvider>
           </GeoProvider>
