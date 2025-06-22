@@ -7,6 +7,7 @@ import java.sql.Time;
 public record BusLineResponse(
         Long id,
         String number,
+        String description,
         LineStatus status,
         String origin,
         String destination,
