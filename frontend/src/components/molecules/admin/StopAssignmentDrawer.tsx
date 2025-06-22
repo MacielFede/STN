@@ -299,7 +299,9 @@ const StopAssignmentDrawer = ({
                 });
             }
 
-            toast.success('Linea creada correctamente');
+            toast.success(
+                `${newBusLine?.properties?.id ? "Se actualizó" : "Se creó"} linea de bus con éxito.`
+            );
             onClose();
             cleanUpBusLineStates();
         } catch (error) {
