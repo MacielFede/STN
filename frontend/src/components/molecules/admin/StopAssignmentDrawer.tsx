@@ -9,6 +9,7 @@ import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
 import { BASIC_STOP_FEATURE, DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
 import { useMapEvents } from 'react-leaflet'
 import { useBusStopContext } from '@/contexts/BusStopContext'
+import { getHoursAndMinutes } from '@/utils/helpers'
 
 const StopAssignmentDrawer = ({
     open,
@@ -196,7 +197,10 @@ const StopAssignmentDrawer = ({
             try {
                 const response = await createBusLine({
                     geometry: newBusLine.geometry,
-                    properties: { ...newBusLine.properties },
+                    properties: {
+                        ...newBusLine.properties,
+                        schedule: getHoursAndMinutes(newBusLine.properties.schedule, true)
+                    },
                 });
                 if (!response || !response.data || !response.data.id) {
                     toast.error("Error al crear la línea de bus, intenta nuevamente.");
@@ -219,7 +223,10 @@ const StopAssignmentDrawer = ({
         else {
             const response = await updateBusLine({
                 geometry: newBusLine.geometry,
-                properties: { ...newBusLine.properties },
+                properties: {
+                    ...newBusLine.properties,
+                    schedule: getHoursAndMinutes(newBusLine.properties.schedule, true)
+                },
             });
             if (!response || !response.data || !response.data.id) {
                 toast.error("Error al actualizar la línea de bus, intenta nuevamente.");
