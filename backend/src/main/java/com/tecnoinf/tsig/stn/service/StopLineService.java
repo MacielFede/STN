@@ -48,6 +48,7 @@ public class StopLineService {
         stopLine.setBusStop(stop);
         stopLine.setBusLine(line);
         stopLine.setEstimatedTime(request.estimatedTime());
+        stopLine.setIsEnabled(request.isEnabled());
 
         StopLine saved = stopLineRepository.save(stopLine);
         return mapToResponse(saved);
@@ -58,6 +59,7 @@ public class StopLineService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StopLine not found"));
 
         stopLine.setEstimatedTime(request.estimatedTime());
+        stopLine.setIsEnabled(request.isEnabled());
 
         StopLine updated = stopLineRepository.save(stopLine);
         return mapToResponse(updated);
@@ -99,7 +101,8 @@ public class StopLineService {
                 stopLine.getId(),
                 stopLine.getBusStop().getId(),
                 stopLine.getBusLine().getId(),
-                stopLine.getEstimatedTime()
+                stopLine.getEstimatedTime(),
+                stopLine.getIsEnabled()
         );
     }
 }
