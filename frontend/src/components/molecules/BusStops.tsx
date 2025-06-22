@@ -149,6 +149,10 @@ const BusStops = ({
               addPoint(stop.geometry.coordinates[1], stop.geometry.coordinates[0])
               return;
             }
+            if (busLineStep === 'select-intermediate') {
+              handleAssociationClick(stop)
+              return;
+            }
           },
           dragend: (event) => {
             const position = event.target.getLatLng()

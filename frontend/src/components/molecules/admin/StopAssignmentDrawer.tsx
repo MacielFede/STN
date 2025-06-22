@@ -42,15 +42,6 @@ const StopAssignmentDrawer = ({
         return h * 3600 + m * 60 + (s || 0);
     };
 
-    const areTimesStrictlyIncreasing = (times: string[]) => {
-        for (let i = 1; i < times.length; i++) {
-            if (timeToSeconds(times[i - 1]) >= timeToSeconds(times[i])) {
-                return false;
-            }
-        }
-        return true;
-    };
-
     const areStopTimesOrdered = () => {
         const allStops = [originStop, ...intermediateStops, destinationStop];
 
@@ -219,7 +210,6 @@ const StopAssignmentDrawer = ({
             }
         }
         else {
-            debugger;
             const response = await updateBusLine({
                 geometry: newBusLine.geometry,
                 properties: { ...newBusLine.properties },
