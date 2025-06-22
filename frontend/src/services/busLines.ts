@@ -4,6 +4,7 @@ import type { BusStopLine } from '@/models/database'
 import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '@/models/geoserver'
 import { api, geoApi } from '@/api/config'
 import { DISTANCE_BETWEEN_STOPS_AND_STREET, GEO_WORKSPACE } from '@/utils/constants'
+import { getHoursAndMinutes } from '@/utils/helpers'
 
 export const getLinesByStopId = async (stopId: number) => {
   const { data: linesInStop }: AxiosResponse<Array<BusStopLine>> =
@@ -28,6 +29,7 @@ export const getByStop = async (stopId: string) => {
 export const createBusLine = async (line: BusLineFeature) => {
   return await api.post('/bus-lines', {
     ...line.properties,
+    schedule: getHoursAndMinutes(line.properties.schedule, true),
     geometry: line.geometry,
   })
 }
@@ -35,6 +37,7 @@ export const createBusLine = async (line: BusLineFeature) => {
 export const updateBusLine = async (line: BusLineFeature) => {
   return await api.put(`/bus-lines/${line.properties.id}`, {
     ...line.properties,
+    schedule: getHoursAndMinutes(line.properties.schedule, true),
     geometry: line.geometry,
   })
 }

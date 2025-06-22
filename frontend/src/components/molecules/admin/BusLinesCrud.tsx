@@ -62,6 +62,12 @@ const BusLinesCrud = ({ onClose }: {
         setPoints(line.geometry.coordinates);
     }
 
+    const handleEditAssociations = (line: BusLineFeature) => {
+        setNewBusLine(line);
+        setBusLineStep('show-selection-popup');
+        setPoints(line.geometry.coordinates);
+    }
+
     const fetchBusLines = async () => {
         const lines = await _getLines();
         setBusLines(lines);
@@ -122,7 +128,7 @@ const BusLinesCrud = ({ onClose }: {
                                     <Button
                                         color="blue"
                                         size="xs"
-                                        onClick={() => console.log(`Delete line ${line.id}`)}
+                                        onClick={() => handleEditAssociations(line)}
                                     >
                                         Editar paradas
                                     </Button>
