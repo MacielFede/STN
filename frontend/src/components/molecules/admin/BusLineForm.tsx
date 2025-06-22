@@ -286,12 +286,12 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       </label>
       <div className="flex gap-2 mt-2">
         {busLineStep === 'creation' && mode !== 'finished' && (
-          <Button disabled={points?.length < 2} onClick={() => setMode('finished')}>
+          <Button disabled={points?.length < 2} onClick={() => setMode('finished')} color="green">
             Finalizar recorrido
           </Button>
         )}
         {busLineStep === 'creation' && mode === 'finished' && (
-          <Button disabled={loadingFormAction || !canSave} type="submit">
+          <Button disabled={loadingFormAction || !canSave} type="submit" color="green">
             Continuar
           </Button>
         )}
@@ -301,7 +301,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           </Button>
         )}
         {mode === 'editing' && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-red-500 hover:bg-red-700'>
+          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-orange-400 hover:bg-orange-500'>
             Redefinir recorrido
           </Button>
         )}
