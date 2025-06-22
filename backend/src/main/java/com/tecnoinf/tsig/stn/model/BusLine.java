@@ -20,6 +20,9 @@ public class BusLine {
     @Column(nullable = false)
     private String number;
 
+    @Column(nullable = true)
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LineStatus status;
