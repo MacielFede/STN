@@ -43,10 +43,6 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
         }
         await createStop({
           ...data,
-          geometry:{
-            type: 'Point',
-            coordinates: [data.geometry.coordinates[1], data.geometry.coordinates[0]]
-          },
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
           ) as Department,
