@@ -3,6 +3,7 @@ package com.tecnoinf.tsig.stn.controller;
 import com.tecnoinf.tsig.stn.dto.BusLineResponse;
 import com.tecnoinf.tsig.stn.dto.BusLineRequest;
 import com.tecnoinf.tsig.stn.service.BusLineService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +19,12 @@ public class BusLineController {
     }
 
     @PostMapping
-    public ResponseEntity<BusLineResponse> create(@RequestBody BusLineRequest request) {
+    public ResponseEntity<BusLineResponse> create(@Valid @RequestBody BusLineRequest request) {
         return ResponseEntity.ok(busLineService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BusLineResponse> update(@PathVariable Long id, @RequestBody BusLineRequest request) {
+    public ResponseEntity<BusLineResponse> update(@PathVariable Long id, @Valid @RequestBody BusLineRequest request) {
         return ResponseEntity.ok(busLineService.update(id, request));
     }
 
