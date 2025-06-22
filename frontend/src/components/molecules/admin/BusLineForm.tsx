@@ -5,8 +5,8 @@ import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineProperties } from '@/models/database'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
-import { createBusLine, deleteBusLine, deleteStopLine, getStopLineByBusLineId, isBusLineOnStreets, updateBusLine } from '@/services/busLines'
-import { getHoursAndMinutes, turnCapitalizedDepartment } from '@/utils/helpers'
+import { isBusLineOnStreets, updateBusLine } from '@/services/busLines'
+import { getHoursAndMinutes } from '@/utils/helpers'
 import { useEffect, useState } from 'react'
 import { getCompanies } from '@/services/companies'
 import type { Company } from '@/models/database'
@@ -30,7 +30,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     newBusLine,
     busLineStep,
     setBusLineStep,
-    cleanUpBusLineStates,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const queryClient = useQueryClient();
@@ -52,32 +51,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           setMode('editing');
           return
         }
-        //TODO: verificar si no guardarla al principio esta bien
-        // const response = await createBusLine({
-        //   ...newBusLine,
-        //   properties: {
-        //     ...data,
-        //     origin: turnCapitalizedDepartment(
-        //       newBusLine.properties.origin,
-        //     ),
-        //     destination: turnCapitalizedDepartment(
-        //       newBusLine.properties.destination,
-        //     ),
-        //   },
-        // })
-        // await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
-        // updateBusLineData({
-        //   ...newBusLine,
-        //   properties: {
-        //     ...newBusLine.properties,
-        //     id: response.data.id,
-        //   },
-        // })
-        // toast.success('Ruta creada correctamente', {
-        //   closeOnClick: true,
-        //   position: 'top-left',
-        //   toastId: 'create-route-toast',
-        // })
         setBusLineStep('show-selection-popup');
       } catch (error) {
         toast.error('Error intentando crear la ruta', {
@@ -125,36 +98,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       }
     },
   })
-  const deleteBusLineMutation = useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        const stopsAssociations = await getStopLineByBusLineId(id);
-
-        stopsAssociations.forEach(async (association) => {
-          await deleteStopLine(String(association.id));
-        });
-
-        await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
-        await queryClient.invalidateQueries({ queryKey: ['stops'] })
-
-        await deleteBusLine(id);
-        toast.success('Línea eliminada correctamente', {
-          closeOnClick: true,
-          position: 'top-left',
-          toastId: 'delete-line-toast',
-        })
-        cleanUpBusLineStates();
-      } catch (error) {
-        toast.error('Error al eliminar la línea', {
-          closeOnClick: true,
-          position: 'top-left',
-          toastId: 'delete-line-toast-error',
-        })
-        cleanUpBusLineStates();
-        console.error('Error al eliminar la línea:', error)
-      }
-    },
-  })
 
   const handleSave = () => {
     if (!newBusLine) return;
@@ -174,16 +117,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         },
       })
     }
-  }
-
-  const handleDeleteBusLine = () => {
-    if (!newBusLine) return;
-    if (!line.properties.id) return;
-
-    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta línea? Todos los recorridos asociados serán eliminados.");
-    if (!confirmed) return;
-
-    deleteBusLineMutation.mutate(String(line.properties.id));
   }
 
 
@@ -371,18 +304,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         {!line.properties.id && (
           <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-red-500 hover:bg-red-700'>
             Redefinir recorrido
-          </Button>
-        )}
-        {line.properties.id && (
-          <Button
-            disabled={loadingFormAction}
-            className="bg-red-500 hover:bg-red-700"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              event.preventDefault()
-              handleDeleteBusLine();
-            }}
-          >
-            Eliminar línea
           </Button>
         )}
       </div>

@@ -2,21 +2,66 @@ import { Button, Drawer } from 'flowbite-react'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useEffect, useState } from 'react'
-import { _getLines } from '@/services/busLines'
+import { _getLines, deleteBusLine, deleteStopLine, getStopLineByBusLineId } from '@/services/busLines'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import { BASIC_LINE_FEATURE } from '@/utils/constants'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
 const BusLinesCrud = ({ onClose }: {
     onClose: () => void
 }) => {
     const [busLines, setBusLines] = useState<Array<BusLineFeature>>([])
-    const { busLineStep, newBusLine, setNewBusLine, setBusLineStep } = useBusLineContext()
+    const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, cleanUpBusLineStates } = useBusLineContext()
+    const queryClient = useQueryClient()
+
+    const deleteBusLineMutation = useMutation({
+        mutationFn: async (id: string) => {
+            try {
+                const stopsAssociations = await getStopLineByBusLineId(id);
+
+                stopsAssociations.forEach(async (association) => {
+                    await deleteStopLine(String(association.id));
+                });
+
+                await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
+                await queryClient.invalidateQueries({ queryKey: ['stops'] })
+
+                await deleteBusLine(id);
+                toast.success('Línea eliminada correctamente', {
+                    closeOnClick: true,
+                    position: 'top-right',
+                    toastId: 'delete-line-toast',
+                })
+            } catch (error) {
+                toast.error('Error al eliminar la línea', {
+                    closeOnClick: true,
+                    position: 'top-right',
+                    toastId: 'delete-line-toast-error',
+                })
+                console.error('Error al eliminar la línea:', error)
+            }
+        },
+        onSuccess: () => {
+            fetchBusLines();
+        },
+    })
+
+    const handleDeleteBusLine = (id: string) => {
+        if (!id) return;
+
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta línea? Todos los recorridos asociados serán eliminados.");
+        if (!confirmed) return;
+
+        deleteBusLineMutation.mutate(id);
+    }
+
+    const fetchBusLines = async () => {
+        const lines = await _getLines();
+        setBusLines(lines);
+    }
 
     useEffect(() => {
-        const fetchBusLines = async () => {
-            const lines = await _getLines();
-            setBusLines(lines);
-        }
         fetchBusLines();
     }, [newBusLine])
 
@@ -78,7 +123,7 @@ const BusLinesCrud = ({ onClose }: {
                                     <Button
                                         color="red"
                                         size="xs"
-                                        onClick={() => console.log(`Delete line ${line.id}`)}
+                                        onClick={() => handleDeleteBusLine(String(line.properties.id))}
                                     >
                                         Eliminar
                                     </Button>
