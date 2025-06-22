@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react'
 import type { EndUserFilter, FilterData } from '@/models/database'
-import type { BBox, PointGeometry } from '@/models/geoserver'
+import type { BBox } from '@/models/geoserver'
 import { buildCqlFilter, getLinesCqlFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
@@ -14,13 +14,13 @@ type GeoContextType = {
   toogleEndUserFilter: (filterToToogle: EndUserFilter) => void
   resetBusLineCqlFilter: () => void
   busLinesCqlFilter: string
-  busLinesInStreetFilter: { streetCode: string } | undefined
+  busLinesInStreetFilter: FilterData['street'] | undefined
   setBusLinesInStreetFilter: (
-    newStreetCode: { streetCode: string } | undefined,
+    newStreetCode: FilterData['street'] | undefined,
   ) => void
-  busLineNearUserFilter: { userLocation: PointGeometry } | undefined
+  busLineNearUserFilter: FilterData['location'] | undefined
   setBusLineNearUserFilter: (
-    newUserLocation: { userLocation: PointGeometry } | undefined,
+    newUserLocation: FilterData['location'] | undefined,
   ) => void
   userBBox: BBox
   setUserBBox: (newBBox: BBox) => void

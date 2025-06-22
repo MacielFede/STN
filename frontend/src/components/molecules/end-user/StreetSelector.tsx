@@ -5,6 +5,7 @@ import { Button } from '../../ui/button'
 import type { StreetFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { findStreet } from '@/services/street'
+import { Label } from '@/components/ui/label'
 
 const StreetSelector = () => {
   const { setBusLinesInStreetFilter } = useGeoContext()
@@ -12,6 +13,7 @@ const StreetSelector = () => {
   const [hasSelectedStreet, setHasSelectedStreet] = useState(false)
   const [suggestions, setSuggestions] = useState<Array<StreetFeature>>([])
   const selectedStreet = useRef<StreetFeature | null>(null)
+  const [km, setKm] = useState('')
 
   const debouncedFetchSuggestions = useMemo(
     () =>
@@ -35,7 +37,7 @@ const StreetSelector = () => {
         } catch {
           setSuggestions([])
         }
-      }, 300),
+      }, 1000),
     [],
   )
 
@@ -48,6 +50,7 @@ const StreetSelector = () => {
     setStreetName('')
     setSuggestions([])
     setHasSelectedStreet(false)
+    setKm('')
     selectedStreet.current = null
     setBusLinesInStreetFilter(undefined)
   }
@@ -62,7 +65,10 @@ const StreetSelector = () => {
       return
     }
 
-    setBusLinesInStreetFilter({ streetCode: street.properties.streetCode })
+    setBusLinesInStreetFilter({
+      streetCode: street.properties.streetCode,
+      km: km,
+    })
   }
 
   const handleSuggestionClick = (suggestion: StreetFeature) => {
@@ -74,7 +80,7 @@ const StreetSelector = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit">
-      <h3 className="font-semibold">Buscar Líneas por Calle</h3>
+      <h3 className="font-semibold">Buscar Líneas por Calle/Ruta</h3>
       <input
         type="text"
         value={streetName}
@@ -109,6 +115,21 @@ const StreetSelector = () => {
       )}
       {streetName !== '' && (
         <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
+            <Label className="font-semibold" htmlFor="km">
+              Agregar KiloMetro
+            </Label>
+            <input
+              type="number"
+              id="km"
+              className="border p-1 rounded w-full"
+              placeholder="Ingrese KM"
+              value={km}
+              onChange={(e) => setKm(e.target.value)}
+              max="1000"
+              min={0}
+            />
+          </div>
           <Button onClick={handleApplyFilter}>Aplicar filtro</Button>
           <Button className="bg-red-800" onClick={handleClear}>
             Limpiar filtro

@@ -86,6 +86,7 @@ export type FilterData = {
   }
   street: {
     streetCode: string
+    km: string
   }
   stopLine: {
     busStopName: string

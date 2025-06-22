@@ -17,7 +17,11 @@ const useLines = () => {
 
   const { data: linesByStreetCode } = useQuery({
     queryKey: ['linesByStreet', busLinesInStreetFilter?.streetCode],
-    queryFn: () => getLinesInStreet(busLinesInStreetFilter?.streetCode),
+    queryFn: () =>
+      getLinesInStreet(
+        busLinesInStreetFilter?.streetCode,
+        busLinesInStreetFilter?.km,
+      ),
     enabled: !!busLinesInStreetFilter,
   })
 
