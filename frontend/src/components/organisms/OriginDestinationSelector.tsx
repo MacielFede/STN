@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
+import FetchingLinesSpinner from '../atoms/FetchingLinesSpinner'
 import { useGeoContext } from '@/contexts/GeoContext'
 import useAllLines from '@/hooks/useAllLines'
 import { useUserLocation } from '@/hooks/useUserLocation'
@@ -138,13 +139,19 @@ const BusLineSelector = () => {
         )}
       </div>
       {(useCurrentLocation ? destination : origin || destination) && (
-        <>
-          <Button onClick={onSearch}>Buscar líneas</Button>
+        <FetchingLinesSpinner>
+          <Button className="w-full" onClick={onSearch}>
+            Aplicar filtro
+          </Button>
 
-          <Button onClick={clearFilter} variant="destructive">
+          <Button
+            className="w-full"
+            onClick={clearFilter}
+            variant="destructive"
+          >
             Limpiar filtro
           </Button>
-        </>
+        </FetchingLinesSpinner>
       )}
     </div>
   )

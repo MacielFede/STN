@@ -1,18 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import debounce from 'lodash.debounce'
 import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../ui/button'
 import type { StreetFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { findStreet } from '@/services/street'
 import { Label } from '@/components/ui/label'
+import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 
 const StreetSelector = () => {
+  const queryClient = useQueryClient()
   const { setBusLinesInStreetFilter } = useGeoContext()
   const [streetName, setStreetName] = useState('')
   const [hasSelectedStreet, setHasSelectedStreet] = useState(false)
   const [suggestions, setSuggestions] = useState<Array<StreetFeature>>([])
-  const selectedStreet = useRef<StreetFeature | null>(null)
   const [km, setKm] = useState('')
 
   const debouncedFetchSuggestions = useMemo(
@@ -28,7 +30,9 @@ const StreetSelector = () => {
           const unique = Array.from(
             new Map(
               streets.map((s) => [
-                s.properties.name + s.properties.department,
+                s.properties.name.startsWith('RUTA')
+                  ? s.properties.name
+                  : s.properties.name + s.properties.department,
                 s,
               ]),
             ).values(),
@@ -47,17 +51,16 @@ const StreetSelector = () => {
   }, [streetName, debouncedFetchSuggestions])
 
   const handleClear = () => {
+    queryClient.removeQueries({ queryKey: ['linesByStreet'] })
+    setBusLinesInStreetFilter(undefined)
     setStreetName('')
     setSuggestions([])
     setHasSelectedStreet(false)
     setKm('')
-    selectedStreet.current = null
-    setBusLinesInStreetFilter(undefined)
   }
 
   const handleApplyFilter = () => {
-    const street = selectedStreet.current
-    if (!street) {
+    if (!hasSelectedStreet) {
       toast.error('Seleccione una calle válida primero.', {
         toastId: 'street-filter-error',
         position: 'top-left',
@@ -66,27 +69,29 @@ const StreetSelector = () => {
     }
 
     setBusLinesInStreetFilter({
-      streetCode: street.properties.streetCode,
+      streetName: streetName,
       km: km,
     })
   }
 
   const handleSuggestionClick = (suggestion: StreetFeature) => {
-    selectedStreet.current = suggestion
     setStreetName(suggestion.properties.name)
     setSuggestions([])
     setHasSelectedStreet(true)
   }
 
+  // useEffect(() => {
+  //   if (!streetName) handleClear()
+  // }, [])
+
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit">
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit max-w-[200px]">
       <h3 className="font-semibold">Buscar Líneas por Calle/Ruta</h3>
       <input
         type="text"
         value={streetName}
         onChange={(e) => {
           setHasSelectedStreet(false)
-          selectedStreet.current = null
           setStreetName(e.target.value)
         }}
         placeholder="Ingrese el nombre de la calle"
@@ -113,27 +118,33 @@ const StreetSelector = () => {
           )}
         </div>
       )}
-      {streetName !== '' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2">
-            <Label className="font-semibold" htmlFor="km">
-              Agregar KiloMetro
-            </Label>
-            <input
-              type="number"
-              id="km"
-              className="border p-1 rounded w-full"
-              placeholder="Ingrese KM"
-              value={km}
-              onChange={(e) => setKm(e.target.value)}
-              max="1000"
-              min={0}
-            />
-          </div>
-          <Button onClick={handleApplyFilter}>Aplicar filtro</Button>
-          <Button className="bg-red-800" onClick={handleClear}>
-            Limpiar filtro
-          </Button>
+      {streetName.trim() && (
+        <div className="flex flex-col gap-2 w-full">
+          <Label
+            title="Este campo es opcional"
+            className="font-semibold"
+            htmlFor="km"
+          >
+            ⓘ Agregar kilometro
+          </Label>
+          <input
+            type="number"
+            id="km"
+            className="border p-1 rounded w-full"
+            placeholder="Ingrese KM"
+            value={km}
+            onChange={(e) => setKm(e.target.value)}
+            max="1000"
+            min={0}
+          />
+          <FetchingLinesSpinner>
+            <Button className="w-full" onClick={handleApplyFilter}>
+              Aplicar filtro
+            </Button>
+            <Button className="bg-red-800 w-full" onClick={handleClear}>
+              Limpiar filtro
+            </Button>
+          </FetchingLinesSpinner>
         </div>
       )}
     </div>

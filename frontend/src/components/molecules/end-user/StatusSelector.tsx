@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
 import type { StatusOptions } from '@/models/database'
 import { useGeoContext } from '@/contexts/GeoContext'
+import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 
 const StatusSelector = () => {
   const { toogleEndUserFilter, endUserFilters } = useGeoContext()
@@ -72,8 +73,9 @@ const StatusSelector = () => {
         </div>
       </div>
       {(linesOption || stopsOption) && (
-        <div className="flex flex-col gap-2">
+        <FetchingLinesSpinner>
           <Button
+            className="w-full"
             onClick={() => {
               if (linesOption === '' && stopsOption === '') {
                 toast.error('Seleccione al menos una opción para filtrar', {
@@ -102,7 +104,7 @@ const StatusSelector = () => {
               : 'Aplicar filtro'}
           </Button>
           <Button
-            className="bg-red-800 hover:bg-red-900"
+            className="bg-red-800 hover:bg-red-900 w-full"
             onClick={() => {
               setSelectedLineas('')
               setSelectedParadas('')
@@ -111,7 +113,7 @@ const StatusSelector = () => {
           >
             Limpiar filtro
           </Button>
-        </div>
+        </FetchingLinesSpinner>
       )}
     </div>
   )

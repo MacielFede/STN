@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { useGeoContext } from '@/contexts/GeoContext'
+import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 
 function PolygonSelector({
   isDrawing,
@@ -44,9 +45,11 @@ function PolygonSelector({
         </Button>
 
         {polygonPoints.length >= 3 && (
-          <Button onClick={onSearch} variant="default">
-            Buscar líneas
-          </Button>
+          <FetchingLinesSpinner>
+            <Button onClick={onSearch} className="w-full">
+              Buscar líneas
+            </Button>
+          </FetchingLinesSpinner>
         )}
       </div>
     </div>
