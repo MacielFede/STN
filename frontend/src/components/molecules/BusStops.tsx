@@ -6,11 +6,12 @@ import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
 import type { BusStopFeature } from '@/models/geoserver'
 import useStops from '@/hooks/useStops'
-import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 import { ADMIN_PATHNAME } from '@/utils/constants'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
 import { toast } from 'react-toastify'
+import { useGeoContext } from '@/contexts/GeoContext'
+import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -28,20 +29,23 @@ const InactiveBusStopIcon = L.icon({
 
 const BusStops = ({
   setActiveStop,
+  activeStop,
 }: {
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
+  activeStop: BusStopFeature | null
 }) => {
   const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
   const { addPoint, setPoints, newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
+  const { setUserBBox } = useGeoContext()
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds()
       const sw = bounds.getSouthWest()
       const ne = bounds.getNorthEast()
-      setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
+      setUserBBox({ sw, ne })
     },
   })
-  const { stops } = useStops(busStopsCqlFilter, true)
+  const { stops } = useStops(true)
   const location = useLocation()
 
   const handleAssociationClick = async (stop: BusStopFeature) => {

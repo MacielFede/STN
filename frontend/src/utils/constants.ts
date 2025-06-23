@@ -1,4 +1,5 @@
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import type { LatLngExpression } from 'leaflet'
 
 export const GEO_WORKSPACE = 'ne'
 
@@ -40,3 +41,11 @@ export const BASIC_LINE_FEATURE: BusLineFeature = {
     companyId: null,
   },
 }
+
+export const DEFAULT_MAP_LOCATION: LatLngExpression = [-32.5, -56.164]
+
+export const BUS_LINE_STYLES = (isActive: boolean) => ({
+  color: isActive ? 'blue' : 'black',
+  weight: 3,
+  opacity: 0.8,
+})

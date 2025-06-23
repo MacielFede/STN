@@ -8,6 +8,7 @@ import java.sql.Time;
 
 public record BusLineRequest(
         @NotNull(message = "Line number is required") String number,
+        String description,
         @NotNull(message = "Line status is required") LineStatus status,
         @NotNull(message = "Line origin is required") String origin,
         @NotNull(message = "Line destination is required") String destination,

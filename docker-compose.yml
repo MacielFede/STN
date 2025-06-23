@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.26.2
@@ -54,6 +52,20 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     networks:
       - red01
+
+  init-config:
+    image: postgres:17
+    container_name: init-config
+    depends_on:
+      - postgis
+      - geoserver
+    volumes:
+      - ./init:/init
+    entrypoint: [ "sh", "/init/init.sh" ]
+    environment:
+      - POSTGRES_DB=geodb
+      - POSTGRES_USER=geouser
+      - POSTGRES_PASSWORD=geopass
 
 networks:
   red01:

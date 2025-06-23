@@ -61,6 +61,7 @@ public class BusLineService {
 
     private void mapRequestToBusLine(BusLine busLine, Company company, BusLineRequest busLineRequest) {
         busLine.setNumber(busLineRequest.number());
+        busLine.setDescription(busLineRequest.description());
         busLine.setStatus(busLineRequest.status());
         busLine.setOrigin(busLineRequest.origin());
         busLine.setDestination(busLineRequest.destination());
@@ -73,6 +74,7 @@ public class BusLineService {
         return new BusLineResponse(
                 busLine.getId(),
                 busLine.getNumber(),
+                busLine.getDescription(),
                 busLine.getStatus(),
                 busLine.getOrigin(),
                 busLine.getDestination(),

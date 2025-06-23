@@ -5,6 +5,6 @@ import java.sql.Time;
 public record StopLineRequest(
         Long stopId,
         Long lineId,
-        Time estimatedTime
-) {
-}
+        Time estimatedTime,
+        Boolean isEnabled
+) { }

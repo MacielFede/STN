@@ -10,7 +10,7 @@ import {
 } from '../ui/dialog'
 import type { ReactNode } from 'react'
 
-type ModalType = 'Companies' | 'Lines' | 'busLines' | 'EndUserLines'
+type ModalType = 'Companies' | 'Lines' | 'Schedule' | 'EndUserLines' | 'busLines'
 type ModalProps = {
   trigger: ReactNode
   body: ReactNode
@@ -35,8 +35,9 @@ const getModalText = (type: ModalType) => {
           description: '',
         }
     case 'EndUserLines':
+    case 'Schedule':
       return {
-        header: 'Horarios de linea de transporte',
+        header: 'Horarios de la linea en la parada indicada',
         description: '',
       }
   }

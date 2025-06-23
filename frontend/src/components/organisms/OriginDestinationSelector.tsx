@@ -1,78 +1,90 @@
-import React, { useEffect, useState } from 'react'
-import { getLines } from '@/services/busLines'
-import type { BusLineFeature } from '@/models/geoserver'
+import { useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import { Button } from '../ui/button'
-import Modal from '@/components/atoms/Modal'
-import BusLineTable from '@/components/atoms/BusLineTable' // Ajustá el path si es distinto
-import { turnCapitalizedDepartment } from '@/utils/helpers'
-import { useGeoContext } from "@/contexts/GeoContext"
+import { Label } from '../ui/label'
+import { useGeoContext } from '@/contexts/GeoContext'
+import useAllLines from '@/hooks/useAllLines'
+import { useUserLocation } from '@/hooks/useUserLocation'
 
 const BusLineSelector = () => {
-  const [busLines, setBusLines] = useState<BusLineFeature[]>([])
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
-  const { toogleEndUserFilter } = useGeoContext()
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false)
+  const { lines } = useAllLines()
+  const { toogleEndUserFilter, setBusLineNearUserFilter } = useGeoContext()
+  const { position: userLocation, error: locationError } = useUserLocation()
 
   const onSearch = () => {
-    if (origin || destination) {
-      toogleEndUserFilter({
-        name: 'origin-destination',
-        isActive: true,
-        data: { origin, destination },
+    if (useCurrentLocation && locationError) {
+      toast.error(
+        'No se pudo obtener tu ubicación. Por favor, revisa los permisos.',
+        {
+          position: 'top-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+          toastId: 'location-error-reminder',
+        },
+      )
+      return
+    }
+    toogleEndUserFilter({
+      name: 'origin-destination',
+      isActive: true,
+      data: { origin, destination },
+    })
+    if (useCurrentLocation) {
+      setBusLineNearUserFilter({
+        userLocation: { coordinates: userLocation, type: 'Point' },
       })
     }
   }
 
-  useEffect(() => {
-    const fetchLines = async () => {
-      const lines = await getLines()
-      setBusLines(lines)
-    }
+  const origins = useMemo(() => {
+    return Array.from(new Set(lines?.map((line) => line.properties.origin)))
+  }, [lines])
 
-    fetchLines()
-  }, [])
-  
-
-  const origins = Array.from(
-    new Set(busLines.map((line) => line.properties.origin))
-  )
-
-  const destinations = Array.from(
-    new Set(
-      busLines
-        .filter((line) =>
-          origin ? line.properties.origin === origin : true
-        )
-        .map((line) => line.properties.destination)
+  const destinations = useMemo(() => {
+    return Array.from(
+      new Set(
+        lines
+          ?.filter((line) =>
+            origin ? line.properties.origin === origin : true,
+          )
+          .map((line) => line.properties.destination),
+      ),
     )
-  )
+  }, [lines, origin])
 
-  // const filteredLines = busLines.filter(
-  //   (line) =>
-  //     line.properties.origin === origin &&
-  //     line.properties.destination === destination
-  // )
-  const filteredLines = busLines.filter((line) => {
-    const matchOrigin = origin ? line.properties.origin === origin : true
-    const matchDestination = destination ? line.properties.destination === destination : true
-    return matchOrigin && matchDestination
-  })
+  const clearFilter = () => {
+    setOrigin('')
+    setDestination('')
+    setUseCurrentLocation(false)
+    toogleEndUserFilter({
+      name: 'origin-destination',
+      isActive: false,
+    })
+  }
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-full">
-      {/* Selectores */}
+    <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md w-min h-fit">
       <div className="flex flex-col gap-2">
         <label className="font-semibold" htmlFor="origen">
           Origen
         </label>
         <select
           id="origen"
-          className="border rounded px-3 py-2"
+          className={`border rounded px-3 py-2 ${useCurrentLocation ? 'bg-gray-300 cursor-not-allowed' : ''}`}
           value={origin}
           onChange={(e) => {
             setOrigin(e.target.value)
             setDestination('')
           }}
+          disabled={useCurrentLocation}
         >
           <option value="">Seleccionar origen</option>
           {origins.map((opt) => (
@@ -81,6 +93,23 @@ const BusLineSelector = () => {
             </option>
           ))}
         </select>
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="checkbox"
+            id="useLocation"
+            checked={useCurrentLocation}
+            onChange={(e) => {
+              const checked = e.target.checked
+              setUseCurrentLocation(checked)
+              if (checked) {
+                setOrigin('')
+              }
+            }}
+          />
+          <Label className="font-semibold" htmlFor="useLocation">
+            Usar mi ubicacion actual
+          </Label>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -92,7 +121,6 @@ const BusLineSelector = () => {
           className="border rounded px-3 py-2"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          // disabled={!origin}
         >
           <option value="">Seleccionar destino</option>
           {destinations
@@ -103,22 +131,21 @@ const BusLineSelector = () => {
               </option>
             ))}
         </select>
+        {useCurrentLocation && destination === '' && (
+          <p className="text-red-500 text-sm text-balance ">
+            Debe seleccionar un destino al usar su ubicación
+          </p>
+        )}
       </div>
+      {(useCurrentLocation ? destination : origin || destination) && (
+        <>
+          <Button onClick={onSearch}>Buscar líneas</Button>
 
-      {/* Botón para abrir el modal */}
-      {/* <Modal
-        type="busLines"
-        trigger={ */}
-          <Button  
-          disabled={!origin && !destination}
-          onClick={onSearch}
-          variant="default"
-          >
-            Buscar líneas
+          <Button onClick={clearFilter} variant="destructive">
+            Limpiar filtro
           </Button>
-        {/* }
-        body={<BusLineTable lines={filteredLines} />}
-      /> */}
+        </>
+      )}
     </div>
   )
 }

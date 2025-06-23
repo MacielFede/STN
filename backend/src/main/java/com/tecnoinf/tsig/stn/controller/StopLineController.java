@@ -3,6 +3,7 @@ package com.tecnoinf.tsig.stn.controller;
 import com.tecnoinf.tsig.stn.dto.StopLineRequest;
 import com.tecnoinf.tsig.stn.dto.StopLineResponse;
 import com.tecnoinf.tsig.stn.service.StopLineService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +21,12 @@ public class StopLineController {
     }
 
     @PostMapping
-    public ResponseEntity<StopLineResponse> create(@RequestBody StopLineRequest request) {
+    public ResponseEntity<StopLineResponse> create(@Valid @RequestBody StopLineRequest request) {
         return ResponseEntity.ok(stopLineService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StopLineResponse> update(@PathVariable Long id, @RequestBody StopLineRequest request) {
+    public ResponseEntity<StopLineResponse> update(@PathVariable Long id, @Valid @RequestBody StopLineRequest request) {
         return ResponseEntity.ok(stopLineService.update(id, request));
     }
 

@@ -24,8 +24,8 @@ const BusStopForm = () => {
     ) => {
       try {
         const stopContext = await streetContext({
-          lon: data.geometry.coordinates[1],
-          lat: data.geometry.coordinates[0],
+          lon: data.geometry.coordinates[0],
+          lat: data.geometry.coordinates[1],
         })
         if (!stopContext) {
           toast.error(
@@ -203,7 +203,7 @@ const BusStopForm = () => {
         />
       </label>
       <label>
-        Descripción:
+        Observaciones:
         <Input
           disabled={loadingFormAction}
           type="text"

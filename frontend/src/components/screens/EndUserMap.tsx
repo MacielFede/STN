@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  CircleMarker,
-  GeoJSON,
-  MapContainer,
-  Popup,
-  TileLayer,
-} from 'react-leaflet'
+import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
@@ -17,6 +11,7 @@ import Modal from '../atoms/Modal'
 import BusStopInfo from '../atoms/BusStopInfo'
 import BusStopLines from '../atoms/BusStopLines'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
+import OriginDestinationSelector from '../organisms/OriginDestinationSelector'
 import CommandPallete from '../atoms/CommandPallete'
 import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
@@ -29,18 +24,13 @@ import ArrowTop from '../../../public/arrow_top.svg?react'
 import ArrowDown from '../../../public/arrow_down.svg?react'
 import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
+import UserPositionIndicator from '../atoms/UserPositionIndicator'
+import StatusSelector from '../molecules/end-user/StatusSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
-import { useUserLocation } from '@/hooks/useUserLocation'
-
-const geoJsonStyle = {
-  color: 'blue',
-  weight: 3,
-  opacity: 0.8,
-}
+import { BUS_LINE_STYLES, DEFAULT_MAP_LOCATION } from '@/utils/constants'
 
 function EndUserMap() {
-  const position = useUserLocation()
   const [polygonPoints, setPolygonPoints] = useState<Array<[number, number]>>(
     [],
   )
@@ -87,7 +77,8 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
-        <OriginDestinationSelector></OriginDestinationSelector>
+        <OriginDestinationSelector />
+        <StatusSelector />
         <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
@@ -99,8 +90,8 @@ function EndUserMap() {
       </CommandPallete>
       <MapContainer
         preferCanvas
-        center={position}
-        zoom={13}
+        center={DEFAULT_MAP_LOCATION}
+        zoom={8}
         className="leaflet-container"
       >
         <TileLayer
@@ -108,21 +99,15 @@ function EndUserMap() {
           attribution="&copy; OpenStreetMap contributors"
         />
 
-        <BusStops setActiveStop={setActiveStop} />
+        <BusStops setActiveStop={setActiveStop} activeStop={activeStop} />
         {displayedRoutes.map((line) => (
-          <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
+          <GeoJSON
+            key={line.id}
+            data={line}
+            style={BUS_LINE_STYLES(line.properties.status === 'ACTIVE')}
+          />
         ))}
-        <CircleMarker
-          center={position}
-          radius={80}
-          pathOptions={{
-            color: 'skyblue',
-            fillColor: 'skyblue',
-            fillOpacity: 0.2,
-          }}
-        >
-          <Popup>Estás aquí</Popup>
-        </CircleMarker>
+        <UserPositionIndicator />
         <PolygonFilterUtilities
           isDrawing={isDrawing}
           polygonPoints={polygonPoints}
@@ -130,37 +115,34 @@ function EndUserMap() {
         />
       </MapContainer>
 
-      {(lines.length > 0 || activeStop) && (
-        <Drawer
-          open={isOpen}
-          onClose={handleCloseDrawer}
-          position="bottom"
-          className="z-3000 bg-gray-200 p-0"
-          edge
-        >
-          <DrawerHeader
-            title="STN | Ver información de paradas y recorridos seleccionados"
-            titleIcon={isOpen ? ArrowDown : ArrowTop}
-            onClick={() => setIsOpen(!isOpen)}
-            className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
+      <Drawer
+        open={isOpen}
+        onClose={handleCloseDrawer}
+        position="bottom"
+        className="z-3000 bg-gray-200 p-0"
+        edge
+      >
+        <DrawerHeader
+          title="STN | Ver información de paradas y recorridos seleccionados"
+          titleIcon={isOpen ? ArrowDown : ArrowTop}
+          onClick={() => setIsOpen(!isOpen)}
+          closeIcon={activeStop ? undefined : isOpen ? ArrowDown : ArrowTop}
+          className="cursor-pointer px-4 pt-4 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700"
+        />
+        <DrawerItems className=" max-h-50 ">
+          {activeStop && (
+            <>
+              <BusStopTable stop={activeStop} />
+              <Separator className="my-4 bg-black" decorative />
+            </>
+          )}
+          <BusLinetable
+            onDisplayRoute={handleDisplayRoute}
+            displayedRoutes={displayedRoutes}
+            activeStopId={activeStop?.properties.id}
           />
-          <DrawerItems className=" max-h-50 ">
-            {activeStop && (
-              <>
-                <BusStopTable stop={activeStop} />
-                <Separator className="my-4 bg-black" decorative />
-              
-              </>
-              
-            )}
-            <BusLinetable
-              onDisplayRoute={handleDisplayRoute}
-              displayedRoutes={displayedRoutes}
-              activeStopId={activeStop?.properties.id}
-            />
-          </DrawerItems>
-        </Drawer>
-      )}
+        </DrawerItems>
+      </Drawer>
     </>
   )
 }

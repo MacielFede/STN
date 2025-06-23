@@ -1,3 +1,5 @@
+import type { PointGeometry } from './geoserver'
+
 export type BusStopProperties = {
   id?: number
   name: string
@@ -8,6 +10,8 @@ export type BusStopProperties = {
   department: Department
   route: string
 }
+
+export type StatusOptions = BusStopProperties['status'] | ''
 
 export type StreetProperties = {
   id?: number
@@ -62,6 +66,9 @@ type FilterName =
   | 'polygon'
   | 'street'
   | 'line'
+  | 'stopLine'
+  | 'status'
+  | 'location'
 
 export type FilterData = {
   company: {
@@ -85,6 +92,15 @@ export type FilterData = {
   line: {
     id: number
     name: string
+  stopLine: {
+    busStopName: string
+  }
+  status: {
+    lineStatus: StatusOptions
+    stopStatus: StatusOptions
+  }
+  location: {
+    userLocation: PointGeometry
   }
 }
 
@@ -113,4 +129,3 @@ export type BusStopLine = {
   lineId: number,
   estimatedTime: string
 }
-

@@ -14,7 +14,7 @@ import BusLineCreator from '@/components/molecules/admin/BusLineCreator'
 import CommandPallete from '@/components/atoms/CommandPallete'
 import BusStopForm from '@/components/molecules/admin/BusStopForm'
 import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
-import { BASIC_STOP_FEATURE } from '@/utils/constants'
+import { BASIC_STOP_FEATURE, DEFAULT_MAP_LOCATION } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
@@ -114,7 +114,7 @@ const AdminMap = () => {
 
       <MapContainer
         preferCanvas={false}
-        center={[-32.5, -56.164]}
+        center={DEFAULT_MAP_LOCATION}
         zoom={8}
         scrollWheelZoom
         zoomControl={false}
@@ -132,10 +132,10 @@ const AdminMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <BusStops setActiveStop={setActiveStop} />
         {displayedRoutes.map((line) => (
           <GeoJSON key={line.id} data={line} style={geoJsonStyle} />
         ))}
+        <BusStops setActiveStop={setActiveStop} activeStop={activeStop} />
         {activeStop && !activeStop.id && (
           <NewBusStopComponent
             setNewStop={setActiveStop}

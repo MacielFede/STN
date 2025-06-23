@@ -1,14 +1,19 @@
-import type { EndUserFilter, FilterData } from '@/models/database'
-import type { BBox } from '@/models/geoserver'
+import * as turf from '@turf/turf'
+import type {
+  EndUserFilter,
+  FilterData,
+  StatusOptions,
+} from '@/models/database'
+import type { BBox, BusLineFeature, PointGeometry } from '@/models/geoserver'
 
 
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
-  sw && ne ? `BBOX(geometry, ${sw.lat}, ${sw.lng}, ${ne.lat}, ${ne.lng})` : ''
+  sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
+export const buildStopStatusFilter = (status: StatusOptions) =>
+  status ? `status='${status}'` : ''
 
-export const buildCqlFilter = (filters: any) => {
-  if (!Array.isArray(filters)) return ''
-
+export const buildCqlFilter = (filters: Array<string>) => {
   return filters.length > 1
     ? filters.join(' AND ')
     : filters.length === 1
@@ -16,19 +21,22 @@ export const buildCqlFilter = (filters: any) => {
       : ''
 }
 
-
 function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
 }
 
-export function transformKeysToCamelCase(obj: any): any {
+export function transformKeysToCamelCase<T>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(transformKeysToCamelCase)
   } else if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      acc[toCamelCase(key)] = transformKeysToCamelCase(value)
-      return acc
-    }, {} as any)
+    return Object.entries(obj).reduce(
+      (acc, [key, value]) => {
+        ;(acc as { [key: string]: unknown })[toCamelCase(key)] =
+          transformKeysToCamelCase(value)
+        return acc
+      },
+      {} as { [key: string]: unknown },
+    )
   }
   return obj
 }
@@ -46,7 +54,7 @@ function latLngsToWktPolygon(points: Array<[number, number]>): string {
   return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
 }
 
-export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
+export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   switch (name) {
     case 'company':
       return `company_id=${(data as FilterData['company']).id}`
@@ -56,21 +64,23 @@ export function getCqlFilterFromData({ name, data }: HalfEndUserFilter) {
         ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
         : `schedule = '${schedule.lowerTime}'`
     }
-    case 'line':
 
     case 'polygon': {
       const polygon = data as FilterData['polygon']
       const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
       return `INTERSECTS(geometry, ${wktPolygon})`
     }
-
     case 'origin-destination': {
       const { origin, destination } = data as FilterData['origin-destination']
       const originFilter = origin ? `origin='${origin}'` : ''
-      const destinationFilter = destination ? `destination='${destination}'` : ''
+      const destinationFilter = destination
+        ? `destination='${destination}'`
+        : ''
       return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
     }
 
+    case 'status':
+      return `status='${(data as FilterData['status']).lineStatus}'`
     case 'street': // No puede ir por aca este filtro
     default:
       return ''
@@ -108,3 +118,21 @@ export function toCQLTime(time: string): string {
   // Add ":00" if only HH:MM is provided
   return time.length === 5 ? `${time}:00` : time
 }
+
+export const filterAndSortLinesByDistance = (
+  userPoint: PointGeometry,
+  lines: Array<BusLineFeature>,
+  radius = 1,
+) =>
+  lines
+    .map((line) => {
+      const distance = turf.pointToLineDistance(
+        [userPoint.coordinates[1], userPoint.coordinates[0]],
+        turf.lineString(line.geometry.coordinates),
+        { units: 'kilometers' },
+      )
+      return { line, distance }
+    })
+    .filter((entry) => entry.distance <= radius)
+    .sort((a, b) => a.distance - b.distance)
+    .map((entry) => entry.line)
