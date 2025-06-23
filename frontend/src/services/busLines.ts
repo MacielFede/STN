@@ -57,7 +57,7 @@ export const getLinesInStreet = async (streetName?: string, km = '') => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
     await geoApi.get('', {
       params: {
-        typeName: `${GEO_WORKSPACE}:bus_lines_in_streets${km ? '_km' : ''}`,
+        typeName: `${GEO_WORKSPACE}:bus_lines_by_street${km ? '_km' : ''}`,
         viewparams: `street_name:${streetName}${km ? `;km_value:${km}` : ''}`,
       },
     })
