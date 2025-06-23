@@ -103,14 +103,14 @@ export function useBusLineCreation(): BusLineCreationType {
         const origin = points[0];
         const destination = points[points.length - 1];
 
-        const cqlFilter = `DWITHIN(geometry, POINT(${origin[1]} ${origin[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+        const cqlFilter = `DWITHIN(geometry, POINT(${origin[0]} ${origin[1]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
         const originData = await _getStops(cqlFilter);
         if (!originData || originData.length === 0) {
             toast.error('Por favor, asegúrate de que el origen de la línea sea una parada válida.');
             setMode('drawing');
             throw new Error('No valid origin stop found.');
         }
-        const cqlFilterDest = `DWITHIN(geometry, POINT(${destination[1]} ${destination[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+        const cqlFilterDest = `DWITHIN(geometry, POINT(${destination[0]} ${destination[1]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
         const destinationData = await _getStops(cqlFilterDest);
         if (!destinationData || destinationData.length === 0) {
             toast.error('Por favor, asegúrate de que el destino de la línea sea una parada válida.');

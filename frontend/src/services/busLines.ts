@@ -3,6 +3,7 @@ import type { BusStopLine } from '../models/database'
 import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '../models/geoserver'
 import { api, geoApi } from '@/api/config'
 import {
+  DISTANCE_BETWEEN_LINE_AND_STREET,
   DISTANCE_BETWEEN_STOPS_AND_STREET,
   GEO_WORKSPACE,
 } from '@/utils/constants'
@@ -111,7 +112,7 @@ export const isOriginStopOnStreet = async (
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
-        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLat} ${lineLon}), 20, meters) AND id = ${originStop.properties.id}`,
+        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLon} ${lineLat}), 20, meters) AND id = ${originStop.properties.id}`,
       },
     })
 
@@ -128,7 +129,7 @@ export const isDestinationStopOnStreet = async (
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
-        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLat} ${lineLon}), 20, meters) AND id = ${destinationStop.properties.id}`,
+        CQL_FILTER: `DWITHIN(geometry, POINT(${lineLon} ${lineLat}), 20, meters) AND id = ${destinationStop.properties.id}`,
       },
     })
 
@@ -155,7 +156,7 @@ export const isIntermediateStopOnStreet = async (
     return false
   }
 
-  const wkt = `LINESTRING(${intermediateDensified.map(coord => `${coord[1]} ${coord[0]}`).join(', ')})`
+  const wkt = `LINESTRING(${intermediateDensified.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
     await geoApi.get('', {
@@ -190,18 +191,22 @@ function densifyLineString(
   return densified
 }
 
-const streetPointContext = async ({
+export const streetPointContext = async ({
   lon,
   lat,
+  isStop = false,
 }: {
   lon: number
   lat: number
+  isStop?: boolean
 }) => {
+  const stopCQLFilter = `DWITHIN(geom, POINT(${lat} ${lon}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
+  const lineCQLFilter = `DWITHIN(geom, POINT(${lon} ${lat}), ${DISTANCE_BETWEEN_LINE_AND_STREET}, meters)`
   const { data }: AxiosResponse<FeatureCollection<StreetFeature>> =
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_street`,
-        CQL_FILTER: `DWITHIN(geom, POINT(${lon} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`,
+        CQL_FILTER: isStop ? stopCQLFilter : lineCQLFilter,
       },
     })
 
@@ -267,7 +272,7 @@ export const getLineFromGraphHopper = async (
 }
 
 export async function fetchBusLinesByPoint([lng, lat]: [number, number]) {
-  const cql = `DWITHIN(geometry, POINT(${lng} ${lat}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
+  const cql = `DWITHIN(geometry, POINT(${lat} ${lng}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`
   const params = {
     typename: `${GEO_WORKSPACE}:ft_bus_line`,
     outputFormat: 'application/json',

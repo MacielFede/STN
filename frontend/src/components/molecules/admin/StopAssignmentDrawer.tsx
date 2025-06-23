@@ -320,7 +320,7 @@ const StopAssignmentDrawer = ({
             if (busLineStep !== 'select-intermediate' || !newBusLine?.geometry) return;
 
             const { lat, lng } = e.latlng
-            const linesNearby = await fetchBusLinesByPoint([lng, lat]);
+            const linesNearby = await fetchBusLinesByPoint([lat, lng]);
             if (!linesNearby || linesNearby.length === 0) {
                 toast.error("Por favor, crea una parada en la trayectoria de la línea");
                 return;
@@ -440,13 +440,13 @@ const StopAssignmentDrawer = ({
             const destination = points[points.length - 1];
             if (!origin || !destination) return;
 
-            const cqlFilter = `DWITHIN(geometry, POINT(${origin[1]} ${origin[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+            const cqlFilter = `DWITHIN(geometry, POINT(${origin[0]} ${origin[1]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
             const originData = await _getStops(cqlFilter);
             if (!originData || originData.length === 0) {
                 toast.error("No se encontró una parada de origen cerca del punto inicial.");
                 return;
             }
-            const destinationCqlFilter = `DWITHIN(geometry, POINT(${destination[1]} ${destination[0]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
+            const destinationCqlFilter = `DWITHIN(geometry, POINT(${destination[0]} ${destination[1]}), ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters)`;
             const destinationData = await _getStops(destinationCqlFilter);
             if (!destinationData || destinationData.length === 0) {
                 toast.error("No se encontró una parada de destino cerca del punto final.");

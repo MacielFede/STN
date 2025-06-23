@@ -4,14 +4,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
-import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
+import type { PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
 import { createStop, deleteStop, updateStop } from '@/services/busStops'
-import { streetContext } from '@/services/street'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { Label } from 'flowbite-react'
+import { streetPointContext } from '@/services/busLines'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
 
@@ -24,9 +24,10 @@ const BusStopForm = () => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetContext({
+        const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[0],
           lat: data.geometry.coordinates[1],
+          isStop: true,
         })
         if (!stopContext) {
           toast.error(
@@ -82,9 +83,10 @@ const BusStopForm = () => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetContext({
+        const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[1],
           lat: data.geometry.coordinates[0],
+          isStop: true,
         })
         if (!stopContext) {
           toast.error(

@@ -160,7 +160,7 @@ const BusStops = ({
               return;
             }
             if (busLineStep === 'creation') {
-              addPoint(stop.geometry.coordinates[1], stop.geometry.coordinates[0])
+              addPoint(stop.geometry.coordinates[0], stop.geometry.coordinates[1])
               return;
             }
             if (busLineStep === 'select-intermediate') {
