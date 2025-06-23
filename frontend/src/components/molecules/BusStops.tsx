@@ -135,19 +135,27 @@ const BusStops = ({
   //console.log('Filter CQL:', busStopsCqlFilter)
   //console.log('Stops:', stops)
 
-  return stops?.map((stop) => {
-    return (
-      <Marker
-        key={stop.id || stop.properties.id}
-        position={stop.geometry.coordinates}
-        icon={
-          stop.properties.status === 'ACTIVE'
-            ? ActiveBusStopIcon
-            : InactiveBusStopIcon
-        }
-        eventHandlers={{
-          click: () => {
-            if (newBusLine === null) {
+  return stops && stops.length > 0
+    ? stops.map((stop) => {
+      return (
+        <Marker
+          key={stop.id || stop.properties.id}
+          position={
+            activeStop && stop.properties.id === activeStop.properties.id
+              ? [
+                activeStop.geometry.coordinates[1],
+                activeStop.geometry.coordinates[0],
+              ]
+              : [stop.geometry.coordinates[1], stop.geometry.coordinates[0]]
+          }
+          icon={
+            stop.properties.status === 'ACTIVE'
+              ? ActiveBusStopIcon
+              : InactiveBusStopIcon
+          }
+          eventHandlers={{
+            click: () => {
+              if (newBusLine === null) {
               setActiveStop(stop)
               return;
             }
@@ -159,37 +167,62 @@ const BusStops = ({
               handleAssociationClick(stop)
               return;
             }
-          },
+            },
+            dragend: (event) => {
+              const position = event.target.getLatLng()
+              if (position)
+                setActiveStop((prevState) => {
+                  if (prevState)
+                    return {
+                      ...prevState,
+                      geometry: {
+                        type: 'Point',
+                        coordinates: [position.lng, position.lat],
+                      },
+                    }
+                  else
+                    return {
+                      ...stop,
+                      geometry: {
+                        type: 'Point',
+                        coordinates: [position.lng, position.lat],
+                      },
+                    }
+                })
+            },
+          }}
+          draggable={location.pathname === ADMIN_PATHNAME}
+        />
+      )
+    })
+    : activeStop && (
+      <Marker
+        key={activeStop.id || activeStop.properties.id}
+        position={[
+          activeStop.geometry.coordinates[1],
+          activeStop.geometry.coordinates[0],
+        ]}
+        icon={
+          activeStop.properties.status === 'ACTIVE'
+            ? ActiveBusStopIcon
+            : InactiveBusStopIcon
+        }
+        eventHandlers={{
           dragend: (event) => {
             const position = event.target.getLatLng()
             if (position)
-              setActiveStop((prevState) => {
-                if (prevState)
-                  return {
-                    ...prevState,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lat, position.lng]
-                    },
-                  }
-                else
-                  return {
-                    ...stop,
-                    geometry: {
-                      type: 'Point',
-                      coordinates: [position.lat, position.lng]
-                    },
-                  }
+              setActiveStop({
+                ...activeStop,
+                geometry: {
+                  type: 'Point',
+                  coordinates: [position.lng, position.lat],
+                },
               })
           },
         }}
-        draggable={
-          newBusLine === null &&
-          location.pathname === ADMIN_PATHNAME
-        }
-      ></Marker>
+        draggable={location.pathname === ADMIN_PATHNAME}
+      />
     )
-  })
 }
 
 export default BusStops
