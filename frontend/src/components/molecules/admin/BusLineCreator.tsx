@@ -265,6 +265,7 @@ interface BusLineGuideProps {
 
 const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, mode, handleReset, maxPoints = 10 }) => {
   const {
+    newBusLine,
     busLineStep,
   } = useBusLineContext();
   const finished = mode === 'finished';
@@ -287,6 +288,8 @@ const BusLineGuide: React.FC<BusLineGuideProps> = ({ points, mode, handleReset, 
       </div>
     );
   }
+
+  if (newBusLine?.geometry?.coordinates?.length) return;
 
   return (
     <div className="absolute top-2 left-2 z-[1100] bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-lg max-w-xs text-sm border border-blue-200">

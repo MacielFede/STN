@@ -2,12 +2,13 @@ import { Button, Drawer } from 'flowbite-react'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useEffect, useState, useMemo } from 'react'
-import { GeoJSON } from 'react-leaflet'
+import { GeoJSON, useMap } from 'react-leaflet'
 import { _getLines, deleteBusLine, deleteStopLine, getStopLineByBusLineId } from '@/services/busLines'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import { BASIC_LINE_FEATURE } from '@/utils/constants'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
+import { geometry } from '@turf/turf'
 
 // Paleta de colores base
 const ROUTE_COLORS = [
@@ -31,6 +32,18 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
     const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, setPoints } = useBusLineContext()
     const queryClient = useQueryClient()
     const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
+    const map = useMap()
+
+    const travelToGeometry = (geometry: number[][]) => {
+        const latLngs = geometry
+            .map(([lng, lat]: [number, number]) => [lat, lng])
+            .filter((coord): coord is [number, number] =>
+                Array.isArray(coord) && coord.length === 2 &&
+                typeof coord[0] === 'number' && typeof coord[1] === 'number'
+            );
+
+        map.fitBounds(latLngs as [number, number][]);
+    }
 
     // Asigna un color único a cada línea visualizada
     const routeColors = useMemo(() => {
@@ -86,6 +99,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
         setNewBusLine(line);
         setBusLineStep('creation');
         setPoints(line.geometry.coordinates);
+        travelToGeometry(line.geometry.coordinates);
     }
 
     const handleViewLine = (line: BusLineFeature) => {
@@ -104,6 +118,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
         setNewBusLine(line);
         setBusLineStep('show-selection-popup');
         setPoints(line.geometry.coordinates);
+        travelToGeometry(line.geometry.coordinates);
     }
 
     const fetchBusLines = async () => {
