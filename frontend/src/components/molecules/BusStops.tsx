@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { Marker, useMapEvents } from 'react-leaflet'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useLocation } from '@tanstack/react-router'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
@@ -31,23 +31,32 @@ const BusStops = ({
   activeStop: BusStopFeature | null
 }) => {
   const { setUserBBox } = useGeoContext()
+  const currentZoom = useRef<number | null>(null)
   const map = useMapEvents({
     moveend: () => {
-      const bounds = map.getBounds()
-      const sw = bounds.getSouthWest()
-      const ne = bounds.getNorthEast()
-      setUserBBox({ sw, ne })
+      updateMapBBox()
+    },
+    zoomend: () => {
+      const newZoom = map.getZoom()
+      if (currentZoom.current && currentZoom.current > newZoom) {
+        updateMapBBox()
+      }
+      currentZoom.current = newZoom
     },
   })
   const { stops } = useStops(true)
   const location = useLocation()
 
-  useEffect(() => {
+  const updateMapBBox = useCallback(() => {
     const bounds = map.getBounds()
     const sw = bounds.getSouthWest()
     const ne = bounds.getNorthEast()
     setUserBBox({ sw, ne })
   }, [map, setUserBBox])
+
+  useEffect(() => {
+    updateMapBBox()
+  }, [updateMapBBox])
 
   return stops && stops.length > 0
     ? stops.map((stop) => {
