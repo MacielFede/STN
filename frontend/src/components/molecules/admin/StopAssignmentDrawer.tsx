@@ -10,6 +10,7 @@ import { BASIC_STOP_FEATURE, DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/c
 import { useMapEvents } from 'react-leaflet'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { getHoursAndMinutes } from '@/utils/helpers'
+import { lineString, point, pointToLineDistance } from '@turf/turf'
 
 const StopAssignmentDrawer = ({
     open,
@@ -319,24 +320,24 @@ const StopAssignmentDrawer = ({
         click: async (e) => {
             if (busLineStep !== 'select-intermediate' || !newBusLine?.geometry) return;
 
-            const { lat, lng } = e.latlng
-            const linesNearby = await fetchBusLinesByPoint([lat, lng]);
-            if (!linesNearby || linesNearby.length === 0) {
+            const { lat, lng } = e.latlng;
+
+            const clickedPoint = point([lng, lat]);
+            const busLine = lineString(newBusLine.geometry.coordinates);
+            const distance = pointToLineDistance(clickedPoint, busLine, { units: 'meters' });
+
+            if (distance > DISTANCE_BETWEEN_STOPS_AND_STREET) {
                 toast.error("Por favor, crea una parada en la trayectoria de la línea");
                 return;
             }
-            const isCorrectLine = linesNearby.filter(line => line.properties.id === newBusLine.properties.id);
-            if (isCorrectLine.length === 0) {
-                toast.error("Por favor, crea una parada en la trayectoria de la línea");
-                return;
-            }
+
             setStop({
                 ...BASIC_STOP_FEATURE,
                 geometry: {
                     type: "Point",
                     coordinates: [lat, lng],
                 },
-            })
+            });
         },
     })
 
@@ -462,6 +463,26 @@ const StopAssignmentDrawer = ({
                 stop: destinationData[0],
                 estimatedTimes: [],
             });
+
+            const stops = [...originData, ...destinationData];
+
+            debugger;
+
+            const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
+                id => !stops.some(stop => stop.properties.id === Number(id))
+            );
+
+            if (missingSelectedStopIds?.length) {
+                const missingStops = await _getStops(`id IN (${missingSelectedStopIds.join(',')})`);
+                for (const stop of missingStops) {
+                    setIntermediateStops(prev => [
+                        ...prev,
+                        { stop, estimatedTimes: [] }
+                    ]);
+                    cacheStop(stop);
+                }
+            }
+
         }
 
         // If bus line is in edit mode
