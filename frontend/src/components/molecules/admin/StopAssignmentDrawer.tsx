@@ -466,8 +466,6 @@ const StopAssignmentDrawer = ({
 
             const stops = [...originData, ...destinationData];
 
-            debugger;
-
             const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
                 id => !stops.some(stop => stop.properties.id === Number(id))
             );

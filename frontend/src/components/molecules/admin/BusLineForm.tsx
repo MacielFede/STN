@@ -40,7 +40,6 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       try {
         const stopContext = await isBusLineOnStreets(data.geometry);
         if (!stopContext.status || !newBusLine) {
-          debugger;
           setErrorPoints(stopContext.errorPoints);
           toast.error(
             'Error intentando crear la ruta, recorrido mal formado o calles no encontradas',
