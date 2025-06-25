@@ -28,6 +28,7 @@ export type StreetProperties = {
 export type BusLineProperties = {
   id: number
   number: string
+  description: string
   status: 'ACTIVE' | 'INACTIVE'
   origin: string
   destination: string
@@ -123,9 +124,9 @@ export type LoginTransactionResponse = {
 
 
 export type BusStopLine = {
-
   id: number,
   stopId: string,
   lineId: number,
-  estimatedTime: string
+  estimatedTime: string,
+  isEnabled: boolean,
 }

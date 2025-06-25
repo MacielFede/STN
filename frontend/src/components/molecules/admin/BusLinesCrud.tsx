@@ -34,7 +34,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
     const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
     const map = useMap()
 
-    const travelToGeometry = (geometry: number[][]) => {
+    const travelToGeometry = (geometry: number[][], type: string = 'fit') => {
         const latLngs = geometry
             .map(([lng, lat]: [number, number]) => [lat, lng])
             .filter((coord): coord is [number, number] =>
@@ -42,7 +42,16 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                 typeof coord[0] === 'number' && typeof coord[1] === 'number'
             );
 
-        map.fitBounds(latLngs as [number, number][]);
+        switch (type) {
+            case 'fit':
+                map.fitBounds(latLngs as [number, number][]);
+                break;
+            default:
+                map.flyToBounds(latLngs as [number, number][], {
+                    padding: [50, 50],
+                });
+                break;
+        }
     }
 
     // Asigna un color único a cada línea visualizada
@@ -102,7 +111,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
         travelToGeometry(line.geometry.coordinates);
     }
 
-    const handleViewLine = (line: BusLineFeature) => {
+    const handleViewLine = (line: BusLineFeature, type: string = 'show') => {
         setDisplayedRoutes((prev) => {
             const exists = prev.some((r) => r.id === line.id);
             if (exists) {
@@ -111,6 +120,8 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                 return [...prev, line];
             }
         });
+        if (type === 'hide') return;  
+        travelToGeometry(line.geometry.coordinates, 'fly');
     }
 
     const handleEditAssociations = (line: BusLineFeature) => {
@@ -183,7 +194,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                                             color={displayedRoutes.some(r => r.id === line.id) ? 'gray' : 'blue'}
                                             size="xs"
                                             style={{ minWidth: '100px', border: routeColors[line.id] ? `2px solid ${routeColors[line.id]}` : '1px solid #ccc' }}
-                                            onClick={() => handleViewLine(line)}
+                                            onClick={() => handleViewLine(line, displayedRoutes.some(r => r.id === line.id) ? 'hide' : 'show')}
                                         >
                                             {displayedRoutes.some(r => r.id === line.id) ? 'Ocultar' : 'Ver Recorrido'}
                                         </Button>

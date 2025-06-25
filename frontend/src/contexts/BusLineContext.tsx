@@ -33,10 +33,10 @@ type BusLineContextType = {
     setOriginStop: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>
     destinationStop: { stop: BusStopFeature | null, estimatedTimes: Array<string> }
     setDestinationStop: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>
-    intermediateStops: { stop: BusStopFeature | null, estimatedTimes: Array<string> }[]
-    setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }[]>>
+    intermediateStops: { stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }[]
+    setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }[]>>
     sortIntermediateStopsByGeometry: (
-        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[],  status?: boolean }>,
     ) => Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
     cleanStopFromAssignments: (
         stopId: number,
@@ -64,7 +64,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [canSave, setCanSave] = useState<boolean>(false)
     const [originStop, setOriginStop] = useState<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>({ stop: null, estimatedTimes: [] })
     const [destinationStop, setDestinationStop] = useState<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>({ stop: null, estimatedTimes: [] })
-    const [intermediateStops, setIntermediateStops] = useState<Array<{ stop: BusStopFeature | null, estimatedTimes: Array<string> }>>([]);
+    const [intermediateStops, setIntermediateStops] = useState<Array<{ stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }>>([]);
     const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
     const [pendingGeometry, setPendingGeometry] = useState(null)
     const featureGroupRef = useRef<L.FeatureGroup>(null)
@@ -179,7 +179,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, [newBusLine, updateBusLineData, finishEditingLine]);
 
     const sortIntermediateStopsByGeometry = (
-        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[],  status?: boolean }>
     ) => {
         return [...intermediateStops].sort((a, b) => {
             const aCoord = a.stop?.geometry?.coordinates;

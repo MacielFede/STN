@@ -46,12 +46,14 @@ export const deleteBusLine = async (lineId: string) => {
 export const createStopLine = async (
   stopId: string,
   lineId: string,
-  estimatedTime: string
+  estimatedTime: string,
+  isEnabled: boolean = true
 ) => {
   return await api.post('/stop-lines', {
     stopId,
     lineId,
     estimatedTime,
+    isEnabled,
   })
 }
 
@@ -59,12 +61,14 @@ export const updateStopLine = async (
   stopLineId: string,
   stopId: string,
   lineId: string,
-  estimatedTime: string
+  estimatedTime: string,
+  isEnabled: boolean = true
 ) => {
   return await api.put(`/stop-lines/${stopLineId}`, {
     stopId,
     lineId,
     estimatedTime,
+    isEnabled,
   })
 }
 
@@ -140,13 +144,11 @@ export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature
 ): Promise<boolean> => {
-  const densified = densifyLineString(busLine.geometry.coordinates)
-
   const [originLon, originLat] = busLine.geometry.coordinates[0]
   const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
 
   const threshold = 0.0003
-  const intermediateDensified = densified.filter(([lon, lat]) => {
+  const intermediateDensified = busLine.geometry.coordinates.filter(([lon, lat]) => {
     const distToOrigin = Math.sqrt((lon - originLon) ** 2 + (lat - originLat) ** 2)
     const distToDest = Math.sqrt((lon - destLon) ** 2 + (lat - destLat) ** 2)
     return distToOrigin > threshold && distToDest > threshold

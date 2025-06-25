@@ -193,6 +193,24 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           className="border-black"
         />
       </label>
+       <label>
+        Descripcion:
+        <Input
+          disabled={loadingFormAction}
+          type="text"
+          value={line.properties.description}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            updateBusLineData({
+              ...line,
+              properties: {
+                ...line.properties,
+                description: e.target.value,
+              },
+            })
+          }
+          className="border-black"
+        />
+      </label>
       <label>
         Horario de salida:
         <Input

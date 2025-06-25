@@ -30,7 +30,7 @@ export type BusLineCreationType = {
     drawControlRef: React.MutableRefObject<L.Control.Draw | null>;
 };
 
-const MAX_POINTS = 10;
+const MAX_POINTS = 5;
 
 export function useBusLineCreation(): BusLineCreationType {
     const [points, setPoints] = useState<[number, number][]>([]);

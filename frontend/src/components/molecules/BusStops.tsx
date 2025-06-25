@@ -54,8 +54,8 @@ const BusStops = ({
     if (busLineStep === 'show-selection-popup') return
     const cleaned = cleanStopFromAssignments(
       id,
-      originStop.stop?.id,
-      destinationStop.stop?.id,
+      originStop?.stop?.id,
+      destinationStop?.stop?.id,
       intermediateStops.map((intermediate) => intermediate.stop?.properties.id ?? null)
     );
 
@@ -163,7 +163,7 @@ const BusStops = ({
               addPoint(stop.geometry.coordinates[0], stop.geometry.coordinates[1])
               return;
             }
-            if (busLineStep === 'select-intermediate') {
+            if (busLineStep === 'select-intermediate' || busLineStep === 'select-destination' || busLineStep === 'select-origin') {
               handleAssociationClick(stop)
               return;
             }

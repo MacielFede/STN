@@ -54,7 +54,7 @@ const StopAssignmentDrawer = ({
     const areStopTimesOrdered = () => {
         const allStops = [originStop, ...intermediateStops, destinationStop];
 
-        const timesLength = originStop.estimatedTimes.length;
+        const timesLength = originStop?.estimatedTimes.length;
         if (
             timesLength === 0 ||
             allStops.some(stop => stop.estimatedTimes.length !== timesLength) ||
@@ -268,10 +268,11 @@ const StopAssignmentDrawer = ({
                         String(assoc.id),
                         assignment.stopId,
                         assignment.busLineId,
-                        assignment.estimatedTime
+                        assignment.estimatedTime,
+                        true,
                     );
                 } else {
-                    return createStopLine(assignment.stopId, assignment.busLineId, assignment.estimatedTime);
+                    return createStopLine(assignment.stopId, assignment.busLineId, assignment.estimatedTime, true);
                 }
             });
 
@@ -301,6 +302,16 @@ const StopAssignmentDrawer = ({
             if (someOrphaned) {
                 toast.warning("Algunas paradas quedaron huérfanas", {
                     autoClose: 8000,
+                });
+            }
+
+            for (const stop of stops) {
+                if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue;
+
+                stop.stop.properties.status = 'ACTIVE';
+                await updateStop({
+                    ...stop.stop.properties,
+                    geometry: stop.stop.geometry,
                 });
             }
 
@@ -344,36 +355,6 @@ const StopAssignmentDrawer = ({
     useEffect(() => {
         if (!open || !newBusLine || activeStop) return;
 
-        const verifyPossibleOrphanStops = async () => {
-            const stops = [originStop, destinationStop, ...intermediateStops];
-            const associations = await getStopLineByBusLineId(String(newBusLine.properties.id));
-            const associationMap = new Map<string, any>();
-            associations.forEach(assoc => {
-                associationMap.set(`${assoc.stopId}_${assoc.estimatedTime}`, assoc);
-            });
-
-            const newAssignments = stops.flatMap(stop =>
-                stop.estimatedTimes.map(estimatedTime => ({
-                    stopId: String(stop.stop?.properties.id),
-                    busLineId: String(newBusLine.properties.id),
-                    estimatedTime: String(estimatedTime),
-                }))
-            );
-            const newAssignmentKeys = new Set(
-                newAssignments.map(a => `${a.stopId}_${a.estimatedTime}`)
-            );
-
-            const toDeleteAssociations = associations.filter(assoc => {
-                return !newAssignmentKeys.has(`${assoc.stopId}_${assoc.estimatedTime}`);
-            });
-
-            if (toDeleteAssociations.length === 0) return;
-
-            // toast.warning(`Se desasociará/n ${toDeleteAssociations.length} parada/s no asociada/s a ninguna línea.`, {
-            //     autoClose: 8000,
-            // });
-        };
-
         const fetchAssociations = async () => {
             const busStopsForLine = await getStopLineByBusLineId(String(newBusLine?.properties.id));
             if (!busStopsForLine || busStopsForLine.length === 0) return;
@@ -388,7 +369,7 @@ const StopAssignmentDrawer = ({
 
             let newOrigin = null;
             let newDestination = null;
-            let newIntermediates: Array<{ stop: any, estimatedTimes: string[] }> = [];
+            let newIntermediates: Array<{ stop: any, estimatedTimes: string[], status: boolean }> = [];
 
             const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
                 id => !stopsFromGeoServer.has(Number(id))
@@ -400,6 +381,7 @@ const StopAssignmentDrawer = ({
                 }
             }
             for (const [id, stop] of stopsFromGeoServer.entries()) {
+                const stopLine = busStopsForLine.find(assoc => Number(assoc.stopId) === id);
                 const estimatedTimes = busStopsForLine
                     .filter(assoc => Number(assoc.stopId) === id)
                     .map(assoc => assoc.estimatedTime)
@@ -411,9 +393,22 @@ const StopAssignmentDrawer = ({
                 } else if (await isDestinationStopOnStreet(stop, newBusLine)) {
                     newDestination = { stop, estimatedTimes };
                     cacheStop(stop);
-                } else if (await isIntermediateStopOnStreet(stop, newBusLine)) {
-                    newIntermediates.push({ stop, estimatedTimes });
+                } else {
+                    if (stopLine?.isEnabled && !await isIntermediateStopOnStreet(stop, newBusLine)) {
+                        await updateStopLine(
+                            String(stopLine?.id),
+                            String(stopLine?.stopId),
+                            String(newBusLine.properties.id),
+                            stopLine?.estimatedTime || '9:00:00',
+                            false
+                        );
+                        newIntermediates.push({ stop, estimatedTimes, status: false });
+                        cacheStop(stop);
+                        return;
+                    }
+                    newIntermediates.push({ stop, estimatedTimes, status: stopLine?.isEnabled || false });
                     cacheStop(stop);
+
                 }
             }
 
@@ -431,8 +426,8 @@ const StopAssignmentDrawer = ({
                 });
             }
 
-            if (newOrigin) setOriginStop(newOrigin);
-            if (newDestination) setDestinationStop(newDestination);
+            setOriginStop(newOrigin ?? { stop: null, estimatedTimes: [] });
+            setDestinationStop(newDestination ?? { stop: null, estimatedTimes: [] });
             setIntermediateStops(newIntermediates);
         };
 
@@ -485,7 +480,6 @@ const StopAssignmentDrawer = ({
 
         // If bus line is in edit mode
         if (newBusLine?.properties?.id) {
-            verifyPossibleOrphanStops();
             fetchAssociations();
         }
         else {
@@ -522,11 +516,19 @@ const StopAssignmentDrawer = ({
                     <div
                         className={`p-2 rounded ${busLineStep === "select-origin" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
+                        {!originStop?.stop?.properties?.id && (
+                            <Button
+                                variant={busLineStep === "select-origin" ? "default" : "outline"}
+                                onClick={() => setBusLineStep("select-origin")}
+                            >
+                                Seleccionar origen
+                            </Button>
+                        )}
                         <p className={`font-semibold ${busLineStep === "select-origin" ? "text-blue-800" : ""}`}>Origen:</p>
-                        <div className={getStopStyle(originStop.stop?.properties?.id)}>
-                            {selectedStops.has(originStop.stop?.properties?.id) ? (
+                        <div className={getStopStyle(originStop?.stop?.properties?.id)}>
+                            {selectedStops.has(originStop?.stop?.properties?.id) ? (
                                 <>
-                                    <p>{selectedStops.get(originStop.stop?.properties?.id)?.properties.name}</p>
+                                    <p>{selectedStops.get(originStop?.stop?.properties?.id)?.properties.name}</p>
                                     <p className="text-xs text-gray-500">{selectedStops.get(originStop.stop?.properties?.id)?.properties.description}</p>
                                     <p className="text-xs text-gray-500">Refugio: {selectedStops.get(originStop.stop?.properties?.id)?.properties.hasShelter ? "Sí" : "No"}</p>
 
@@ -595,21 +597,23 @@ const StopAssignmentDrawer = ({
                                 intermediateStops.map((stop, stopIndex) => {
                                     if (!stop || !stop.stop) return null;
                                     return (
-                                        <li key={stopIndex} className="flex flex-col bg-blue-50 p-2 rounded border border-blue-300">
+                                        <li key={stopIndex} className={`flex flex-col ${stop?.status ? 'bg-blue-50' : 'bg-gray-300'} p-2 rounded border border-blue-300`}>
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-sm font-medium">
                                                     {selectedStops.get(stop.stop.properties.id)?.properties.name || `Parada ${stop.stop.properties.id}`}
                                                 </span>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => {
-                                                        setIntermediateStops(prev => prev.filter((_, index) => index !== stopIndex));
-                                                        cacheStopRemove(stop?.stop?.properties?.id);
-                                                    }}
-                                                >
-                                                    ❌
-                                                </Button>
+                                                {stop.status && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => {
+                                                            setIntermediateStops(prev => prev.filter((_, index) => index !== stopIndex));
+                                                            cacheStopRemove(stop?.stop?.properties?.id);
+                                                        }}
+                                                    >
+                                                        ❌
+                                                    </Button>
+                                                )}
                                             </div>
                                             <p className="text-xs text-gray-500">{selectedStops.get(stop.stop.properties.id)?.properties.description}</p>
                                             <p className="text-xs text-gray-500">Refugio: {selectedStops.get(stop.stop.properties.id)?.properties.hasShelter ? "Sí" : "No"}</p>
@@ -617,18 +621,21 @@ const StopAssignmentDrawer = ({
                                             <div className="mt-2">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className="text-sm font-medium">Horarios estimados:</label>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => addEstimatedTime('intermediate', stopIndex)}
-                                                    >
-                                                        + Horario
-                                                    </Button>
+                                                    {stop?.status && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => addEstimatedTime('intermediate', stopIndex)}
+                                                        >
+                                                            + Horario
+                                                        </Button>
+                                                    )}
                                                 </div>
                                                 {stop.estimatedTimes.map((time, timeIndex) => (
                                                     <div key={timeIndex} className="flex gap-2 mb-2">
                                                         <Input
                                                             type="time"
+                                                            disabled={!stop.status}
                                                             value={time ? time.substring(0, 5) : ""}
                                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                                 updateEstimatedTime('intermediate', timeIndex, e.target.value, stopIndex)
@@ -646,7 +653,7 @@ const StopAssignmentDrawer = ({
                                                         )}
                                                     </div>
                                                 ))}
-                                                {stop.estimatedTimes.length === 0 && (
+                                                {stop.status && stop.estimatedTimes.length === 0 && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -669,9 +676,17 @@ const StopAssignmentDrawer = ({
                     <div
                         className={`p-2 rounded ${busLineStep === "select-destination" ? "bg-blue-100 border-l-4 border-blue-500" : ""}`}
                     >
+                        {!destinationStop?.stop?.properties?.id && (
+                            <Button
+                                variant={busLineStep === "select-destination" ? "default" : "outline"}
+                                onClick={() => setBusLineStep("select-destination")}
+                            >
+                                Seleccionar destino
+                            </Button>
+                        )}
                         <p className={`font-semibold ${busLineStep === "select-destination" ? "text-blue-800" : ""}`}>Destino:</p>
-                        <div className={getStopStyle(destinationStop.stop?.properties?.id)}>
-                            {selectedStops.has(destinationStop.stop?.properties?.id) ? (
+                        <div className={getStopStyle(destinationStop?.stop?.properties?.id)}>
+                            {selectedStops.has(destinationStop?.stop?.properties?.id) ? (
                                 <>
                                     <p>{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.name}</p>
                                     <p className="text-xs text-gray-500">{selectedStops.get(destinationStop.stop?.properties?.id)?.properties.description}</p>
@@ -732,10 +747,10 @@ const StopAssignmentDrawer = ({
                     <Button variant="secondary" onClick={onClose}>Cancelar</Button>
                     <Button
                         disabled={
-                            !originStop.stop ||
-                            !destinationStop.stop ||
-                            originStop.estimatedTimes?.length === 0 ||
-                            destinationStop.estimatedTimes?.length === 0 ||
+                            !originStop?.stop ||
+                            !destinationStop?.stop ||
+                            originStop?.estimatedTimes?.length === 0 ||
+                            destinationStop?.estimatedTimes?.length === 0 ||
                             intermediateStops.some(stop =>
                                 !stop.stop ||
                                 stop.estimatedTimes?.length === 0

@@ -37,6 +37,7 @@ export const BASIC_LINE_FEATURE: BusLineFeature = {
     destination: 'Canelones',
     number: 'L29',
     origin: 'Montevideo',
+    description: 'Descripcion de la linea',
     status: 'ACTIVE',
     schedule: '09:00:00',
     companyId: null,

@@ -123,7 +123,7 @@ const AdminMap = () => {
           onClose={handleCloseDrawer}
         />
         <StopAssignmentDrawer
-          open={busLineStep === 'show-selection-popup'}
+          open={busLineStep === 'show-selection-popup' || busLineStep === 'select-origin' || busLineStep === 'select-destination'}
           onClose={() => {
             handleCloseDrawer();
           }}
