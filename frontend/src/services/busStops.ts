@@ -7,13 +7,14 @@ import type {
 } from '@/models/geoserver'
 import type { BusStopProperties } from '@/models/database'
 import { api, geoApi } from '@/api/config'
-import { GEO_WORKSPACE } from '@/utils/constants'
+import { GEO_WORKSPACE, MAX_BUS_STOP_FEATURE_REQUEST } from '@/utils/constants'
 
 const _getStops = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
     await geoApi.get('', {
       params: {
         typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+        maxFeatures: MAX_BUS_STOP_FEATURE_REQUEST,
         CQL_FILTER: cqlFilter,
       },
     })
@@ -22,7 +23,7 @@ const _getStops = async (cqlFilter: string) => {
 
 export const getStops = debounce(
   async (cqlFilter: string) => _getStops(cqlFilter),
-  1000,
+  600,
   {
     leading: true,
     trailing: true,
