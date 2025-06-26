@@ -143,8 +143,7 @@ export const isDestinationStopOnStreet = async (
 export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature,
-  batchPercent: number = 0.3,
-  minBatchSize: number = 130
+  maxBatchSize: number = 100
 ): Promise<boolean> => {
   const [originLon, originLat] = busLine.geometry.coordinates[0];
   const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1];
@@ -163,10 +162,9 @@ export const isIntermediateStopOnStreet = async (
   }
 
   const total = intermediateDensified.length;
-  const batchSize = Math.max(Math.ceil(total * batchPercent), minBatchSize);
   const batches: [number, number][][] = [];
-  for (let i = 0; i < total; i += batchSize) {
-    batches.push(intermediateDensified.slice(i, i + batchSize));
+  for (let i = 0; i < total; i += maxBatchSize) {
+    batches.push(intermediateDensified.slice(i, i + maxBatchSize));
   }
 
   for (const batch of batches) {
