@@ -4,13 +4,13 @@ import { useBusLineContext } from '@/contexts/BusLineContext'
 import { createBusLine, createStopLine, deleteStopLine, fetchBusLinesByPoint, getByStop, getStopLineByBusLineId, isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet, updateBusLine, updateStopLine } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { Input } from '@/components/ui/input'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
 import { BASIC_STOP_FEATURE, DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
 import { useMapEvents } from 'react-leaflet'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { getHoursAndMinutes } from '@/utils/helpers'
-import { lineString, point, pointToLineDistance } from '@turf/turf'
+import { lineString, nearestPointOnLine, point, pointToLineDistance } from '@turf/turf'
 
 const StopAssignmentDrawer = ({
     open,
@@ -40,6 +40,7 @@ const StopAssignmentDrawer = ({
         stop: activeStop,
         setStop,
     } = useBusStopContext();
+    const [isSaving, setIsSaving] = useState(false);
 
     const getStopStyle = (id: number | null) => {
         if (!id) return "";
@@ -147,55 +148,61 @@ const StopAssignmentDrawer = ({
         }
     }
 
-    const handleSave = async () => {
-        if (originStop === null || destinationStop === null) {
-            toast.error("Por favor, selecciona un origen y un destino antes de guardar.");
-            return;
-        }
-        if (!newBusLine?.geometry?.coordinates?.length) return;
+    const handleSave = async (e) => {
+        setIsSaving(true);
+        e.preventDefault();
 
-        const stops = [originStop, destinationStop, ...intermediateStops];
-        if (stops.length < 2) {
-            toast.error("Debes seleccionar al menos un origen y un destino.");
-            return;
-        }
-
-        if (!originStop.stop || !destinationStop.stop || !intermediateStops) {
-            toast.error("Por favor, completa todos los campos antes de guardar.");
-            return;
-        }
-
-        const originOk = await isOriginStopOnStreet(originStop.stop, newBusLine);
-        const destinationOk = await isDestinationStopOnStreet(destinationStop.stop, newBusLine);
-
-        for (const stop of intermediateStops) {
-            if (!stop.stop) continue;
-            const intermediateOk = await isIntermediateStopOnStreet(stop.stop, newBusLine);
-            if (!intermediateOk) {
-                toast.error(`La parada intermedia ${stop.stop.properties.name} no es válida.`);
+        try {
+            // Basic validations
+            if (originStop === null || destinationStop === null) {
+                toast.error("Por favor, selecciona un origen y un destino antes de guardar.");
                 return;
             }
-        }
+            if (!newBusLine?.geometry?.coordinates?.length) return;
 
-        if (!originOk) {
-            toast.error("El origen seleccionado no es válido.");
-            return;
-        }
-        if (!destinationOk) {
-            toast.error("El destino seleccionado no es válido.");
-            return;
-        }
-        if (intermediateStops.some(stop => !stop.stop)) {
-            toast.error("Todas las paradas intermedias deben ser válidas.");
-            return;
-        }
-        if (originStop.estimatedTimes.length !== destinationStop.estimatedTimes.length) {
-            toast.error("El número de horarios estimados debe ser el mismo para origen y destino.");
-            return;
-        }
+            const stops = [originStop, destinationStop, ...intermediateStops];
+            if (stops.length < 2) {
+                toast.error("Debes seleccionar al menos un origen y un destino.");
+                return;
+            }
+            if (!originStop.stop || !destinationStop.stop || !intermediateStops) {
+                toast.error("Por favor, completa todos los campos antes de guardar.");
+                return;
+            }
 
-        if (!newBusLine.properties.id) {
-            try {
+            // Validate stops on street
+            const originOk = await isOriginStopOnStreet(originStop.stop, newBusLine);
+            const destinationOk = await isDestinationStopOnStreet(destinationStop.stop, newBusLine);
+
+            // Build set of intermediate stopIds that are NOT on the street
+            const disabledIntermediateIds = new Set();
+            for (const stop of intermediateStops) {
+                if (!stop.stop) continue;
+                const intermediateOk = await isIntermediateStopOnStreet(stop.stop, newBusLine);
+                if (!intermediateOk) {
+                    disabledIntermediateIds.add(String(stop.stop.properties.id));
+                }
+            }
+
+            if (!originOk) {
+                toast.error("El origen seleccionado no es válido.");
+                return;
+            }
+            if (!destinationOk) {
+                toast.error("El destino seleccionado no es válido.");
+                return;
+            }
+            if (intermediateStops.some(stop => !stop.stop)) {
+                toast.error("Todas las paradas intermedias deben ser válidas.");
+                return;
+            }
+            if (originStop.estimatedTimes.length !== destinationStop.estimatedTimes.length) {
+                toast.error("El número de horarios estimados debe ser el mismo para origen y destino.");
+                return;
+            }
+
+            // Create or update bus line
+            if (!newBusLine.properties.id) {
                 const response = await createBusLine({
                     geometry: newBusLine.geometry,
                     properties: {
@@ -215,46 +222,46 @@ const StopAssignmentDrawer = ({
                     },
                 });
                 newBusLine.properties.id = response.data.id;
-            } catch (error) {
-                toast.error("Error al crear la línea de bus, intenta nuevamente.");
-                console.error("Error creating bus line:", error);
-                return;
+            } else {
+                const response = await updateBusLine({
+                    geometry: newBusLine.geometry,
+                    properties: {
+                        ...newBusLine.properties,
+                        schedule: getHoursAndMinutes(newBusLine.properties.schedule, true)
+                    },
+                });
+                if (!response || !response.data || !response.data.id) {
+                    toast.error("Error al actualizar la línea de bus, intenta nuevamente.");
+                    return;
+                }
+                updateBusLineData({
+                    ...newBusLine,
+                    properties: {
+                        ...newBusLine.properties,
+                        id: response.data.id,
+                    },
+                });
             }
-        }
-        else {
-            const response = await updateBusLine({
-                geometry: newBusLine.geometry,
-                properties: {
-                    ...newBusLine.properties,
-                    schedule: getHoursAndMinutes(newBusLine.properties.schedule, true)
-                },
-            });
-            if (!response || !response.data || !response.data.id) {
-                toast.error("Error al actualizar la línea de bus, intenta nuevamente.");
-                return;
-            }
-            updateBusLineData({
-                ...newBusLine,
-                properties: {
-                    ...newBusLine.properties,
-                    id: response.data.id,
-                },
-            });
-        }
 
-        try {
             const associations = await getStopLineByBusLineId(String(newBusLine.properties.id));
             const associationMap = new Map<string, any>();
             associations.forEach(assoc => {
                 associationMap.set(`${assoc.stopId}_${assoc.estimatedTime}`, assoc);
             });
 
+            // Prepare new assignments with correct isEnabled
             const newAssignments = stops.flatMap(stop =>
-                stop.estimatedTimes.map(estimatedTime => ({
-                    stopId: String(stop.stop?.properties.id),
-                    busLineId: String(newBusLine.properties.id),
-                    estimatedTime: String(estimatedTime),
-                }))
+                stop.estimatedTimes.map(estimatedTime => {
+                    const stopId = String(stop.stop?.properties.id);
+                    let isEnabled = true;
+                    if (disabledIntermediateIds.has(stopId)) isEnabled = false;
+                    return {
+                        stopId,
+                        busLineId: String(newBusLine.properties.id),
+                        estimatedTime: String(estimatedTime),
+                        isEnabled,
+                    };
+                })
             );
             const newAssignmentKeys = new Set(
                 newAssignments.map(a => `${a.stopId}_${a.estimatedTime}`)
@@ -269,17 +276,21 @@ const StopAssignmentDrawer = ({
                         assignment.stopId,
                         assignment.busLineId,
                         assignment.estimatedTime,
-                        true,
+                        assignment.isEnabled,
                     );
                 } else {
-                    return createStopLine(assignment.stopId, assignment.busLineId, assignment.estimatedTime, true);
+                    return createStopLine(
+                        assignment.stopId,
+                        assignment.busLineId,
+                        assignment.estimatedTime,
+                        assignment.isEnabled,
+                    );
                 }
             });
 
             const toDeleteAssociations = associations.filter(assoc => {
                 return !newAssignmentKeys.has(`${assoc.stopId}_${assoc.estimatedTime}`);
             });
-
             const deleteRequests = toDeleteAssociations.map(assoc => deleteStopLine(String(assoc.id)));
 
             await Promise.all([...upsertRequests, ...deleteRequests]);
@@ -298,7 +309,6 @@ const StopAssignmentDrawer = ({
                     });
                 }
             }
-
             if (someOrphaned) {
                 toast.warning("Algunas paradas quedaron huérfanas", {
                     autoClose: 8000,
@@ -307,7 +317,6 @@ const StopAssignmentDrawer = ({
 
             for (const stop of stops) {
                 if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue;
-
                 stop.stop.properties.status = 'ACTIVE';
                 await updateStop({
                     ...stop.stop.properties,
@@ -319,11 +328,12 @@ const StopAssignmentDrawer = ({
                 `${newBusLine?.properties?.id ? "Se actualizó" : "Se creó"} linea de bus con éxito.`
             );
             onClose();
-            cleanUpBusLineStates();
         } catch (error) {
             toast.error('Hubo un error al guardar la asignación de paradas, intenta nuevamente.');
             console.error('Error saving stop assignments:', error);
             cleanUpBusLineStates();
+        } finally {
+            setIsSaving(false);
         }
     }
 
@@ -353,7 +363,7 @@ const StopAssignmentDrawer = ({
     })
 
     useEffect(() => {
-        if (!open || !newBusLine || activeStop) return;
+        if (!open || !newBusLine || activeStop || isSaving) return;
 
         const fetchAssociations = async () => {
             const busStopsForLine = await getStopLineByBusLineId(String(newBusLine?.properties.id));
@@ -369,7 +379,7 @@ const StopAssignmentDrawer = ({
 
             let newOrigin = null;
             let newDestination = null;
-            let newIntermediates: Array<{ stop: any, estimatedTimes: string[], status: boolean }> = [];
+            let newIntermediates: Array<{ stop: any, estimatedTimes: string[], status?: boolean }> = [];
 
             const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
                 id => !stopsFromGeoServer.has(Number(id))
@@ -394,35 +404,28 @@ const StopAssignmentDrawer = ({
                     newDestination = { stop, estimatedTimes };
                     cacheStop(stop);
                 } else {
-                    if (stopLine?.isEnabled && !await isIntermediateStopOnStreet(stop, newBusLine)) {
-                        await updateStopLine(
-                            String(stopLine?.id),
-                            String(stopLine?.stopId),
-                            String(newBusLine.properties.id),
-                            stopLine?.estimatedTime || '9:00:00',
-                            false
-                        );
+                    if (!await isIntermediateStopOnStreet(stop, newBusLine)) {
                         newIntermediates.push({ stop, estimatedTimes, status: false });
                         cacheStop(stop);
-                        return;
+                        continue;
                     }
-                    newIntermediates.push({ stop, estimatedTimes, status: stopLine?.isEnabled || false });
+                    newIntermediates.push({ stop, estimatedTimes, status: stopLine?.isEnabled || undefined });
                     cacheStop(stop);
-
                 }
             }
 
             if (newBusLine?.geometry && Array.isArray(newBusLine.geometry.coordinates)) {
-                const geometryCoords = newBusLine.geometry.coordinates.map(
-                    ([lng, lat]) => `${lng},${lat}`
-                );
+                const busLine = lineString(newBusLine.geometry.coordinates);
 
                 newIntermediates.sort((a, b) => {
                     const aCoord = a.stop.geometry?.coordinates;
                     const bCoord = b.stop.geometry?.coordinates;
-                    const aIndex = geometryCoords.indexOf(aCoord ? `${aCoord[0]},${aCoord[1]}` : "");
-                    const bIndex = geometryCoords.indexOf(bCoord ? `${bCoord[0]},${bCoord[1]}` : "");
-                    return aIndex - bIndex;
+                    if (!aCoord || !bCoord) return 0;
+
+                    const aSnap = nearestPointOnLine(busLine, point(aCoord));
+                    const bSnap = nearestPointOnLine(busLine, point(bCoord));
+
+                    return aSnap.properties.location - bSnap.properties.location;
                 });
             }
 
@@ -459,8 +462,7 @@ const StopAssignmentDrawer = ({
                 estimatedTimes: [],
             });
 
-            const stops = [...originData, ...destinationData];
-
+            const stops = [...originData, ...destinationData, ...intermediateStops.map(i => i.stop)];
             const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
                 id => !stops.some(stop => stop.properties.id === Number(id))
             );
@@ -486,7 +488,7 @@ const StopAssignmentDrawer = ({
             fetchPointsFromCreation();
         }
 
-    }, [open, newBusLine]);
+    }, [open, newBusLine, isSaving]);
 
     return (
         <Drawer
@@ -597,12 +599,12 @@ const StopAssignmentDrawer = ({
                                 intermediateStops.map((stop, stopIndex) => {
                                     if (!stop || !stop.stop) return null;
                                     return (
-                                        <li key={stopIndex} className={`flex flex-col ${stop?.status ? 'bg-blue-50' : 'bg-gray-300'} p-2 rounded border border-blue-300`}>
+                                        <li key={stopIndex} className={`flex flex-col ${stop?.status || stop?.status === undefined ? 'bg-blue-50' : 'bg-gray-300'} p-2 rounded border border-blue-300`}>
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-sm font-medium">
                                                     {selectedStops.get(stop.stop.properties.id)?.properties.name || `Parada ${stop.stop.properties.id}`}
                                                 </span>
-                                                {stop.status && (
+                                                {(stop.status || stop?.status === undefined) && (
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
@@ -615,13 +617,14 @@ const StopAssignmentDrawer = ({
                                                     </Button>
                                                 )}
                                             </div>
+                                            {stop?.status ? <p>estoy</p> : <p>no estoy</p>}
                                             <p className="text-xs text-gray-500">{selectedStops.get(stop.stop.properties.id)?.properties.description}</p>
                                             <p className="text-xs text-gray-500">Refugio: {selectedStops.get(stop.stop.properties.id)?.properties.hasShelter ? "Sí" : "No"}</p>
 
                                             <div className="mt-2">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className="text-sm font-medium">Horarios estimados:</label>
-                                                    {stop?.status && (
+                                                    {(stop?.status || stop?.status === undefined) && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -635,7 +638,7 @@ const StopAssignmentDrawer = ({
                                                     <div key={timeIndex} className="flex gap-2 mb-2">
                                                         <Input
                                                             type="time"
-                                                            disabled={!stop.status}
+                                                            disabled={!stop.status && stop.status !== undefined}
                                                             value={time ? time.substring(0, 5) : ""}
                                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                                 updateEstimatedTime('intermediate', timeIndex, e.target.value, stopIndex)
@@ -757,7 +760,7 @@ const StopAssignmentDrawer = ({
                             ) ||
                             !areStopTimesOrdered()
                         }
-                        onClick={handleSave}
+                        onClick={(e) => handleSave(e)}
                     >
                         Guardar
                     </Button>

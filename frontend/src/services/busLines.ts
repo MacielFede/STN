@@ -142,33 +142,51 @@ export const isDestinationStopOnStreet = async (
 
 export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
-  busLine: BusLineFeature
+  busLine: BusLineFeature,
+  batchPercent: number = 0.3,
+  minBatchSize: number = 130
 ): Promise<boolean> => {
-  const [originLon, originLat] = busLine.geometry.coordinates[0]
-  const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
+  const [originLon, originLat] = busLine.geometry.coordinates[0];
+  const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1];
 
-  const threshold = 0.0003
-  const intermediateDensified = busLine.geometry.coordinates.filter(([lon, lat]) => {
-    const distToOrigin = Math.sqrt((lon - originLon) ** 2 + (lat - originLat) ** 2)
-    const distToDest = Math.sqrt((lon - destLon) ** 2 + (lat - destLat) ** 2)
-    return distToOrigin > threshold && distToDest > threshold
-  })
+  const densified = densifyLineString(busLine.geometry.coordinates);
+
+  const threshold = 0.0003;
+  const intermediateDensified = densified.filter(([lon, lat]) => {
+    const distToOrigin = Math.sqrt((lon - originLon) ** 2 + (lat - originLat) ** 2);
+    const distToDest = Math.sqrt((lon - destLon) ** 2 + (lat - destLat) ** 2);
+    return distToOrigin > threshold && distToDest > threshold;
+  });
 
   if (intermediateDensified.length === 0) {
-    return false
+    return false;
   }
 
-  const wkt = `LINESTRING(${intermediateDensified.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`
+  const total = intermediateDensified.length;
+  const batchSize = Math.max(Math.ceil(total * batchPercent), minBatchSize);
+  const batches: [number, number][][] = [];
+  for (let i = 0; i < total; i += batchSize) {
+    batches.push(intermediateDensified.slice(i, i + batchSize));
+  }
 
-  const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
-    await geoApi.get('', {
-      params: {
-        typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
-        CQL_FILTER: `DWITHIN(geometry, ${wkt}, ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters) AND id = ${intermediateStop.properties.id}`,
-      },
-    })
+  for (const batch of batches) {
+    if (batch.length < 2) continue;
+    const wkt = `LINESTRING(${batch.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`;
 
-  return data.features.length > 0
+    const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
+      await geoApi.get('', {
+        params: {
+          typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
+          CQL_FILTER: `DWITHIN(geometry, ${wkt}, ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters) AND id = ${intermediateStop.properties.id}`,
+        },
+      });
+
+    if (data.features.length > 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function densifyLineString(
