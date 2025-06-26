@@ -7,6 +7,7 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import { getLineFromGraphHopper } from '@/services/busLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { Button } from 'flowbite-react'
+import { toast } from 'react-toastify'
 
 const BusLineCreator = () => {
   const {
@@ -32,6 +33,8 @@ const BusLineCreator = () => {
     drawControlRef,
     updateBusLineData,
     errorPoints,
+    showLoader,
+    hideLoader,
   } = useBusLineContext();
   const map = useMap();
 
@@ -125,6 +128,8 @@ const BusLineCreator = () => {
   useEffect(() => {
     if (mode !== 'finished') return;
 
+    showLoader();
+
     let newPoints = points;
     if (featureGroupRef.current) {
       const layers = featureGroupRef.current.getLayers();
@@ -149,12 +154,20 @@ const BusLineCreator = () => {
           coordinates: newPoints.map(([lng, lat]) => [lng, lat]),
         },
       });
+      hideLoader(1500);
       return;
     }
 
     const calculateRoute = async () => {
       await handleFinished();
       const coordinates = await getLineFromGraphHopper(points.map(p => [p[0], p[1]]));
+      if (!coordinates) {
+        toast.error('No se pudo calcular la ruta. Por favor, inténtalo de nuevo.');
+        hideLoader(1500);
+        setMode('drawing');
+        handleReset();
+        return;
+      }
       setCalculatedRoute(coordinates || null);
       if (coordinates) {
         updateBusLineData({
@@ -163,8 +176,14 @@ const BusLineCreator = () => {
         });
         setPoints(coordinates.coordinates.map(([lng, lat]) => [lng, lat]));
       }
+      hideLoader(1500);
     };
-    calculateRoute();
+    try {
+      calculateRoute();
+    } catch (error) {
+      toast.error('Error al calcular la ruta. Por favor, inténtalo de nuevo.')
+      hideLoader(1500);
+    }
   }, [mode]);
 
   useEffect(() => {
