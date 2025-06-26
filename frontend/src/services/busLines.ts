@@ -7,6 +7,7 @@ import {
   DISTANCE_BETWEEN_STOPS_AND_STREET,
   GEO_WORKSPACE,
 } from '@/utils/constants'
+import { booleanPointInPolygon, buffer, point } from '@turf/turf'
 
 export const getLines = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
@@ -85,27 +86,55 @@ export const getStopLineByBusLineId = async (busLineId: string) => {
 
 export const isBusLineOnStreets = async (
   geometry: LineStringGeometry,
+  batchSize: number = 100
 ): Promise<any> => {
   const response: { status: boolean; errorPoints: number[][] } = {
     status: false,
     errorPoints: [],
-  }
-  const errorPoints: number[][] = [];
-  const densified = densifyLineString(geometry.coordinates)
-  for (const [lon, lat] of densified) {
-    const street = await streetPointContext({ lon, lat })
-    if (!street) {
-      errorPoints.push([lon, lat]);
+  };
+  const densified = densifyLineString(geometry.coordinates);
+
+  for (let i = 0; i < densified.length; i += batchSize) {
+    const batch = densified.slice(i, i + batchSize);
+    if (batch.length === 0) continue;
+
+    const multipointWKT = `MULTIPOINT(${batch.map(([lon, lat]) => `(${lon} ${lat})`).join(',')})`;
+
+    const { data }: AxiosResponse<FeatureCollection<StreetFeature>> =
+      await geoApi.get('', {
+        params: {
+          typeName: `${GEO_WORKSPACE}:ft_street`,
+          CQL_FILTER: `DWITHIN(geom, ${multipointWKT}, ${DISTANCE_BETWEEN_LINE_AND_STREET}, meters)`,
+        },
+      });
+
+    for (const [lon, lat] of batch) {
+      const pt = point([lon, lat]);
+      let covered = false;
+      for (const street of data.features) {
+        const streetBuffer = buffer(street.geometry, DISTANCE_BETWEEN_LINE_AND_STREET, { units: 'meters' });
+        if(!streetBuffer){
+          return false;
+        }
+        if (booleanPointInPolygon(pt, streetBuffer)) {
+          covered = true;
+          break;
+        }
+      }
+      if (!covered) {
+        response.errorPoints.push([lon, lat]);
+      }
     }
   }
-  if (errorPoints.length > 0) {
+
+  if (response.errorPoints.length > 0) {
     response.status = false;
-    response.errorPoints = errorPoints;
     return response;
   }
   response.status = true;
   return response;
-}
+};
+
 export const isOriginStopOnStreet = async (
   originStop: BusStopFeature,
   busLine: BusLineFeature
