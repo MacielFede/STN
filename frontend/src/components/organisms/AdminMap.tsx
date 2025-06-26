@@ -21,6 +21,8 @@ import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
 import BusLinetable from '../molecules/end-user/BusLineTable'
 import BusLinesCrud from '../molecules/admin/BusLinesCrud'
 import { useBusStopContext } from '@/contexts/BusStopContext'
+import Loader from '../../../public/loader.gif'
+
 
 const geoJsonStyle = {
   color: 'blue',
@@ -31,7 +33,7 @@ const geoJsonStyle = {
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
-  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep } = useBusLineContext();
+  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, isLoaderActive } = useBusLineContext();
   const { stop: activeStop, setStop: setActiveStop, cleanUpStopState } = useBusStopContext();
   const { lines } = useLines()
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([]);
@@ -119,6 +121,19 @@ const AdminMap = () => {
         scrollWheelZoom
         zoomControl={false}
       >
+        {isLoaderActive && (
+          <div className="flex justify-center flex-col items-center" style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            zIndex: 9999,
+            background: 'black',
+            opacity: 0.8,
+          }}>
+            <img src={Loader} alt="Loading..." style={{ scale: '.7' }} />
+            <h1 className='text-white font-semibold text-lg'>Calculando ruta..., por favor espera</h1>
+          </div>
+        )}
         <BusLinesCrud
           onClose={handleCloseDrawer}
         />

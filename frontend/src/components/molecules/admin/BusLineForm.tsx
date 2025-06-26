@@ -31,6 +31,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     busLineStep,
     setBusLineStep,
     setErrorPoints,
+    showLoader,
+    hideLoader,
   } = useBusLineContext();
   const [companies, setCompanies] = useState<Array<Company>>([])
   const createBusLineMutation = useMutation({
@@ -49,6 +51,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'create-stop-toast-street',
             },
           )
+          hideLoader();
           return
         }
         updateBusLineData({
@@ -60,7 +63,9 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           },
         });
         setBusLineStep('show-selection-popup');
+        hideLoader();
       } catch (error) {
+        hideLoader();
         toast.error('Error intentando crear la ruta', {
           closeOnClick: true,
           position: 'top-left',
@@ -84,11 +89,14 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'update-stop-toast-street',
             },
           )
+          hideLoader();
           return
         }
         updateBusLineData(data);
         setBusLineStep('show-selection-popup');
+        hideLoader();
       } catch (error) {
+        hideLoader();
         toast.error('Error al actualizar la línea', {
           closeOnClick: true,
           position: 'top-left',
@@ -101,6 +109,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
 
   const handleSave = () => {
     if (!newBusLine) return;
+    showLoader();
     if (!line.properties.id) {
       createBusLineMutation.mutate({
         ...newBusLine?.properties,

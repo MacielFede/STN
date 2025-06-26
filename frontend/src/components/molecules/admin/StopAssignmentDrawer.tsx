@@ -35,6 +35,8 @@ const StopAssignmentDrawer = ({
         cacheStop,
         cacheStopRemove,
         updateBusLineData,
+        showLoader,
+        hideLoader,
     } = useBusLineContext()
     const {
         stop: activeStop,
@@ -160,13 +162,17 @@ const StopAssignmentDrawer = ({
             }
             if (!newBusLine?.geometry?.coordinates?.length) return;
 
+            showLoader();
+
             const stops = [originStop, destinationStop, ...intermediateStops];
             if (stops.length < 2) {
                 toast.error("Debes seleccionar al menos un origen y un destino.");
+                hideLoader(1500);
                 return;
             }
             if (!originStop.stop || !destinationStop.stop || !intermediateStops) {
                 toast.error("Por favor, completa todos los campos antes de guardar.");
+                hideLoader(1500);
                 return;
             }
 
@@ -186,18 +192,22 @@ const StopAssignmentDrawer = ({
 
             if (!originOk) {
                 toast.error("El origen seleccionado no es válido.");
+                hideLoader(1500);
                 return;
             }
             if (!destinationOk) {
                 toast.error("El destino seleccionado no es válido.");
+                hideLoader(1500);
                 return;
             }
             if (intermediateStops.some(stop => !stop.stop)) {
                 toast.error("Todas las paradas intermedias deben ser válidas.");
+                hideLoader(1500);
                 return;
             }
             if (originStop.estimatedTimes.length !== destinationStop.estimatedTimes.length) {
                 toast.error("El número de horarios estimados debe ser el mismo para origen y destino.");
+                hideLoader(1500);
                 return;
             }
 
@@ -212,6 +222,7 @@ const StopAssignmentDrawer = ({
                 });
                 if (!response || !response.data || !response.data.id) {
                     toast.error("Error al crear la línea de bus, intenta nuevamente.");
+                    hideLoader(1500);
                     return;
                 }
                 updateBusLineData({
@@ -232,6 +243,7 @@ const StopAssignmentDrawer = ({
                 });
                 if (!response || !response.data || !response.data.id) {
                     toast.error("Error al actualizar la línea de bus, intenta nuevamente.");
+                    hideLoader(1500);
                     return;
                 }
                 updateBusLineData({
@@ -323,12 +335,13 @@ const StopAssignmentDrawer = ({
                     geometry: stop.stop.geometry,
                 });
             }
-
+            hideLoader(1500);
             toast.success(
                 `${newBusLine?.properties?.id ? "Se actualizó" : "Se creó"} linea de bus con éxito.`
             );
             onClose();
         } catch (error) {
+            hideLoader(1500);
             toast.error('Hubo un error al guardar la asignación de paradas, intenta nuevamente.');
             console.error('Error saving stop assignments:', error);
             cleanUpBusLineStates();

@@ -36,7 +36,7 @@ type BusLineContextType = {
     intermediateStops: { stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }[]
     setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }[]>>
     sortIntermediateStopsByGeometry: (
-        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[],  status?: boolean }>,
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[], status?: boolean }>,
     ) => Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
     cleanStopFromAssignments: (
         stopId: number,
@@ -54,6 +54,10 @@ type BusLineContextType = {
     selectedStops: Map<number | null, BusStopFeature>
     pendingGeometry: any
     setPendingGeometry: React.Dispatch<React.SetStateAction<any>>
+    isLoaderActive: boolean
+    setIsLoaderActive: React.Dispatch<React.SetStateAction<boolean>>
+    showLoader: (timeout?: number) => void
+    hideLoader: (timeout?: number) => void
 } & BusLineCreationType;
 
 const BusLineContext = createContext<BusLineContextType | undefined>(undefined)
@@ -67,6 +71,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     const [intermediateStops, setIntermediateStops] = useState<Array<{ stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }>>([]);
     const [selectedStops, setSelectedStops] = useState<Map<number | null, BusStopFeature>>(new Map());
     const [pendingGeometry, setPendingGeometry] = useState(null)
+    const [isLoaderActive, setIsLoaderActive] = useState<boolean>(false);
     const featureGroupRef = useRef<L.FeatureGroup>(null)
     const onCreationRef = useRef<boolean>(false)
     const onEditedRef = useRef<boolean>(false)
@@ -179,7 +184,7 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, [newBusLine, updateBusLineData, finishEditingLine]);
 
     const sortIntermediateStopsByGeometry = (
-        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[],  status?: boolean }>
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[], status?: boolean }>
     ) => {
         return [...intermediateStops].sort((a, b) => {
             const aCoord = a.stop?.geometry?.coordinates;
@@ -220,6 +225,26 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
         });
     };
 
+    const showLoader = useCallback((timeout: number = null) => {
+        if (timeout) {
+            setTimeout(() => {
+                setIsLoaderActive(true);
+            }, timeout);
+            return;
+        }
+        setIsLoaderActive(true);
+    }, []);
+
+    const hideLoader = useCallback((timeout: number = null) => {
+        if (timeout) {
+            setTimeout(() => {
+                setIsLoaderActive(false);
+            }, timeout);
+            return;
+        }
+        setIsLoaderActive(false);
+    }, []);
+
     return (
         <BusLineContext.Provider
             value={{
@@ -251,6 +276,9 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
                 selectedStops,
                 pendingGeometry,
                 setPendingGeometry,
+                showLoader,
+                hideLoader,
+                isLoaderActive,
                 ...busLineCreation,
             }}
         >
