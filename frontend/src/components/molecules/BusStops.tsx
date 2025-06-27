@@ -6,11 +6,11 @@ import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
 import type { BusStopFeature } from '@/models/geoserver'
 import useStops from '@/hooks/useStops'
-import { ADMIN_PATHNAME } from '@/utils/constants'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { useGeoContext } from '@/contexts/GeoContext'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -35,6 +35,7 @@ const BusStops = ({
 }) => {
   const { addPoint, setPoints, newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
   const { setUserBBox } = useGeoContext()
+  const { isAdmin } = useAuthContext()
   const currentZoom = useRef<number | null>(null)
   const map = useMapEvents({
     moveend: () => {
@@ -162,6 +163,8 @@ const BusStops = ({
           }
           eventHandlers={{
             click: () => {
+              if (busLineStep === 'show-crud') return;
+
               if (newBusLine === null) {
                 setActiveStop(stop)
                 return;
@@ -198,7 +201,7 @@ const BusStops = ({
                 })
             },
           }}
-          draggable={location.pathname === ADMIN_PATHNAME}
+          draggable={isAdmin && !busLineStep}
         />
       )
     })
@@ -227,7 +230,7 @@ const BusStops = ({
               })
           },
         }}
-        draggable={location.pathname === ADMIN_PATHNAME}
+        draggable={isAdmin}
       />
     )
 }
