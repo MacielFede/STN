@@ -34,7 +34,11 @@ export default function BusLinetable({
 
   const validLineIds = useMemo(() => {
     return activeStopId && stopSpecificLines
-      ? new Set(stopSpecificLines.map((rel) => rel.lineId))
+      ? new Set(
+        stopSpecificLines
+          .filter((rel) => rel.isEnabled)
+          .map((rel) => rel.lineId)
+      )
       : null
   }, [activeStopId, stopSpecificLines])
 

@@ -3,32 +3,31 @@ import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
-import { Label } from '../../ui/label'
 import { Input } from '../../ui/input'
-import type { BusStopFeature, PointGeometry } from '@/models/geoserver'
+import type { PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
 import { createStop, deleteStop, updateStop } from '@/services/busStops'
-import { streetContext } from '@/services/street'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
+import { useBusStopContext } from '@/contexts/BusStopContext'
+import { useBusLineContext } from '@/contexts/BusLineContext'
+import { Label } from 'flowbite-react'
+import { streetPointContext } from '@/services/busLines'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
 
-interface BusStopFormProps {
-  stop: BusStopFeature
-  setStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
-  resetActiveStop: () => void
-}
-
-const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
+const BusStopForm = () => {
+  const { stop, setStop, cleanUpStopState } = useBusStopContext();
+  const { cacheStop, busLineStep, setBusLineStep } = useBusLineContext();
   const queryClient = useQueryClient()
   const createStopMutation = useMutation({
     mutationFn: async (
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetContext({
+        const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[0],
           lat: data.geometry.coordinates[1],
+          isStop: true,
         })
         if (!stopContext) {
           toast.error(
@@ -41,13 +40,27 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           )
           return
         }
-        await createStop({
+        const response = await createStop({
           ...data,
+          geometry: {
+            type: 'Point',
+            coordinates: [data.geometry.coordinates[1], data.geometry.coordinates[0]],
+          },
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
           ) as Department,
           route: stopContext.properties.name,
         })
+        if (busLineStep === 'select-intermediate') {
+          cacheStop({
+            geometry: data.geometry,
+            properties: {
+              ...data,
+              id: response.data.id,
+            },
+          })
+          setBusLineStep('show-selection-popup')
+        }
         setStop(null)
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada creada correctamente', {
@@ -70,9 +83,10 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
-        const stopContext = await streetContext({
+        const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[1],
           lat: data.geometry.coordinates[0],
+          isStop: true,
         })
         if (!stopContext) {
           toast.error(
@@ -113,7 +127,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
       if (!id) return
       try {
         await deleteStop(id)
-        resetActiveStop()
+        cleanUpStopState()
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada eliminada correctamente', {
           closeOnClick: true,
@@ -208,33 +222,6 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
           />
         </label>
         <div>
-          <label>Estado:</label>
-          <div className="flex flex-col gap-1">
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="ACTIVE"
-                checked={stop.properties.status === 'ACTIVE'}
-                onChange={() => updateProperty('status', 'ACTIVE')}
-              />
-              Activa
-            </label>
-            <label>
-              <input
-                disabled={loadingFormAction}
-                type="radio"
-                name="status"
-                value="INACTIVE"
-                checked={stop.properties.status === 'INACTIVE'}
-                onChange={() => updateProperty('status', 'INACTIVE')}
-              />
-              Inactiva
-            </label>
-          </div>
-        </div>
-        <div>
           <label>Refugio:</label>
           <div className="flex flex-col gap-1">
             <label>
@@ -298,7 +285,7 @@ const BusStopForm = ({ stop, setStop, resetActiveStop }: BusStopFormProps) => {
             </Button>
           )}
         </div>
-      </form>
+      </form >
     </>
   )
 }
