@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useCookies } from 'react-cookie'
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
+import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
 import { Button } from '../ui/button'
 import Modal from '../atoms/Modal'
@@ -9,6 +9,10 @@ import NewBusStopComponent from '../molecules/admin/NewBusStop'
 import { Separator } from '../ui/separator'
 import BusLineForm from '../molecules/admin/BusLineForm'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import BusLinetable from '../molecules/end-user/BusLineTable'
+import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
+import BusLinesCrud from '../molecules/admin/BusLinesCrud'
+import Loader from '../../../public/loader.gif'
 import type { BusLineFeature } from '@/models/geoserver'
 import BusLineCreator from '@/components/molecules/admin/BusLineCreator'
 import CommandPallete from '@/components/atoms/CommandPallete'
@@ -17,12 +21,7 @@ import CompanyCRUD from '@/components/molecules/admin/CompanyCRUD'
 import { BASIC_STOP_FEATURE, DEFAULT_MAP_LOCATION } from '@/utils/constants'
 import useLines from '@/hooks/useLines'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import StopAssignmentDrawer from '../molecules/admin/StopAssignmentDrawer'
-import BusLinetable from '../molecules/end-user/BusLineTable'
-import BusLinesCrud from '../molecules/admin/BusLinesCrud'
 import { useBusStopContext } from '@/contexts/BusStopContext'
-import Loader from '../../../public/loader.gif'
-
 
 const geoJsonStyle = {
   color: 'blue',
@@ -33,19 +32,29 @@ const geoJsonStyle = {
 const AdminMap = () => {
   const [, , removeCookie] = useCookies(['admin-jwt'])
   const [isOpen, setIsOpen] = useState(false)
-  const { newBusLine, cleanUpBusLineStates, busLineStep, setBusLineStep, isLoaderActive } = useBusLineContext();
-  const { stop: activeStop, setStop: setActiveStop, cleanUpStopState } = useBusStopContext();
+  const {
+    newBusLine,
+    cleanUpBusLineStates,
+    busLineStep,
+    setBusLineStep,
+    isLoaderActive,
+  } = useBusLineContext()
+  const {
+    stop: activeStop,
+    setStop: setActiveStop,
+    cleanUpStopState,
+  } = useBusStopContext()
   const { lines } = useLines()
-  const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([]);
+  const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>(
+    [],
+  )
 
   function handleDisplayRoute(route: BusLineFeature) {
     setDisplayedRoutes((prev) => {
       const exists = prev.some((r) => r.id === route.id)
       if (exists) {
-        // Quitarla
         return prev.filter((r) => r.id !== route.id)
       } else {
-        // Agregarla
         return [...prev, route]
       }
     })
@@ -54,13 +63,9 @@ const AdminMap = () => {
   const handleCloseDrawer = useCallback(() => {
     setIsOpen(false)
     setActiveStop(null)
-    cleanUpBusLineStates();
-    cleanUpStopState();
-  }, [])
-
-  useEffect(() => {
-    console.log('lines updated:', lines)
-  }, [lines])
+    cleanUpBusLineStates()
+    cleanUpStopState()
+  }, [setActiveStop, setIsOpen, cleanUpBusLineStates, cleanUpStopState])
 
   useEffect(() => {
     if (activeStop || newBusLine) setIsOpen(true)
@@ -69,7 +74,7 @@ const AdminMap = () => {
 
   return (
     <>
-      <CommandPallete yPosition="top" xPosition="right">
+      <CommandPallete yPosition="top" xPosition="right" displayToogle={false}>
         <Modal
           type="Companies"
           trigger={<Button>Administrar empresas</Button>}
@@ -86,12 +91,11 @@ const AdminMap = () => {
             <Button
               onClick={() => {
                 if (busLineStep === 'show-crud') {
-                  handleCloseDrawer();
-                  return;
+                  handleCloseDrawer()
+                  return
                 }
-                setBusLineStep('show-crud');
+                setBusLineStep('show-crud')
               }}
-
               disabled={!!newBusLine || !!activeStop}
             >
               Lineas
@@ -122,25 +126,32 @@ const AdminMap = () => {
         zoomControl={false}
       >
         {isLoaderActive && (
-          <div className="flex justify-center flex-col items-center" style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            zIndex: 9999,
-            background: 'black',
-            opacity: 0.8,
-          }}>
+          <div
+            className="flex justify-center flex-col items-center"
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              zIndex: 9999,
+              background: 'black',
+              opacity: 0.8,
+            }}
+          >
             <img src={Loader} alt="Loading..." style={{ scale: '.7' }} />
-            <h1 className='text-white font-semibold text-lg'>Calculando ruta..., por favor espera</h1>
+            <h1 className="text-white font-semibold text-lg">
+              Calculando ruta..., por favor espera
+            </h1>
           </div>
         )}
-        <BusLinesCrud
-          onClose={handleCloseDrawer}
-        />
+        <BusLinesCrud onClose={handleCloseDrawer} />
         <StopAssignmentDrawer
-          open={busLineStep === 'show-selection-popup' || busLineStep === 'select-origin' || busLineStep === 'select-destination'}
+          open={
+            busLineStep === 'show-selection-popup' ||
+            busLineStep === 'select-origin' ||
+            busLineStep === 'select-destination'
+          }
           onClose={() => {
-            handleCloseDrawer();
+            handleCloseDrawer()
           }}
         />
         <TileLayer
@@ -157,9 +168,7 @@ const AdminMap = () => {
             newStopGeom={activeStop.geometry}
           />
         )}
-        {newBusLine && (
-          <BusLineCreator />
-        )}
+        {newBusLine && <BusLineCreator />}
       </MapContainer>
 
       <Drawer
@@ -175,22 +184,23 @@ const AdminMap = () => {
             <>
               <BusStopForm />
               <Separator className="my-4 bg-black" decorative />
-              {lines?.map((line) => <BusLineForm line={line} />)}
+              {lines.map((line) => (
+                <BusLineForm line={line} />
+              ))}
             </>
           )}
-          {newBusLine && busLineStep === 'creation'
-            ?
+          {newBusLine && busLineStep === 'creation' ? (
             <BusLineForm line={newBusLine} />
-            :
+          ) : (
             <BusLinetable
               onDisplayRoute={handleDisplayRoute}
               displayedRoutes={displayedRoutes}
               activeStopId={activeStop?.properties.id}
+              selectedRouteId=""
             />
-          }
+          )}
         </DrawerItems>
       </Drawer>
-
     </>
   )
 }

@@ -26,7 +26,7 @@ export type StreetProperties = {
 }
 
 export type BusLineProperties = {
-  id: number
+  id?: number
   number: string
   description: string
   status: 'ACTIVE' | 'INACTIVE'
@@ -58,7 +58,6 @@ export type Department =
   | 'Soriano'
   | 'Tacuarembó'
   | 'Treinta y Tres'
-
 
 type FilterName =
   | 'company'
@@ -94,6 +93,7 @@ export type FilterData = {
   line: {
     id: number
     name: string
+  }
   stopLine: {
     busStopName: string
   }
@@ -123,11 +123,10 @@ export type LoginTransactionResponse = {
   token: string
 }
 
-
 export type BusStopLine = {
-  id: number,
-  stopId: string,
-  lineId: number,
-  estimatedTime: string,
-  isEnabled: boolean,
+  id: number
+  stopId: string
+  lineId: number
+  estimatedTime: string
+  isEnabled: boolean
 }

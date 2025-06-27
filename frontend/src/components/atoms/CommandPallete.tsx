@@ -6,14 +6,16 @@ type CommandPalleteProps = {
   yPosition: 'top' | 'bottom' | 'center'
   xPosition: 'right' | 'left' | 'center'
   children: ReactNode
+  displayToogle: boolean
 }
 
 const CommandPallete = ({
   children,
   xPosition,
   yPosition,
+  displayToogle,
 }: CommandPalleteProps) => {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(!displayToogle)
 
   return (
     <div
@@ -24,17 +26,19 @@ const CommandPallete = ({
       >
         {children}
       </div>
-      <Button
-        className="bg-white hover:bg-amber-50"
-        onClick={() => setIsVisible(!isVisible)}
-      >
-        <img
-          src="/filter_icon.png"
-          alt="Ocultar filtros"
-          height={36}
-          width={36}
-        />
-      </Button>
+      {displayToogle && (
+        <Button
+          className="bg-white hover:bg-amber-50"
+          onClick={() => setIsVisible(!isVisible)}
+        >
+          <img
+            src="/filter_icon.png"
+            alt="Ocultar filtros"
+            height={36}
+            width={36}
+          />
+        </Button>
+      )}
     </div>
   )
 }

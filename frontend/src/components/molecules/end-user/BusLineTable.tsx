@@ -20,12 +20,14 @@ type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
   displayedRoutes: Array<BusLineFeature>
   activeStopId: number | undefined
+  selectedRouteId: string
 }
 
 export default function BusLinetable({
   onDisplayRoute,
   displayedRoutes,
   activeStopId,
+  selectedRouteId,
 }: BusLineTableProps) {
   const { companies } = useCompanies()
   const { stopSpecificLines } = useStopLines(activeStopId)
@@ -35,16 +37,18 @@ export default function BusLinetable({
   const validLineIds = useMemo(() => {
     return activeStopId && stopSpecificLines
       ? new Set(
-        stopSpecificLines
-          .filter((rel) => rel.isEnabled)
-          .map((rel) => rel.lineId)
-      )
+          stopSpecificLines
+            .filter((rel) => rel.isEnabled)
+            .map((rel) => rel.lineId),
+        )
       : null
   }, [activeStopId, stopSpecificLines])
 
   const linesToShow = useMemo(() => {
     return activeStopId && validLineIds
-      ? allLines?.filter((line) => validLineIds.has(line.properties.id))
+      ? allLines?.filter(
+          (line) => line.properties.id && validLineIds.has(line.properties.id),
+        )
       : filteredLines
   }, [filteredLines, allLines, validLineIds, activeStopId])
 
@@ -65,7 +69,9 @@ export default function BusLinetable({
 
   const getLineSchedule = useCallback(
     (line: BusLineFeature) => {
-      return lineScheduleMap.get(line.properties.id) || []
+      return (
+        (!!line.properties.id && lineScheduleMap.get(line.properties.id)) || []
+      )
     },
     [lineScheduleMap],
   )
@@ -94,7 +100,14 @@ export default function BusLinetable({
         </TableHeader>
         <TableBody>
           {linesToShow.map((line) => (
-            <TableRow key={line.id}>
+            <TableRow
+              key={line.id}
+              className={line.id === selectedRouteId ? 'bg-red-400' : ''}
+              ref={(el) => {
+                if (line.id === selectedRouteId)
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
               <TableCell className="font-medium">
                 {line.properties.number}
               </TableCell>

@@ -44,7 +44,7 @@ export type StreetFeature = {
 
 export type BusLineFeature = {
   type: 'Feature'
-  id: string
+  id?: string
   geometry: LineStringGeometry
   geometry_name: string
   properties: BusLineProperties
@@ -65,7 +65,6 @@ export type FeatureCollection<T> = {
   }
 }
 
-
 export type BusLineFeatureCollection = {
   type: 'FeatureCollection'
   features: Array<BusLineFeature>
@@ -80,11 +79,6 @@ export type BusLineFeatureCollection = {
     }
   }
 }
-
-
-
-
-
 
 export type BBox = {
   sw?: L.LatLng

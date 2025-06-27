@@ -9,7 +9,7 @@ const UserPositionIndicator = () => {
 
   useEffect(() => {
     if (!error && !Object.is(position, DEFAULT_COORDINATES))
-      map.flyTo(position, 13)
+      map.flyTo(position, 17)
   }, [position, map, error])
 
   return (
