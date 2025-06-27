@@ -10,6 +10,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { geometry } from '@turf/turf'
 import { _getStops, updateStop } from '@/services/busStops'
+import type { Company } from '@/models/database'
+import { getCompanies } from '@/services/companies'
 
 // Paleta de colores base
 const ROUTE_COLORS = [
@@ -33,6 +35,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
     const { busLineStep, newBusLine, setNewBusLine, setBusLineStep, setPoints } = useBusLineContext()
     const queryClient = useQueryClient()
     const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>([])
+    const [companies, setCompanies] = useState<Array<Company>>([])
     const map = useMap()
 
     const travelToGeometry = (geometry: number[][], type: string = 'fit') => {
@@ -151,8 +154,14 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
         setBusLines(lines);
     }
 
+    const fetchCompanies = async () => {
+        const companies = await getCompanies();
+        setCompanies(companies);
+    }
+
     useEffect(() => {
         fetchBusLines();
+        fetchCompanies();
     }, [newBusLine])
 
     return (
@@ -191,6 +200,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                                 <th className="p-2 text-left">Origen</th>
                                 <th className="p-2 text-left">Destino</th>
                                 <th className="p-2 text-left">Estado</th>
+                                <th className="p-2 text-left">Empresa</th>
                                 <th className="p-2 text-left">Salida</th>
                                 <th className="p-2 text-center">Acciones</th>
                             </tr>
@@ -202,6 +212,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                                     <td className="p-2">{line.properties.origin}</td>
                                     <td className="p-2">{line.properties.destination}</td>
                                     <td className="p-2">{line.properties.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</td>
+                                    <td className="p-2">{line.properties.companyId ? companies.find(c => c.id === line.properties.companyId)?.name?.toUpperCase() : 'No asignada'}</td>
                                     <td className='p-2'>{getHoursAndMinutes(line.properties.schedule)}</td>
                                     <td className="p-2 flex gap-2 justify-center">
                                         <Button
