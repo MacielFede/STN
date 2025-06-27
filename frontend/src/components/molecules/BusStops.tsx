@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { Marker, useMapEvents } from 'react-leaflet'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useLocation } from '@tanstack/react-router'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
@@ -11,7 +11,6 @@ import { useBusLineContext } from '@/contexts/BusLineContext'
 import { isDestinationStopOnStreet, isIntermediateStopOnStreet, isOriginStopOnStreet } from '@/services/busLines'
 import { toast } from 'react-toastify'
 import { useGeoContext } from '@/contexts/GeoContext'
-import { buildBBoxFilter, buildCqlFilter } from '@/utils/helpers'
 
 const ActiveBusStopIcon = L.icon({
   iconUrl: ActiveBusStop,
@@ -34,7 +33,6 @@ const BusStops = ({
   setActiveStop: React.Dispatch<React.SetStateAction<BusStopFeature | null>>
   activeStop: BusStopFeature | null
 }) => {
-  const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
   const { addPoint, setPoints, newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
   const { setUserBBox } = useGeoContext()
   const currentZoom = useRef<number | null>(null)
@@ -135,8 +133,10 @@ const BusStops = ({
     const bounds = map.getBounds()
     const sw = bounds.getSouthWest()
     const ne = bounds.getNorthEast()
-    setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
-  }, [map, setBusStopsCqlFilter])
+    setUserBBox({ sw, ne })
+  }, [map, setUserBBox])
+  //console.log('Filter CQL:', busStopsCqlFilter)
+  //console.log('Stops:', stops)
 
   useEffect(() => {
     updateMapBBox()
@@ -163,17 +163,17 @@ const BusStops = ({
           eventHandlers={{
             click: () => {
               if (newBusLine === null) {
-              setActiveStop(stop)
-              return;
-            }
-            if (busLineStep === 'creation') {
-              addPoint(stop.geometry.coordinates[0], stop.geometry.coordinates[1])
-              return;
-            }
-            if (busLineStep === 'select-intermediate' || busLineStep === 'select-destination' || busLineStep === 'select-origin') {
-              handleAssociationClick(stop)
-              return;
-            }
+                setActiveStop(stop)
+                return;
+              }
+              if (busLineStep === 'creation') {
+                addPoint(stop.geometry.coordinates[0], stop.geometry.coordinates[1])
+                return;
+              }
+              if (busLineStep === 'select-intermediate' || busLineStep === 'select-destination' || busLineStep === 'select-origin') {
+                handleAssociationClick(stop)
+                return;
+              }
             },
             dragend: (event) => {
               const position = event.target.getLatLng()
