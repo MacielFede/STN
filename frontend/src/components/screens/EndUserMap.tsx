@@ -76,9 +76,9 @@ function EndUserMap() {
   return (
     <>
       <CommandPallete yPosition="top" xPosition="right">
+        <StreetSelector />
         <OriginDestinationSelector />
         <StatusSelector />
-        <StreetSelector />
         <ScheduleSelector />
         <CompanySelector />
         <PolygonSelector

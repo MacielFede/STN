@@ -42,4 +42,6 @@ To be able to use the frontend fully, you'll need to publish this tables on geos
 1. ft_bus_stop
 2. ft_street -> this table should be added using the script created by Martin
 3. ft_bus_line
-4. bus_lines_in_streets -> This is a stored view that you have to add following this guide https://docs.geoserver.org/main/en/user/data/database/sqlview.html and using the script at `utils/geoserver/bus_lines_by_street.sql` 
+4. ft_kilometer_post -> this table should be added using the script created by Martin
+5. bus_lines_by_street -> This is a stored view that you have to add following this guide https://docs.geoserver.org/main/en/user/data/database/sqlview.html and using the script at `utils/geoserver/bus_lines_by_street.sql`
+6. bus_lines_by_street_km -> This is a stored view that you have to add following this guide https://docs.geoserver.org/main/en/user/data/database/sqlview.html and using the script at `utils/geoserver/bus_lines_by_street_km.sql` 

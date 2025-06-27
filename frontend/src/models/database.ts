@@ -88,7 +88,8 @@ export type FilterData = {
     polygonPoints: Array<[number, number]>
   }
   street: {
-    streetCode: string
+    streetName: string
+    km: string
   }
   line: {
     id: number

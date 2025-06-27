@@ -51,3 +51,5 @@ export const BUS_LINE_STYLES = (isActive: boolean) => ({
   weight: 3,
   opacity: 0.8,
 })
+
+export const MAX_BUS_STOP_FEATURE_REQUEST = 100

@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { Marker, useMapEvents } from 'react-leaflet'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from '@tanstack/react-router'
 import ActiveBusStop from '../../../public/active_bus_stop.png'
 import InactiveBusStop from '../../../public/inactive_bus_stop.png'
@@ -37,12 +37,17 @@ const BusStops = ({
   const [busStopsCqlFilter, setBusStopsCqlFilter] = useState('')
   const { addPoint, setPoints, newBusLine, busLineStep, setBusLineStep, originStop, destinationStop, intermediateStops, cleanStopFromAssignments, setOriginStop, setDestinationStop, setIntermediateStops, cacheStop, sortIntermediateStopsByGeometry } = useBusLineContext()
   const { setUserBBox } = useGeoContext()
+  const currentZoom = useRef<number | null>(null)
   const map = useMapEvents({
     moveend: () => {
-      const bounds = map.getBounds()
-      const sw = bounds.getSouthWest()
-      const ne = bounds.getNorthEast()
-      setUserBBox({ sw, ne })
+      updateMapBBox()
+    },
+    zoomend: () => {
+      const newZoom = map.getZoom()
+      if (currentZoom.current && currentZoom.current > newZoom) {
+        updateMapBBox()
+      }
+      currentZoom.current = newZoom
     },
   })
   const { stops } = useStops(true)
@@ -126,14 +131,16 @@ const BusStops = ({
     }
   };
 
-  useEffect(() => {
+  const updateMapBBox = useCallback(() => {
     const bounds = map.getBounds()
     const sw = bounds.getSouthWest()
     const ne = bounds.getNorthEast()
     setBusStopsCqlFilter(buildCqlFilter([buildBBoxFilter({ sw, ne })]))
   }, [map, setBusStopsCqlFilter])
-  //console.log('Filter CQL:', busStopsCqlFilter)
-  //console.log('Stops:', stops)
+
+  useEffect(() => {
+    updateMapBBox()
+  }, [updateMapBBox])
 
   return stops && stops.length > 0
     ? stops.map((stop) => {

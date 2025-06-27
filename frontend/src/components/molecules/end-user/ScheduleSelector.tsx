@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Label } from 'flowbite-react'
 import { toast } from 'react-toastify'
 import { Button } from '../../ui/button'
+import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 import { useGeoContext } from '@/contexts/GeoContext'
 
 const ScheduleSelector = () => {
@@ -36,64 +37,65 @@ const ScheduleSelector = () => {
         />
       </div>
       {lowerTime !== '' && (
-        <Button
-          onClick={() => {
-            if (upperTime) {
-              const [lowHours, lowMinutes, lowSeconds] = lowerTime
-                .split(':')
-                .map(Number)
-              const [upHours, upMinutes, upSeconds] = upperTime
-                .split(':')
-                .map(Number)
-              if (
-                lowHours > upHours ||
-                (lowHours === upHours && lowMinutes > upMinutes) ||
-                (lowHours === upHours &&
-                  lowMinutes === upMinutes &&
-                  lowSeconds > upSeconds)
-              ) {
-                toast.error(
-                  'El horario inicial debe ser menor que el final en el rango',
-                  {
-                    position: 'top-left',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'colored',
-                    toastId: 'schedule-error',
-                  },
-                )
-                return
+        <FetchingLinesSpinner>
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (upperTime) {
+                const [lowHours, lowMinutes, lowSeconds] = lowerTime
+                  .split(':')
+                  .map(Number)
+                const [upHours, upMinutes, upSeconds] = upperTime
+                  .split(':')
+                  .map(Number)
+                if (
+                  lowHours > upHours ||
+                  (lowHours === upHours && lowMinutes > upMinutes) ||
+                  (lowHours === upHours &&
+                    lowMinutes === upMinutes &&
+                    lowSeconds > upSeconds)
+                ) {
+                  toast.error(
+                    'El horario inicial debe ser menor que el final en el rango',
+                    {
+                      position: 'top-left',
+                      autoClose: 5000,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                      theme: 'colored',
+                      toastId: 'schedule-error',
+                    },
+                  )
+                  return
+                }
               }
-            }
-            toogleEndUserFilter({
-              name: 'schedule',
-              isActive: true,
-              data: { lowerTime: lowerTime, upperTime: upperTime },
-            })
-          }}
-        >
-          {endUserFilters.some(
-            (filter) => filter.name === 'schedule' && filter.isActive,
-          )
-            ? 'Actualizar filtro'
-            : 'Aplicar filtro'}
-        </Button>
-      )}
-      {lowerTime !== '' && (
-        <Button
-          className="bg-red-800"
-          onClick={() => {
-            setLowerTime('')
-            setUpperTime('')
-            toogleEndUserFilter({ name: 'schedule', isActive: false })
-          }}
-        >
-          Limpiar filtro
-        </Button>
+              toogleEndUserFilter({
+                name: 'schedule',
+                isActive: true,
+                data: { lowerTime: lowerTime, upperTime: upperTime },
+              })
+            }}
+          >
+            {endUserFilters.some(
+              (filter) => filter.name === 'schedule' && filter.isActive,
+            )
+              ? 'Actualizar filtro'
+              : 'Aplicar filtro'}
+          </Button>
+          <Button
+            className="bg-red-800 w-full"
+            onClick={() => {
+              setLowerTime('')
+              setUpperTime('')
+              toogleEndUserFilter({ name: 'schedule', isActive: false })
+            }}
+          >
+            Limpiar filtro
+          </Button>
+        </FetchingLinesSpinner>
       )}
     </div>
   )

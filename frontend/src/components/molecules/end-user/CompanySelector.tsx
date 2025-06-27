@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Button } from '../../ui/button'
 import { useGeoContext } from '@/contexts/GeoContext'
+import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 import useCompanies from '@/hooks/useCompanies'
 
 const CompanySelector = () => {
@@ -50,14 +51,16 @@ const CompanySelector = () => {
           ))}
         </select>
         {activeFilteredCompany !== 'Seleccionar' && (
-          <Button
-            className="bg-red-800"
-            onClick={() =>
-              toogleEndUserFilter({ name: 'company', isActive: false })
-            }
-          >
-            Limpiar filtro
-          </Button>
+          <FetchingLinesSpinner>
+            <Button
+              className="bg-red-800 w-full"
+              onClick={() =>
+                toogleEndUserFilter({ name: 'company', isActive: false })
+              }
+            >
+              Limpiar filtro
+            </Button>
+          </FetchingLinesSpinner>
         )}
       </div>
     </div>

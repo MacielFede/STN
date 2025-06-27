@@ -5,9 +5,11 @@ import lombok.Data;
 
 import java.sql.Time;
 
+import org.hibernate.annotations.ColumnDefault;
+
 @Entity
 @Table(name = "stop_line", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"bus_stop_id", "bus_line_id", "estimated_time"})
+        @UniqueConstraint(columnNames = { "bus_stop_id", "bus_line_id", "estimated_time" })
 })
 @Data
 public class StopLine {
@@ -28,5 +30,6 @@ public class StopLine {
     private Time estimatedTime;
 
     @Column(name = "is_enabled", nullable = false)
+    @ColumnDefault(value = "false")
     private Boolean isEnabled;
 }
