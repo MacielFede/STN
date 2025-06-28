@@ -149,11 +149,12 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       }}
     >
       <label>
-        Número:
+        Linea:
         <Input
           disabled={loadingFormAction}
           type="text"
           value={line.properties.number}
+          placeholder='Ej: 123-Canelones'
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
@@ -172,6 +173,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           disabled={loadingFormAction}
           type="text"
           value={line.properties.origin}
+          placeholder='Ej: Montevideo'
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
@@ -188,6 +190,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         Destino:
         <Input
           disabled={loadingFormAction}
+          placeholder='Ej: Canelones'
           type="text"
           value={line.properties.destination}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -203,11 +206,12 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         />
       </label>
        <label>
-        Descripcion:
+        Observaciones:
         <Input
           disabled={loadingFormAction}
           type="text"
           value={line.properties.description}
+          placeholder='Ej: Observaciones de la linea'
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
