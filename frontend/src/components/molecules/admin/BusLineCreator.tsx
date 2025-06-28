@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { FeatureGroup, Marker, Polyline, useMap, useMapEvents, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -36,11 +36,29 @@ const BusLineCreator = () => {
     showLoader,
     hideLoader,
   } = useBusLineContext();
+
   const map = useMap();
 
+  const localDrawControlRef = useRef<any>(null);
+
   useEffect(() => {
-    console.log('points', points);
-  }, [points]);
+    if ((mode === 'finished' || !busLineStep) && drawControlRef.current) {
+      map.removeControl(drawControlRef.current);
+    }
+  }, [busLineStep, mode, newBusLine, map]);
+
+  useEffect(() => {
+    return () => {
+      if (localDrawControlRef.current && map) {
+        try {
+          map.removeControl(localDrawControlRef.current);
+          localDrawControlRef.current = null;
+        } catch (error) {
+          console.warn('Draw control cleanup error:', error);
+        }
+      }
+    };
+  }, []);
 
   const clearAllMapLayers = useCallback(() => {
     if (polylineRef.current) {
@@ -68,6 +86,10 @@ const BusLineCreator = () => {
     );
     featureGroupRef.current.addLayer(leafletPolyline);
 
+    if (localDrawControlRef.current) {
+      map.removeControl(localDrawControlRef.current);
+      localDrawControlRef.current = null;
+    }
     if (drawControlRef.current) {
       map.removeControl(drawControlRef.current);
     }
@@ -80,6 +102,9 @@ const BusLineCreator = () => {
       },
       draw: false,
     });
+
+    localDrawControlRef.current = drawControlRef.current;
+
     map.addControl(drawControlRef.current);
     drawControlRef.current._toolbars.edit._modes.edit.handler.enable();
 
@@ -100,12 +125,17 @@ const BusLineCreator = () => {
       });
       setMode('drawing');
       map.removeControl(drawControlRef.current!);
+      localDrawControlRef.current = null;
     };
 
     map.on(L.Draw.Event.EDITED, onEdited);
 
     return () => {
       map.off(L.Draw.Event.EDITED, onEdited);
+      if (localDrawControlRef.current) {
+        map.removeControl(localDrawControlRef.current);
+        localDrawControlRef.current = null;
+      }
       if (drawControlRef.current) {
         map.removeControl(drawControlRef.current);
       }
