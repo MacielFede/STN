@@ -14,7 +14,6 @@ import {
   createBusLine,
   createStopLine,
   deleteStopLine,
-  getByStop,
   getStopLineByBusLineId,
   isDestinationStopOnStreet,
   isIntermediateStopOnStreet,
@@ -23,7 +22,8 @@ import {
   updateStopLine,
 } from '@/services/busLines'
 import { Input } from '@/components/ui/input'
-import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
+import { _getStops, getStopGeoServer } from '@/services/busStops'
+import { updateStopStatusesWithBusLineStatus } from '@/services/stopStatusService'
 import {
   BASIC_STOP_FEATURE,
   DISTANCE_BETWEEN_STOPS_AND_STREET,
@@ -372,34 +372,12 @@ const StopAssignmentDrawer = ({
 
       await Promise.all([...upsertRequests, ...deleteRequests])
 
-      let someOrphaned = false
-      for (const association of toDeleteAssociations) {
-        const isOrphaned = await getByStop(String(association.stopId))
-        if (isOrphaned.length === 0) {
-          const stop = await _getStops(`id = ${association.stopId}`)
-          if (!stop || stop.length === 0) continue
-          stop[0].properties.status = 'INACTIVE'
-          someOrphaned = true
-          await updateStop({
-            ...stop[0].properties,
-            geometry: stop[0].geometry,
-          })
-        }
-      }
-      if (someOrphaned) {
-        toast.warning('Algunas paradas quedaron huérfanas', {
-          autoClose: 8000,
-        })
-      }
-
-      for (const stop of stops) {
-        if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue
-        stop.stop.properties.status = 'ACTIVE'
-        await updateStop({
-          ...stop.stop.properties,
-          geometry: stop.stop.geometry,
-        })
-      }
+      await updateStopStatusesWithBusLineStatus(
+        toDeleteAssociations, 
+        stops, 
+        newBusLine.properties.status,
+        newBusLine.properties.id
+      )
       hideLoader(1500)
       toast.success(
         `${newBusLine?.properties?.id ? 'Se actualizó' : 'Se creó'} linea de bus con éxito.`,
