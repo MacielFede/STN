@@ -3,13 +3,13 @@ import { useBusLineContext } from '@/contexts/BusLineContext'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useEffect, useState, useMemo } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
-import { _getLines, deleteBusLine, deleteStopLine, getByStop, getStopLineByBusLineId } from '@/services/busLines'
+import { _getLines, deleteBusLine, deleteStopLine, getStopLineByBusLineId } from '@/services/busLines'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import { BASIC_LINE_FEATURE } from '@/utils/constants'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { geometry } from '@turf/turf'
-import { _getStops, updateStop } from '@/services/busStops'
+import { handleStopStatusAfterBusLineDeletion } from '@/services/stopStatusService'
 import type { Company } from '@/models/database'
 import { getCompanies } from '@/services/companies'
 
@@ -81,18 +81,8 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
                 await queryClient.invalidateQueries({ queryKey: ['bus-lines'] })
                 await queryClient.invalidateQueries({ queryKey: ['stops'] })
                 await deleteBusLine(id);
-                for(const stop of stopsAssociations){
-                    const stopAssoc = await getByStop(stop.stopId);
-                    if (stopAssoc.length === 0 || stopAssoc.every((assoc) => assoc.isEnabled === false)){
-                        const stopData = await _getStops(`id=${stop.stopId}`);
-                        if(!stopData || !stopData?.length) continue;
-                        stopData[0].properties.status = 'INACTIVE';
-                        await updateStop({
-                            ...stopData[0].properties,
-                            geometry: stopData[0].geometry,
-                        });
-                    }
-                }
+                
+                await handleStopStatusAfterBusLineDeletion(stopsAssociations)
                 toast.success('Línea eliminada correctamente', {
                     closeOnClick: true,
                     position: 'top-right',
