@@ -370,10 +370,23 @@ const StopAssignmentDrawer = ({
         deleteStopLine(String(assoc.id)),
       )
 
+      const disabledAssociations = associations.filter((assoc) => {
+        const key = `${assoc.stopId}_${assoc.estimatedTime}`
+        if (newAssignmentKeys.has(key)) {
+          const newAssignment = newAssignments.find(a => 
+            `${a.stopId}_${a.estimatedTime}` === key
+          )
+          return newAssignment && !newAssignment.isEnabled
+        }
+        return false
+      })
+
+      const allDeletedOrDisabledAssociations = [...toDeleteAssociations, ...disabledAssociations]
+
       await Promise.all([...upsertRequests, ...deleteRequests])
 
       await updateStopStatusesWithBusLineStatus(
-        toDeleteAssociations, 
+        allDeletedOrDisabledAssociations, 
         stops, 
         newBusLine.properties.status,
         newBusLine.properties.id

@@ -5,7 +5,7 @@ import type { BusStopFeature } from '@/models/geoserver'
 import type { BusStopLine } from '@/models/database'
 
 /**
- * Handles updating stop status when stops become orphaned (no longer assigned to any bus line)
+ * Handles updating stop status when stops become orphaned (no longer assigned to any active bus line)
  * @param deletedAssociations Array of stop-line associations that were deleted
  * @returns Promise<boolean> Returns true if any stops were orphaned
  */
@@ -17,8 +17,7 @@ export async function handleOrphanedStops(
   for (const association of deletedAssociations) {
     const remainingAssociations = await getByStop(String(association.stopId))
     
-    // If stop has no remaining associations, mark it as INACTIVE
-    if (remainingAssociations.length === 0) {
+    if (remainingAssociations.length === 0 || remainingAssociations.every((assoc) => assoc.isEnabled === false)) {
       const stopFeatures = await _getStops(`id = ${association.stopId}`)
       if (!stopFeatures || stopFeatures.length === 0) continue
 
@@ -50,7 +49,6 @@ export async function activateAssignedStops(
   stops: Array<{ stop: BusStopFeature | null }>
 ): Promise<void> {
   for (const stop of stops) {
-    // Skip if stop doesn't exist or is already active
     if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue
 
     stop.stop.properties.status = 'ACTIVE'
@@ -153,10 +151,8 @@ export async function updateStopStatusesWithBusLineStatus(
   busLineStatus: 'ACTIVE' | 'INACTIVE',
   busLineId?: string | number
 ): Promise<boolean> {
-  // Handle orphaned stops first
   const hasOrphanedStops = await handleOrphanedStops(deletedAssociations)
 
-  // Then update stop statuses based on bus line status
   await updateStopStatusesForBusLineStatus(busLineStatus, assignedStops, busLineId)
 
   return hasOrphanedStops
