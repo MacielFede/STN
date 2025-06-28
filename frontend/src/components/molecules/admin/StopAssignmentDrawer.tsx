@@ -536,11 +536,11 @@ const StopAssignmentDrawer = ({
       cacheStop(destinationData[0])
       setOriginStop({
         stop: originData[0],
-        estimatedTimes: [],
+        estimatedTimes: originStop?.estimatedTimes ?? [],
       })
       setDestinationStop({
         stop: destinationData[0],
-        estimatedTimes: [],
+        estimatedTimes: destinationStop?.estimatedTimes ?? [],
       })
 
       const stops = [
