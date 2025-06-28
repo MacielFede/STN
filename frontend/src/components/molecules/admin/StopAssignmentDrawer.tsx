@@ -757,7 +757,6 @@ const StopAssignmentDrawer = ({
                           </Button>
                         )}
                       </div>
-                      {stop?.status ? <p>estoy</p> : <p>no estoy</p>}
                       <p className="text-xs text-gray-500">
                         {
                           selectedStops.get(stop.stop.properties.id)?.properties
