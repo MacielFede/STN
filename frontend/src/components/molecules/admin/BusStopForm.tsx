@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
+import { Label } from 'flowbite-react'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import type { PointGeometry } from '@/models/geoserver'
@@ -10,14 +11,13 @@ import { createStop, deleteStop, updateStop } from '@/services/busStops'
 import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { useBusLineContext } from '@/contexts/BusLineContext'
-import { Label } from 'flowbite-react'
 import { streetPointContext } from '@/services/busLines'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
 
 const BusStopForm = () => {
-  const { stop, setStop, cleanUpStopState } = useBusStopContext();
-  const { cacheStop, busLineStep, setBusLineStep } = useBusLineContext();
+  const { stop, setStop, cleanUpStopState } = useBusStopContext()
+  const { cacheStop, busLineStep, setBusLineStep } = useBusLineContext()
   const queryClient = useQueryClient()
   const createStopMutation = useMutation({
     mutationFn: async (
@@ -44,7 +44,10 @@ const BusStopForm = () => {
           ...data,
           geometry: {
             type: 'Point',
-            coordinates: [data.geometry.coordinates[1], data.geometry.coordinates[0]],
+            coordinates: [
+              data.geometry.coordinates[1],
+              data.geometry.coordinates[0],
+            ],
           },
           department: turnCapitalizedDepartment(
             stopContext.properties.department,
@@ -57,6 +60,10 @@ const BusStopForm = () => {
             properties: {
               ...data,
               id: response.data.id,
+              department: turnCapitalizedDepartment(
+                stopContext.properties.department,
+              ) as Department,
+              route: stopContext.properties.name,
             },
           })
           setBusLineStep('show-selection-popup')
@@ -164,6 +171,7 @@ const BusStopForm = () => {
   }
 
   const handleStopUpdate = () => {
+    if (!stop) return
     updateStopMutation.mutate({
       id: stop.properties.id,
       name: stop.properties.name,
@@ -175,6 +183,7 @@ const BusStopForm = () => {
     })
   }
   const handleCreateStop = () => {
+    if (!stop) return
     createStopMutation.mutate({
       name: stop.properties.name,
       description: stop.properties.description,
@@ -190,6 +199,7 @@ const BusStopForm = () => {
     [updateStopMutation, deleteStopMutation],
   )
 
+  if (!stop) return null
   return (
     <>
       <Label>Paradas</Label>
@@ -223,7 +233,7 @@ const BusStopForm = () => {
         </label>
         <div>
           <label>Refugio:</label>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-row gap-1">
             <label>
               <input
                 disabled={loadingFormAction}
@@ -248,8 +258,8 @@ const BusStopForm = () => {
             </label>
           </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <label>
+        <div>
+          <label className="flex flex-col gap-1">
             Dirección:
             <select
               disabled={loadingFormAction}
@@ -260,7 +270,7 @@ const BusStopForm = () => {
                   e.target.value as 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL',
                 )
               }
-              className="select select-bordered border-black"
+              className="select select-bordered border-black bg-white"
             >
               <option value="OUTBOUND">Ida</option>
               <option value="INBOUND">Vuelta</option>
@@ -285,7 +295,7 @@ const BusStopForm = () => {
             </Button>
           )}
         </div>
-      </form >
+      </form>
     </>
   )
 }

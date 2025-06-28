@@ -3,14 +3,8 @@ import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
-import OriginDestinationSelector  from '../organisms/OriginDestinationSelector'
-import { Button } from '../ui/button'
-import Modal from '../atoms/Modal'
-
-
-import BusStopInfo from '../atoms/BusStopInfo'
-import BusStopLines from '../atoms/BusStopLines'
 import { Drawer, DrawerHeader, DrawerItems } from 'flowbite-react'
+import OriginDestinationSelector from '../molecules/end-user/OriginDestinationSelector'
 import CommandPallete from '../atoms/CommandPallete'
 import BusStops from '../molecules/BusStops'
 import CompanySelector from '../molecules/end-user/CompanySelector'
@@ -25,6 +19,7 @@ import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
 import UserPositionIndicator from '../atoms/UserPositionIndicator'
 import StatusSelector from '../molecules/end-user/StatusSelector'
+import DefaultLinesSelector from '../molecules/end-user/DefaultLinesSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
 import { BUS_LINE_STYLES, DEFAULT_MAP_LOCATION } from '@/utils/constants'
@@ -39,16 +34,16 @@ function EndUserMap() {
   const [displayedRoutes, setDisplayedRoutes] = useState<Array<BusLineFeature>>(
     [],
   )
+  const [selectedRouteId, setSelectedRouteId] = useState<string>('')
   const { lines } = useLines()
 
   function handleDisplayRoute(route: BusLineFeature) {
     setDisplayedRoutes((prev) => {
       const exists = prev.some((r) => r.id === route.id)
       if (exists) {
-        // Quitarla
+        if (selectedRouteId === route.id) setSelectedRouteId('')
         return prev.filter((r) => r.id !== route.id)
       } else {
-        // Agregarla
         return [...prev, route]
       }
     })
@@ -59,7 +54,7 @@ function EndUserMap() {
   }
 
   useEffect(() => {
-    setDisplayedRoutes([])
+    setDisplayedRoutes(lines)
   }, [lines])
 
   useEffect(() => {
@@ -75,7 +70,7 @@ function EndUserMap() {
 
   return (
     <>
-      <CommandPallete yPosition="top" xPosition="right">
+      <CommandPallete yPosition="top" xPosition="right" displayToogle>
         <StreetSelector />
         <OriginDestinationSelector />
         <StatusSelector />
@@ -86,6 +81,7 @@ function EndUserMap() {
           polygonPoints={polygonPoints}
           onToggleDrawing={onToggleDrawing}
         />
+        <DefaultLinesSelector />
       </CommandPallete>
       <MapContainer
         preferCanvas
@@ -103,7 +99,16 @@ function EndUserMap() {
           <GeoJSON
             key={line.id}
             data={line}
-            style={BUS_LINE_STYLES(line.properties.status === 'ACTIVE')}
+            style={BUS_LINE_STYLES(
+              line.properties.status === 'ACTIVE',
+              selectedRouteId === line.id,
+            )}
+            eventHandlers={{
+              click: () => {
+                if (selectedRouteId === line.id) setSelectedRouteId('')
+                else setSelectedRouteId(line.id ?? '')
+              },
+            }}
           />
         ))}
         <UserPositionIndicator />
@@ -139,6 +144,7 @@ function EndUserMap() {
             onDisplayRoute={handleDisplayRoute}
             displayedRoutes={displayedRoutes}
             activeStopId={activeStop?.properties.id}
+            selectedRouteId={selectedRouteId}
           />
         </DrawerItems>
       </Drawer>

@@ -1,13 +1,20 @@
+import { booleanPointInPolygon, buffer, point } from '@turf/turf'
 import type { AxiosResponse } from 'axios'
 import type { BusStopLine } from '../models/database'
-import type { BusLineFeature, BusLineFeatureCollection, BusStopFeature, FeatureCollection, LineStringGeometry, StreetFeature } from '../models/geoserver'
+import type {
+  BusLineFeature,
+  BusLineFeatureCollection,
+  BusStopFeature,
+  FeatureCollection,
+  LineStringGeometry,
+  StreetFeature,
+} from '../models/geoserver'
 import { api, geoApi } from '@/api/config'
 import {
   DISTANCE_BETWEEN_LINE_AND_STREET,
   DISTANCE_BETWEEN_STOPS_AND_STREET,
   GEO_WORKSPACE,
 } from '@/utils/constants'
-import { booleanPointInPolygon, buffer, point } from '@turf/turf'
 
 export const getLines = async (cqlFilter: string) => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
@@ -21,9 +28,10 @@ export const getLines = async (cqlFilter: string) => {
 }
 
 export const getByStop = async (stopId: string) => {
-  const { data }: AxiosResponse<Array<BusStopLine>> =
-    await api.get(`/stop-lines/by-stop/${stopId}`)
-  return data;
+  const { data }: AxiosResponse<Array<BusStopLine>> = await api.get(
+    `/stop-lines/by-stop/${stopId}`,
+  )
+  return data
 }
 
 export const createBusLine = async (line: BusLineFeature) => {
@@ -48,7 +56,7 @@ export const createStopLine = async (
   stopId: string,
   lineId: string,
   estimatedTime: string,
-  isEnabled: boolean = true
+  isEnabled: boolean = true,
 ) => {
   return await api.post('/stop-lines', {
     stopId,
@@ -63,7 +71,7 @@ export const updateStopLine = async (
   stopId: string,
   lineId: string,
   estimatedTime: string,
-  isEnabled: boolean = true
+  isEnabled: boolean = true,
 ) => {
   return await api.put(`/stop-lines/${stopLineId}`, {
     stopId,
@@ -78,27 +86,28 @@ export const deleteStopLine = async (stopLineId: string) => {
 }
 
 export const getStopLineByBusLineId = async (busLineId: string) => {
-  const { data }: AxiosResponse<Array<BusStopLine>> =
-    await api.get(`/stop-lines/by-line/${busLineId}`)
+  const { data }: AxiosResponse<Array<BusStopLine>> = await api.get(
+    `/stop-lines/by-line/${busLineId}`,
+  )
 
   return data
 }
 
 export const isBusLineOnStreets = async (
   geometry: LineStringGeometry,
-  batchSize: number = 100
+  batchSize: number = 100,
 ): Promise<any> => {
-  const response: { status: boolean; errorPoints: number[][] } = {
+  const response: { status: boolean; errorPoints: Array<Array<number>> } = {
     status: false,
     errorPoints: [],
-  };
-  const densified = densifyLineString(geometry.coordinates);
+  }
+  const densified = densifyLineString(geometry.coordinates)
 
   for (let i = 0; i < densified.length; i += batchSize) {
-    const batch = densified.slice(i, i + batchSize);
-    if (batch.length === 0) continue;
+    const batch = densified.slice(i, i + batchSize)
+    if (batch.length === 0) continue
 
-    const multipointWKT = `MULTIPOINT(${batch.map(([lon, lat]) => `(${lon} ${lat})`).join(',')})`;
+    const multipointWKT = `MULTIPOINT(${batch.map(([lon, lat]) => `(${lon} ${lat})`).join(',')})`
 
     const { data }: AxiosResponse<FeatureCollection<StreetFeature>> =
       await geoApi.get('', {
@@ -106,38 +115,42 @@ export const isBusLineOnStreets = async (
           typeName: `${GEO_WORKSPACE}:ft_street`,
           CQL_FILTER: `DWITHIN(geom, ${multipointWKT}, ${DISTANCE_BETWEEN_LINE_AND_STREET}, meters)`,
         },
-      });
+      })
 
     for (const [lon, lat] of batch) {
-      const pt = point([lon, lat]);
-      let covered = false;
+      const pt = point([lon, lat])
+      let covered = false
       for (const street of data.features) {
-        const streetBuffer = buffer(street.geometry, DISTANCE_BETWEEN_LINE_AND_STREET, { units: 'meters' });
-        if(!streetBuffer){
-          return false;
+        const streetBuffer = buffer(
+          street.geometry,
+          DISTANCE_BETWEEN_LINE_AND_STREET,
+          { units: 'meters' },
+        )
+        if (!streetBuffer) {
+          return false
         }
         if (booleanPointInPolygon(pt, streetBuffer)) {
-          covered = true;
-          break;
+          covered = true
+          break
         }
       }
       if (!covered) {
-        response.errorPoints.push([lon, lat]);
+        response.errorPoints.push([lon, lat])
       }
     }
   }
 
   if (response.errorPoints.length > 0) {
-    response.status = false;
-    return response;
+    response.status = false
+    return response
   }
-  response.status = true;
-  return response;
-};
+  response.status = true
+  return response
+}
 
 export const isOriginStopOnStreet = async (
   originStop: BusStopFeature,
-  busLine: BusLineFeature
+  busLine: BusLineFeature,
 ): Promise<boolean> => {
   const [lineLon, lineLat] = busLine.geometry.coordinates[0]
 
@@ -154,9 +167,10 @@ export const isOriginStopOnStreet = async (
 
 export const isDestinationStopOnStreet = async (
   destinationStop: BusStopFeature,
-  busLine: BusLineFeature
+  busLine: BusLineFeature,
 ): Promise<boolean> => {
-  const [lineLon, lineLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
+  const [lineLon, lineLat] =
+    busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
 
   const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
     await geoApi.get('', {
@@ -172,33 +186,36 @@ export const isDestinationStopOnStreet = async (
 export const isIntermediateStopOnStreet = async (
   intermediateStop: BusStopFeature,
   busLine: BusLineFeature,
-  maxBatchSize: number = 100
+  maxBatchSize: number = 100,
 ): Promise<boolean> => {
-  const [originLon, originLat] = busLine.geometry.coordinates[0];
-  const [destLon, destLat] = busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1];
+  const [originLon, originLat] = busLine.geometry.coordinates[0]
+  const [destLon, destLat] =
+    busLine.geometry.coordinates[busLine.geometry.coordinates.length - 1]
 
-  const densified = densifyLineString(busLine.geometry.coordinates);
+  const densified = densifyLineString(busLine.geometry.coordinates)
 
-  const threshold = 0.0003;
+  const threshold = 0.0003
   const intermediateDensified = densified.filter(([lon, lat]) => {
-    const distToOrigin = Math.sqrt((lon - originLon) ** 2 + (lat - originLat) ** 2);
-    const distToDest = Math.sqrt((lon - destLon) ** 2 + (lat - destLat) ** 2);
-    return distToOrigin > threshold && distToDest > threshold;
-  });
+    const distToOrigin = Math.sqrt(
+      (lon - originLon) ** 2 + (lat - originLat) ** 2,
+    )
+    const distToDest = Math.sqrt((lon - destLon) ** 2 + (lat - destLat) ** 2)
+    return distToOrigin > threshold && distToDest > threshold
+  })
 
   if (intermediateDensified.length === 0) {
-    return false;
+    return false
   }
 
-  const total = intermediateDensified.length;
-  const batches: [number, number][][] = [];
+  const total = intermediateDensified.length
+  const batches: Array<Array<[number, number]>> = []
   for (let i = 0; i < total; i += maxBatchSize) {
-    batches.push(intermediateDensified.slice(i, i + maxBatchSize));
+    batches.push(intermediateDensified.slice(i, i + maxBatchSize))
   }
 
   for (const batch of batches) {
-    if (batch.length < 2) continue;
-    const wkt = `LINESTRING(${batch.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`;
+    if (batch.length < 2) continue
+    const wkt = `LINESTRING(${batch.map((coord) => `${coord[0]} ${coord[1]}`).join(', ')})`
 
     const { data }: AxiosResponse<FeatureCollection<BusStopFeature>> =
       await geoApi.get('', {
@@ -206,21 +223,21 @@ export const isIntermediateStopOnStreet = async (
           typeName: `${GEO_WORKSPACE}:ft_bus_stop`,
           CQL_FILTER: `DWITHIN(geometry, ${wkt}, ${DISTANCE_BETWEEN_STOPS_AND_STREET}, meters) AND id = ${intermediateStop.properties.id}`,
         },
-      });
+      })
 
     if (data.features.length > 0) {
-      return true;
+      return true
     }
   }
 
-  return false;
+  return false
 }
 
 function densifyLineString(
-  coordinates: [number, number][],
-  maxSegmentLength = 0.0003 // approximately 30 meters
-): [number, number][] {
-  const densified: [number, number][] = []
+  coordinates: Array<[number, number]>,
+  maxSegmentLength = 0.0003, // approximately 30 meters
+): Array<[number, number]> {
+  const densified: Array<[number, number]> = []
   for (let i = 0; i < coordinates.length - 1; i++) {
     const [lon1, lat1] = coordinates[i]
     const [lon2, lat2] = coordinates[i + 1]
@@ -276,16 +293,20 @@ export const _getLines = async (cqlFilter?: string) => {
 }
 
 export const getLineFromGraphHopper = async (
-  points: [number, number][],
+  points: Array<[number, number]>,
 ): Promise<LineStringGeometry | null> => {
-  if (!points || points.length === 0 || points.some(point => point.length !== 2)) {
+  if (
+    !points ||
+    points.length === 0 ||
+    points.some((point) => point.length !== 2)
+  ) {
     console.error('Puntos deben ser coordenadas válidas')
     return null
   }
 
   const params = new URLSearchParams()
-  points.forEach(point => {
-    params.append('point', `${point[1]},${point[0]}`)
+  points.forEach((p) => {
+    params.append('point', `${p[1]},${p[0]}`)
   })
   params.append('profile', 'car')
   params.append('locale', 'es')
@@ -296,14 +317,11 @@ export const getLineFromGraphHopper = async (
   const url = `https://graphhopper.com/api/1/route?${params.toString()}`
 
   try {
-    const response = await fetch(
-      url,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+    })
     const route = await response.json()
 
     if (!route || route.error) {
@@ -357,7 +375,7 @@ export const getLinesInStreet = async (streetName?: string, km = '') => {
   const { data }: AxiosResponse<FeatureCollection<BusLineFeature>> =
     await geoApi.get('', {
       params: {
-        typeName: `${GEO_WORKSPACE}:bus_lines_by_street${km ? '_km' : ''}`,
+        typeName: `${GEO_WORKSPACE}:bus_lines_in_streets${km ? '_km' : ''}`,
         viewparams: `street_name:${streetName}${km ? `;km_value:${km}` : ''}`,
       },
     })

@@ -15,36 +15,42 @@ import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import useStopLines from '@/hooks/useStopLines'
 import Modal from '@/components/atoms/Modal'
+import { useGeoContext } from '@/contexts/GeoContext'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
   displayedRoutes: Array<BusLineFeature>
   activeStopId: number | undefined
+  selectedRouteId: string
 }
 
 export default function BusLinetable({
   onDisplayRoute,
   displayedRoutes,
   activeStopId,
+  selectedRouteId,
 }: BusLineTableProps) {
   const { companies } = useCompanies()
   const { stopSpecificLines } = useStopLines(activeStopId)
   const { lines: filteredLines } = useLines()
   const { lines: allLines } = useAllLines()
+  const { displayDefaultLines } = useGeoContext()
 
   const validLineIds = useMemo(() => {
     return activeStopId && stopSpecificLines
       ? new Set(
-        stopSpecificLines
-          .filter((rel) => rel.isEnabled)
-          .map((rel) => rel.lineId)
-      )
+          stopSpecificLines
+            .filter((rel) => rel.isEnabled)
+            .map((rel) => rel.lineId),
+        )
       : null
   }, [activeStopId, stopSpecificLines])
 
   const linesToShow = useMemo(() => {
     return activeStopId && validLineIds
-      ? allLines?.filter((line) => validLineIds.has(line.properties.id))
+      ? allLines?.filter(
+          (line) => line.properties.id && validLineIds.has(line.properties.id),
+        )
       : filteredLines
   }, [filteredLines, allLines, validLineIds, activeStopId])
 
@@ -65,16 +71,20 @@ export default function BusLinetable({
 
   const getLineSchedule = useCallback(
     (line: BusLineFeature) => {
-      return lineScheduleMap.get(line.properties.id) || []
+      return (
+        (!!line.properties.id && lineScheduleMap.get(line.properties.id)) || []
+      )
     },
     [lineScheduleMap],
   )
 
   const tableTitle = useMemo(() => {
-    return activeStopId
-      ? `Líneas que pasan por esta parada`
-      : 'Líneas filtradas'
-  }, [activeStopId])
+    return displayDefaultLines
+      ? 'Lineas cercanas a tu ubicación (los filtros no funcionaran hasta que dejes de ver las lineas cercanas)'
+      : activeStopId
+        ? `Líneas que pasan por esta parada`
+        : 'Líneas filtradas'
+  }, [activeStopId, displayDefaultLines])
 
   return linesToShow && linesToShow.length > 0 ? (
     <>
@@ -94,7 +104,14 @@ export default function BusLinetable({
         </TableHeader>
         <TableBody>
           {linesToShow.map((line) => (
-            <TableRow key={line.id}>
+            <TableRow
+              key={line.id}
+              className={line.id === selectedRouteId ? 'bg-red-400' : ''}
+              ref={(el) => {
+                if (line.id === selectedRouteId)
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
               <TableCell className="font-medium">
                 {line.properties.number}
               </TableCell>

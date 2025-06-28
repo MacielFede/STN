@@ -28,6 +28,7 @@ export const DISTANCE_BETWEEN_STOPS_AND_STREET = 30
 export const DISTANCE_BETWEEN_LINE_AND_STREET = 80
 
 export const BASIC_LINE_FEATURE: BusLineFeature = {
+  geometry_name: 'LineString',
   type: 'Feature',
   geometry: {
     type: 'LineString',
@@ -40,14 +41,14 @@ export const BASIC_LINE_FEATURE: BusLineFeature = {
     description: 'Descripcion de la linea',
     status: 'ACTIVE',
     schedule: '09:00:00',
-    companyId: null,
+    companyId: 0,
   },
 }
 
 export const DEFAULT_MAP_LOCATION: LatLngExpression = [-32.5, -56.164]
 
-export const BUS_LINE_STYLES = (isActive: boolean) => ({
-  color: isActive ? 'blue' : 'black',
+export const BUS_LINE_STYLES = (isActive: boolean, isSelected = false) => ({
+  color: isSelected ? 'red' : isActive ? 'blue' : 'black',
   weight: 3,
   opacity: 0.8,
 })

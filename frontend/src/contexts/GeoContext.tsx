@@ -24,11 +24,14 @@ type GeoContextType = {
   ) => void
   userBBox: BBox
   setUserBBox: (newBBox: BBox) => void
+  displayDefaultLines: boolean
+  setDisplayDefaultLines: (toogleDefaultLines: boolean) => void
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
 
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
+  const [displayDefaultLines, setDisplayDefaultLines] = useState<boolean>(false)
   const [userBBox, setUserBBox] = useState<BBox>({})
   const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
@@ -83,6 +86,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         setBusLineNearUserFilter,
         userBBox,
         setUserBBox,
+        displayDefaultLines,
+        setDisplayDefaultLines,
       }}
     >
       {children}
