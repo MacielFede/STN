@@ -15,7 +15,7 @@ const CommandPallete = ({
   yPosition,
   displayToogle,
 }: CommandPalleteProps) => {
-  const [isVisible, setIsVisible] = useState(!displayToogle)
+  const [isVisible, setIsVisible] = useState(true)
 
   return (
     <div

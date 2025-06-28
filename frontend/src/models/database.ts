@@ -26,7 +26,7 @@ export type StreetProperties = {
 }
 
 export type BusLineProperties = {
-  id?: number
+  id: number
   number: string
   description: string
   status: 'ACTIVE' | 'INACTIVE'

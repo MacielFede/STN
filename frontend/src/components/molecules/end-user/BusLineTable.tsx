@@ -15,6 +15,7 @@ import useCompanies from '@/hooks/useCompanies'
 import { getHoursAndMinutes } from '@/utils/helpers'
 import useStopLines from '@/hooks/useStopLines'
 import Modal from '@/components/atoms/Modal'
+import { useGeoContext } from '@/contexts/GeoContext'
 
 type BusLineTableProps = {
   onDisplayRoute: (route: BusLineFeature) => void
@@ -33,6 +34,7 @@ export default function BusLinetable({
   const { stopSpecificLines } = useStopLines(activeStopId)
   const { lines: filteredLines } = useLines()
   const { lines: allLines } = useAllLines()
+  const { displayDefaultLines } = useGeoContext()
 
   const validLineIds = useMemo(() => {
     return activeStopId && stopSpecificLines
@@ -77,10 +79,12 @@ export default function BusLinetable({
   )
 
   const tableTitle = useMemo(() => {
-    return activeStopId
-      ? `Líneas que pasan por esta parada`
-      : 'Líneas filtradas'
-  }, [activeStopId])
+    return displayDefaultLines
+      ? 'Lineas cercanas a tu ubicación (los filtros no funcionaran hasta que dejes de ver las lineas cercanas)'
+      : activeStopId
+        ? `Líneas que pasan por esta parada`
+        : 'Líneas filtradas'
+  }, [activeStopId, displayDefaultLines])
 
   return linesToShow && linesToShow.length > 0 ? (
     <>

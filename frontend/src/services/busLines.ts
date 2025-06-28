@@ -305,8 +305,8 @@ export const getLineFromGraphHopper = async (
   }
 
   const params = new URLSearchParams()
-  points.forEach((point) => {
-    params.append('point', `${point[1]},${point[0]}`)
+  points.forEach((p) => {
+    params.append('point', `${p[1]},${p[0]}`)
   })
   params.append('profile', 'car')
   params.append('locale', 'es')

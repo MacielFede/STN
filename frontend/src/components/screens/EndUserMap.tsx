@@ -19,6 +19,7 @@ import { PolygonFilterUtilities } from '../atoms/PolygonFilterUtilities'
 import StreetSelector from '../molecules/end-user/StreetSelector'
 import UserPositionIndicator from '../atoms/UserPositionIndicator'
 import StatusSelector from '../molecules/end-user/StatusSelector'
+import DefaultLinesSelector from '../molecules/end-user/DefaultLinesSelector'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
 import { BUS_LINE_STYLES, DEFAULT_MAP_LOCATION } from '@/utils/constants'
@@ -40,6 +41,7 @@ function EndUserMap() {
     setDisplayedRoutes((prev) => {
       const exists = prev.some((r) => r.id === route.id)
       if (exists) {
+        if (selectedRouteId === route.id) setSelectedRouteId('')
         return prev.filter((r) => r.id !== route.id)
       } else {
         return [...prev, route]
@@ -79,6 +81,7 @@ function EndUserMap() {
           polygonPoints={polygonPoints}
           onToggleDrawing={onToggleDrawing}
         />
+        <DefaultLinesSelector />
       </CommandPallete>
       <MapContainer
         preferCanvas
