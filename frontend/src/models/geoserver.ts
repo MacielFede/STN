@@ -1,6 +1,7 @@
 import type {
   BusLineProperties,
   BusStopProperties,
+  KmProperties,
   StreetProperties,
 } from './database'
 
@@ -40,6 +41,14 @@ export type StreetFeature = {
   geometry: MultiLineStringGeometry
   geometryName: string
   properties: StreetProperties
+}
+
+export type KmFeature = {
+  type?: 'Feature'
+  id?: string
+  geometry: PointGeometry
+  geometryName: string
+  properties: KmProperties
 }
 
 export type BusLineFeature = {

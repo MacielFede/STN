@@ -1,5 +1,6 @@
+import L from 'leaflet'
 import { useEffect, useState } from 'react'
-import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
+import { GeoJSON, MapContainer, Marker, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'react-toastify/dist/ReactToastify.css'
 import '@/styles/Map.css'
@@ -20,9 +21,18 @@ import StreetSelector from '../molecules/end-user/StreetSelector'
 import UserPositionIndicator from '../atoms/UserPositionIndicator'
 import StatusSelector from '../molecules/end-user/StatusSelector'
 import DefaultLinesSelector from '../molecules/end-user/DefaultLinesSelector'
+import KmPost from '../../../public/km_post_icon.png'
 import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
 import useLines from '@/hooks/useLines'
 import { BUS_LINE_STYLES, DEFAULT_MAP_LOCATION } from '@/utils/constants'
+import { useGeoContext } from '@/contexts/GeoContext'
+
+const kmPostIcon = L.icon({
+  iconUrl: KmPost,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+})
 
 function EndUserMap() {
   const [polygonPoints, setPolygonPoints] = useState<Array<[number, number]>>(
@@ -36,6 +46,7 @@ function EndUserMap() {
   )
   const [selectedRouteId, setSelectedRouteId] = useState<string>('')
   const { lines } = useLines()
+  const { kmFeature } = useGeoContext()
 
   function handleDisplayRoute(route: BusLineFeature) {
     setDisplayedRoutes((prev) => {
@@ -111,6 +122,16 @@ function EndUserMap() {
             }}
           />
         ))}
+        {kmFeature && (
+          <Marker
+            position={[
+              kmFeature.geometry.coordinates[1],
+              kmFeature.geometry.coordinates[0],
+            ]}
+            title={`Km ${kmFeature.properties.kilometer}`}
+            icon={kmPostIcon}
+          />
+        )}
         <UserPositionIndicator />
         <PolygonFilterUtilities
           isDrawing={isDrawing}

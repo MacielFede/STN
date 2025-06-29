@@ -14,13 +14,13 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
     coordinates: DEFAULT_COORDINATES,
   },
   properties: {
-    name: 'Nueva parada',
-    description: 'Direccion de la parada',
+    name: '',
+    description: '',
     status: 'INACTIVE',
     hasShelter: false,
-    department: 'Montevideo',
+    department: 'Durazno',
     direction: 'BIDIRECTIONAL',
-    route: 'AV. Italia',
+    route: '',
   },
 }
 
@@ -54,3 +54,25 @@ export const BUS_LINE_STYLES = (isActive: boolean, isSelected = false) => ({
 })
 
 export const MAX_BUS_STOP_FEATURE_REQUEST = 100
+
+export const DEPARTMENTS = [
+  'Artigas',
+  'Canelones',
+  'Cerro Largo',
+  'Colonia',
+  'Durazno',
+  'Flores',
+  'Florida',
+  'Lavalleja',
+  'Maldonado',
+  'Montevideo',
+  'Paysandú',
+  'Río Negro',
+  'Rivera',
+  'Rocha',
+  'Salto',
+  'San José',
+  'Soriano',
+  'Tacuarembó',
+  'Treinta y Tres',
+] as const

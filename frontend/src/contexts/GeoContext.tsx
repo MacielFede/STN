@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react'
 import type { EndUserFilter, FilterData } from '@/models/database'
-import type { BBox } from '@/models/geoserver'
+import type { BBox, KmFeature } from '@/models/geoserver'
 import { buildCqlFilter, getLinesCqlFilterFromData } from '@/utils/helpers'
 
 type GeoContextType = {
@@ -26,6 +26,8 @@ type GeoContextType = {
   setUserBBox: (newBBox: BBox) => void
   displayDefaultLines: boolean
   setDisplayDefaultLines: (toogleDefaultLines: boolean) => void
+  kmFeature: KmFeature | undefined
+  setKmFeature: (newKm: KmFeature | undefined) => void
 }
 
 const GeoContext = createContext<GeoContextType | undefined>(undefined)
@@ -39,6 +41,7 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
     useState<FilterData['street']>()
   const [busLineNearUserFilter, setBusLineNearUserFilter] =
     useState<FilterData['location']>()
+  const [kmFeature, setKmFeature] = useState<KmFeature | undefined>()
 
   const toogleEndUserFilter = (filterToToogle: EndUserFilter) => {
     const filterExists = endUserFilters.some(
@@ -88,6 +91,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         setUserBBox,
         displayDefaultLines,
         setDisplayDefaultLines,
+        kmFeature,
+        setKmFeature,
       }}
     >
       {children}
