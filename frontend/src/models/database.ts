@@ -1,3 +1,4 @@
+import type { DEPARTMENTS } from '@/utils/constants'
 import type { PointGeometry } from './geoserver'
 
 export type BusStopProperties = {
@@ -25,6 +26,13 @@ export type StreetProperties = {
   department: string
 }
 
+export type KmProperties = {
+  id?: number
+  kilometer: number
+  route: number
+  route_name: string
+}
+
 export type BusLineProperties = {
   id: number
   number: string
@@ -38,26 +46,7 @@ export type BusLineProperties = {
 
 export type StopDirection = 'OUTBOUND' | 'INBOUND' | 'BIDIRECTIONAL'
 
-export type Department =
-  | 'Artigas'
-  | 'Canelones'
-  | 'Cerro Largo'
-  | 'Colonia'
-  | 'Durazno'
-  | 'Flores'
-  | 'Florida'
-  | 'Lavalleja'
-  | 'Maldonado'
-  | 'Montevideo'
-  | 'Paysandú'
-  | 'Río Negro'
-  | 'Rivera'
-  | 'Rocha'
-  | 'Salto'
-  | 'San José'
-  | 'Soriano'
-  | 'Tacuarembó'
-  | 'Treinta y Tres'
+export type Department = (typeof DEPARTMENTS)[number]
 
 type FilterName =
   | 'company'

@@ -6,7 +6,6 @@ import type {
 } from '@/models/database'
 import type { BBox, BusLineFeature, PointGeometry } from '@/models/geoserver'
 
-
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 
@@ -40,11 +39,6 @@ export function transformKeysToCamelCase<T>(obj: T): unknown {
   }
   return obj
 }
-
-export function turnCapitalizedDepartment(str: string) {
-  return str[0].toUpperCase() + str.slice(1).toLowerCase()
-}
-
 
 type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
 
@@ -87,31 +81,30 @@ export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
   }
 }
 
-
 export function getHoursAndMinutes(
   input: string,
-  withSeconds: boolean = false
+  withSeconds: boolean = false,
 ): string {
-  const timeMatch = input.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  const timeMatch = input.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/)
   if (timeMatch) {
-    const [, hh, mm, ss] = timeMatch;
+    const [, hh, mm, ss] = timeMatch
     if (withSeconds) {
-      return `${hh}:${mm}:${ss ?? '00'}`;
+      return `${hh}:${mm}:${ss ?? '00'}`
     }
-    return `${hh}:${mm}`;
+    return `${hh}:${mm}`
   }
 
-  const date = new Date(input);
+  const date = new Date(input)
   if (!isNaN(date.getTime())) {
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0')
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0')
     return withSeconds
       ? `${hours}:${minutes}:${seconds}`
-      : `${hours}:${minutes}`;
+      : `${hours}:${minutes}`
   }
 
-  throw new Error('Invalid date or time format');
+  throw new Error('Invalid date or time format')
 }
 
 export function toCQLTime(time: string): string {

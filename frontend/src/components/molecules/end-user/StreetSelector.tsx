@@ -5,13 +5,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../ui/button'
 import type { StreetFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
-import { findStreet } from '@/services/street'
+import { findKilometerPost, findStreet } from '@/services/street'
 import { Label } from '@/components/ui/label'
 import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 
 const StreetSelector = () => {
   const queryClient = useQueryClient()
-  const { setBusLinesInStreetFilter } = useGeoContext()
+  const { setBusLinesInStreetFilter, setKmFeature } = useGeoContext()
   const [streetName, setStreetName] = useState('')
   const [hasSelectedStreet, setHasSelectedStreet] = useState(false)
   const [suggestions, setSuggestions] = useState<Array<StreetFeature>>([])
@@ -45,10 +45,35 @@ const StreetSelector = () => {
     [],
   )
 
+  const debouncedFetchKm = useMemo(
+    () =>
+      debounce(async (kilometer: string, street: string) => {
+        if (!street.trim()) return
+        if (!kilometer.trim()) {
+          setKmFeature(undefined)
+          return
+        }
+        try {
+          const feature = await findKilometerPost(street, kilometer)
+          console.log(feature)
+          setKmFeature(feature)
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e)
+        }
+      }, 1000),
+    [setKmFeature],
+  )
+
   useEffect(() => {
     debouncedFetchSuggestions(streetName)
     return () => debouncedFetchSuggestions.cancel()
   }, [streetName, debouncedFetchSuggestions])
+
+  useEffect(() => {
+    if (streetName) debouncedFetchKm(km, streetName)
+    return () => debouncedFetchKm.cancel()
+  }, [km, debouncedFetchKm, streetName])
 
   const handleClear = () => {
     queryClient.removeQueries({ queryKey: ['linesByStreet'] })
@@ -79,10 +104,6 @@ const StreetSelector = () => {
     setSuggestions([])
     setHasSelectedStreet(true)
   }
-
-  // useEffect(() => {
-  //   if (!streetName) handleClear()
-  // }, [])
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit max-w-[200px]">
@@ -118,7 +139,7 @@ const StreetSelector = () => {
           )}
         </div>
       )}
-      {streetName.trim() && (
+      {hasSelectedStreet && (
         <div className="flex flex-col gap-2 w-full">
           <Label
             title="Este campo es opcional"
