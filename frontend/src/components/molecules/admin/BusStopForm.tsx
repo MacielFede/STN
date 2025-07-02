@@ -57,7 +57,7 @@ const BusStopForm = () => {
               data.geometry.coordinates[0],
             ],
           },
-          route: stopContext.properties.name,
+          route: stopContext.properties.name ?? 'unknown',
         })
         if (busLineStep === 'select-intermediate') {
           cacheStop({
@@ -118,7 +118,7 @@ const BusStopForm = () => {
         }
         await updateStop({
           ...data,
-          route: stopContext.properties.name,
+          route: stopContext.properties.name ?? 'unknown',
         })
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada actualizada correctamente', {

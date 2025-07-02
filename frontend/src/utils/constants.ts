@@ -24,8 +24,8 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
   },
 }
 
-export const DISTANCE_BETWEEN_STOPS_AND_STREET = 30
-export const DISTANCE_BETWEEN_LINE_AND_STREET = 80
+export const DISTANCE_BETWEEN_STOPS_AND_STREET = 10
+export const DISTANCE_BETWEEN_LINE_AND_STREET = 10
 
 export const BASIC_LINE_FEATURE: BusLineFeature = {
   geometry_name: 'LineString',
