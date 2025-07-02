@@ -8,12 +8,12 @@ import { Input } from '../../ui/input'
 import type { PointGeometry } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
 import { createStop, deleteStop, updateStop } from '@/services/busStops'
-import { turnCapitalizedDepartment } from '@/utils/helpers'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { streetPointContext } from '@/services/busLines'
+import { DEPARTMENTS } from '@/utils/constants'
 
-type PartialBusStopProperties = Omit<BusStopProperties, 'department' | 'route'>
+type PartialBusStopProperties = Omit<BusStopProperties, 'route'>
 
 const BusStopForm = () => {
   const { stop, setStop, cleanUpStopState } = useBusStopContext()
@@ -24,6 +24,14 @@ const BusStopForm = () => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
+        if (!(data.name && data.description)) {
+          toast.error('Debes indicar nombre y observacion de la parada', {
+            closeOnClick: true,
+            position: 'top-left',
+            toastId: 'update-stop-toast-error',
+          })
+          return
+        }
         const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[0],
           lat: data.geometry.coordinates[1],
@@ -49,9 +57,6 @@ const BusStopForm = () => {
               data.geometry.coordinates[0],
             ],
           },
-          department: turnCapitalizedDepartment(
-            stopContext.properties.department,
-          ) as Department,
           route: stopContext.properties.name,
         })
         if (busLineStep === 'select-intermediate') {
@@ -60,9 +65,6 @@ const BusStopForm = () => {
             properties: {
               ...data,
               id: response.data.id,
-              department: turnCapitalizedDepartment(
-                stopContext.properties.department,
-              ) as Department,
               route: stopContext.properties.name,
             },
           })
@@ -90,6 +92,14 @@ const BusStopForm = () => {
       data: PartialBusStopProperties & { geometry: PointGeometry },
     ) => {
       try {
+        if (!(data.name && data.description)) {
+          toast.error('Debes indicar nombre y observacion de la parada', {
+            closeOnClick: true,
+            position: 'top-left',
+            toastId: 'update-stop-toast-error',
+          })
+          return
+        }
         const stopContext = await streetPointContext({
           lon: data.geometry.coordinates[1],
           lat: data.geometry.coordinates[0],
@@ -108,9 +118,6 @@ const BusStopForm = () => {
         }
         await updateStop({
           ...data,
-          department: turnCapitalizedDepartment(
-            stopContext.properties.department,
-          ) as Department,
           route: stopContext.properties.name,
         })
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
@@ -180,6 +187,7 @@ const BusStopForm = () => {
       hasShelter: stop.properties.hasShelter,
       direction: stop.properties.direction,
       geometry: stop.geometry,
+      department: stop.properties.department,
     })
   }
   const handleCreateStop = () => {
@@ -191,6 +199,7 @@ const BusStopForm = () => {
       hasShelter: stop.properties.hasShelter,
       direction: stop.properties.direction,
       geometry: stop.geometry,
+      department: stop.properties.department,
     })
   }
 
@@ -219,6 +228,7 @@ const BusStopForm = () => {
             value={stop.properties.name}
             onChange={(e) => updateProperty('name', e.target.value)}
             className="border-black"
+            placeholder="Ej. Parada 15"
           />
         </label>
         <label>
@@ -229,6 +239,7 @@ const BusStopForm = () => {
             value={stop.properties.description}
             onChange={(e) => updateProperty('description', e.target.value)}
             className="border-black"
+            placeholder="Ej. Necesita mantenimiento"
           />
         </label>
         <div>
@@ -275,6 +286,25 @@ const BusStopForm = () => {
               <option value="OUTBOUND">Ida</option>
               <option value="INBOUND">Vuelta</option>
               <option value="BIDIRECTIONAL">Circuito</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <label className="flex flex-col gap-1">
+            Departamento:
+            <select
+              disabled={loadingFormAction}
+              value={stop.properties.department}
+              onChange={(e) =>
+                updateProperty('department', e.target.value as Department)
+              }
+              className="select select-bordered border-black bg-white"
+            >
+              {DEPARTMENTS.map((dep) => (
+                <option key={dep} value={dep}>
+                  {dep}
+                </option>
+              ))}
             </select>
           </label>
         </div>

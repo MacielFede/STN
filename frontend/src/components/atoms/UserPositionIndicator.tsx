@@ -11,10 +11,31 @@ const UserPositionIndicator = () => {
 
   useEffect(() => {
     if (!error && !Object.is(position, DEFAULT_COORDINATES)) {
-      map.flyTo(position, 15, { duration: 1 })
-      setTimeout(() => {
+      map.scrollWheelZoom.disable()
+      map.doubleClickZoom.disable()
+      map.touchZoom.disable()
+      map.boxZoom.disable()
+      map.keyboard.disable()
+      
+      const enableZoomControls = () => {
+        map.scrollWheelZoom.enable()
+        map.doubleClickZoom.enable()
+        map.touchZoom.enable()
+        map.boxZoom.enable()
+        map.keyboard.enable()
         setDisplayDefaultLines(true)
-      }, 1500)
+      }
+      
+      map.once('flyend', enableZoomControls)
+      
+      map.flyTo(position, 15, { duration: 1 })
+      
+      const fallbackTimeout = setTimeout(enableZoomControls, 1500)
+      
+      return () => {
+        clearTimeout(fallbackTimeout)
+        map.off('flyend', enableZoomControls)
+      }
     }
   }, [position, map, error, setDisplayDefaultLines])
 

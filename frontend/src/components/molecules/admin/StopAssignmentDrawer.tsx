@@ -14,7 +14,6 @@ import {
   createBusLine,
   createStopLine,
   deleteStopLine,
-  getByStop,
   getStopLineByBusLineId,
   isDestinationStopOnStreet,
   isIntermediateStopOnStreet,
@@ -23,7 +22,8 @@ import {
   updateStopLine,
 } from '@/services/busLines'
 import { Input } from '@/components/ui/input'
-import { _getStops, getStopGeoServer, updateStop } from '@/services/busStops'
+import { _getStops, getStopGeoServer } from '@/services/busStops'
+import { updateStopStatusesWithBusLineStatus } from '@/services/stopStatusService'
 import {
   BASIC_STOP_FEATURE,
   DISTANCE_BETWEEN_STOPS_AND_STREET,
@@ -370,36 +370,27 @@ const StopAssignmentDrawer = ({
         deleteStopLine(String(assoc.id)),
       )
 
+      const disabledAssociations = associations.filter((assoc) => {
+        const key = `${assoc.stopId}_${assoc.estimatedTime}`
+        if (newAssignmentKeys.has(key)) {
+          const newAssignment = newAssignments.find(a => 
+            `${a.stopId}_${a.estimatedTime}` === key
+          )
+          return newAssignment && !newAssignment.isEnabled
+        }
+        return false
+      })
+
+      const allDeletedOrDisabledAssociations = [...toDeleteAssociations, ...disabledAssociations]
+
       await Promise.all([...upsertRequests, ...deleteRequests])
 
-      let someOrphaned = false
-      for (const association of toDeleteAssociations) {
-        const isOrphaned = await getByStop(String(association.stopId))
-        if (isOrphaned.length === 0) {
-          const stop = await _getStops(`id = ${association.stopId}`)
-          if (!stop || stop.length === 0) continue
-          stop[0].properties.status = 'INACTIVE'
-          someOrphaned = true
-          await updateStop({
-            ...stop[0].properties,
-            geometry: stop[0].geometry,
-          })
-        }
-      }
-      if (someOrphaned) {
-        toast.warning('Algunas paradas quedaron huérfanas', {
-          autoClose: 8000,
-        })
-      }
-
-      for (const stop of stops) {
-        if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue
-        stop.stop.properties.status = 'ACTIVE'
-        await updateStop({
-          ...stop.stop.properties,
-          geometry: stop.stop.geometry,
-        })
-      }
+      await updateStopStatusesWithBusLineStatus(
+        allDeletedOrDisabledAssociations, 
+        stops, 
+        newBusLine.properties.status,
+        newBusLine.properties.id
+      )
       hideLoader(1500)
       toast.success(
         `${newBusLine?.properties?.id ? 'Se actualizó' : 'Se creó'} linea de bus con éxito.`,
@@ -558,11 +549,11 @@ const StopAssignmentDrawer = ({
       cacheStop(destinationData[0])
       setOriginStop({
         stop: originData[0],
-        estimatedTimes: [],
+        estimatedTimes: originStop?.estimatedTimes ?? [],
       })
       setDestinationStop({
         stop: destinationData[0],
-        estimatedTimes: [],
+        estimatedTimes: destinationStop?.estimatedTimes ?? [],
       })
 
       const stops = [
@@ -766,7 +757,6 @@ const StopAssignmentDrawer = ({
                           </Button>
                         )}
                       </div>
-                      {stop?.status ? <p>estoy</p> : <p>no estoy</p>}
                       <p className="text-xs text-gray-500">
                         {
                           selectedStops.get(stop.stop.properties.id)?.properties

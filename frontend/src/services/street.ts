@@ -1,4 +1,8 @@
-import type { FeatureCollection, StreetFeature } from '@/models/geoserver'
+import type {
+  FeatureCollection,
+  KmFeature,
+  StreetFeature,
+} from '@/models/geoserver'
 import type { AxiosResponse } from 'axios'
 import { geoApi } from '@/api/config'
 import {
@@ -41,4 +45,18 @@ export const findStreet = async (
       },
     })
   return data.features
+}
+
+export const findKilometerPost = async (
+  streetName: string,
+  kilometer: string,
+) => {
+  const { data }: AxiosResponse<FeatureCollection<KmFeature>> =
+    await geoApi.get('', {
+      params: {
+        typeName: `${GEO_WORKSPACE}:ft_kilometer_post`,
+        CQL_FILTER: `route_name='${streetName}' AND kilometer='${kilometer}'`,
+      },
+    })
+  return data.features[0]
 }
