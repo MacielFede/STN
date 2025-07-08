@@ -3,9 +3,12 @@ import debounce from 'lodash.debounce'
 import { toast } from 'react-toastify'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../ui/button'
-import type { StreetFeature } from '@/models/geoserver'
+import type { KmFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
-import { findKilometerPost, findStreet } from '@/services/street'
+import {
+  findKilometerPost,
+  findStreet as findStreetInKmTable,
+} from '@/services/street'
 import { Label } from '@/components/ui/label'
 import FetchingLinesSpinner from '@/components/atoms/FetchingLinesSpinner'
 
@@ -14,7 +17,7 @@ const StreetSelector = () => {
   const { setBusLinesInStreetFilter, setKmFeature } = useGeoContext()
   const [streetName, setStreetName] = useState('')
   const [hasSelectedStreet, setHasSelectedStreet] = useState(false)
-  const [suggestions, setSuggestions] = useState<Array<StreetFeature>>([])
+  const [suggestions, setSuggestions] = useState<Array<KmFeature>>([])
   const [km, setKm] = useState('')
 
   const debouncedFetchSuggestions = useMemo(
@@ -26,16 +29,9 @@ const StreetSelector = () => {
         }
 
         try {
-          const streets = await findStreet(
-            stName.toUpperCase().startsWith('RUTA') ||
-              ['R', 'RU', 'RUT', 'RUTA'].some((pattern) =>
-                stName.toUpperCase().startsWith(pattern),
-              )
-              ? stName
-              : `RUTA ${stName}`,
-          )
+          const streets = await findStreetInKmTable(stName)
           const unique = Array.from(
-            new Map(streets.map((s) => [s.properties.name, s])).values(),
+            new Map(streets.map((s) => [s.properties.routeName, s])).values(),
           )
           setSuggestions(unique)
         } catch {
@@ -84,7 +80,7 @@ const StreetSelector = () => {
   }
 
   const handleApplyFilter = () => {
-    if (!hasSelectedStreet || !streetName.toUpperCase().startsWith('RUTA')) {
+    if (!hasSelectedStreet) {
       toast.error('Seleccione una ruta válida primero.', {
         toastId: 'street-filter-error',
         position: 'top-left',
@@ -98,8 +94,8 @@ const StreetSelector = () => {
     })
   }
 
-  const handleSuggestionClick = (suggestion: StreetFeature) => {
-    setStreetName(suggestion.properties.name)
+  const handleSuggestionClick = (suggestion: KmFeature) => {
+    setStreetName(suggestion.properties.routeName)
     setSuggestions([])
     setHasSelectedStreet(true)
   }
@@ -127,7 +123,7 @@ const StreetSelector = () => {
                   className="cursor-pointer hover:bg-gray-200 p-1"
                   onClick={() => handleSuggestionClick(s)}
                 >
-                  {s.properties.name}
+                  {s.properties.routeName}
                 </li>
               ))}
             </ul>

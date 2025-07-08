@@ -17,7 +17,7 @@ const CommandPallete = ({
 }: CommandPalleteProps) => {
   const [isVisible, setIsVisible] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
-  console.log(isHovered)
+
   return (
     <div
       className={`absolute ${yPosition}-4 ${xPosition}-4 z-[1000] text-end`}

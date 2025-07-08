@@ -32,13 +32,14 @@ export const streetContext = async ({
 }
 
 export const findStreet = async (streetName: string) => {
-  const { data }: AxiosResponse<FeatureCollection<StreetFeature>> =
+  const { data }: AxiosResponse<FeatureCollection<KmFeature>> =
     await geoApi.get('', {
       params: {
-        typeName: `${GEO_WORKSPACE}:ft_street`,
-        CQL_FILTER: `name ILIKE '%${streetName}%'`,
+        typeName: `${GEO_WORKSPACE}:ft_kilometer_post`,
+        CQL_FILTER: `route_name ILIKE '%${streetName}%'`,
       },
     })
+
   return data.features
 }
 

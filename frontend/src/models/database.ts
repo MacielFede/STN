@@ -23,7 +23,7 @@ export type KmProperties = {
   id?: number
   kilometer: number
   route: number
-  route_name: string
+  routeName: string
 }
 
 export type BusLineProperties = {
