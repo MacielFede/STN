@@ -21,7 +21,6 @@ const DefaultLinesSelector = () => {
           onClick={() => {
             if (flyToUserLocation || displayDefaultLines) {
               setDisplayDefaultLines(false)
-              setFlyToUserLocation(false)
             } else {
               setFlyToUserLocation(true)
             }

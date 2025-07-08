@@ -37,6 +37,8 @@ const UserPositionIndicator = () => {
         clearTimeout(fallbackTimeout)
         map.off('flyend', enableZoomControls)
       }
+    } else {
+      setFlyToUserLocation(false)
     }
   }, [
     position,
@@ -45,6 +47,7 @@ const UserPositionIndicator = () => {
     setDisplayDefaultLines,
     enableZoomControls,
     flyToUserLocation,
+    setFlyToUserLocation,
   ])
 
   return (

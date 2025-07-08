@@ -24,12 +24,6 @@ const CommandPallete = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {isHovered && (
-        <span className="bg-yellow-300 px-2 py-1 rounded">
-          No podras interactuar con el mapa mientras estes en la paleta de
-          filtros
-        </span>
-      )}
       <div className="flex justify-end gap-3 text-start">
         <div
           className={`flex justify-end gap-3  flex-wrap ${isVisible ? '' : 'hidden'}`}
@@ -50,6 +44,12 @@ const CommandPallete = ({
           </Button>
         )}
       </div>
+      {isHovered && (
+        <span className="bg-yellow-300 px-2 py-1 rounded">
+          No podras interactuar con el mapa mientras estes en la paleta de
+          filtros
+        </span>
+      )}
     </div>
   )
 }
