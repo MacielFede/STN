@@ -34,7 +34,7 @@ const useLines = () => {
     enabled: !!busLinesInStreetFilter,
   })
 
-  const { data: defaultLines } = useQuery({
+  const { data: defaultLines, isLoading: isFetchingDefaultLines } = useQuery({
     queryKey: ['defaultLines', displayDefaultLines],
     queryFn: () => {
       if (displayDefaultLines) {
@@ -82,7 +82,8 @@ const useLines = () => {
   return {
     lines:
       defaultLines?.length && defaultLines.length > 0 ? defaultLines : lines,
-    isFetching: isFetchingByCqlFilter || isFetchingByStreet,
+    isFetching:
+      isFetchingByCqlFilter || isFetchingByStreet || isFetchingDefaultLines,
   }
 }
 

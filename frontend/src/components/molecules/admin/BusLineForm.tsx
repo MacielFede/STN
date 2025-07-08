@@ -1,15 +1,14 @@
 import { Button, Select } from 'flowbite-react'
-import type { BusLineFeature, LineStringGeometry } from '@/models/geoserver'
-import { Input } from '@/components/ui/input'
-import { useBusLineContext } from '@/contexts/BusLineContext'
-import type { BusLineProperties } from '@/models/database'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
+import { useEffect, useState } from 'react'
+import type { BusLineFeature, LineStringGeometry } from '@/models/geoserver'
+import type { BusLineProperties, Company } from '@/models/database'
+import { Input } from '@/components/ui/input'
+import { useBusLineContext } from '@/contexts/BusLineContext'
 import { isBusLineOnStreets, updateBusLine } from '@/services/busLines'
 import { getHoursAndMinutes } from '@/utils/helpers'
-import { useEffect, useState } from 'react'
 import { getCompanies } from '@/services/companies'
-import type { Company } from '@/models/database'
 
 const loadingFormAction = false
 
@@ -33,16 +32,16 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     setErrorPoints,
     showLoader,
     hideLoader,
-  } = useBusLineContext();
+  } = useBusLineContext()
   const [companies, setCompanies] = useState<Array<Company>>([])
   const createBusLineMutation = useMutation({
     mutationFn: async (
       data: PartialBusLineProperties & { geometry: LineStringGeometry },
     ) => {
       try {
-        const stopContext = await isBusLineOnStreets(data.geometry);
+        const stopContext = await isBusLineOnStreets(data.geometry)
         if (!stopContext.status || !newBusLine) {
-          setErrorPoints(stopContext.errorPoints);
+          setErrorPoints(stopContext.errorPoints)
           toast.error(
             'Error intentando crear la ruta, recorrido mal formado o calles no encontradas',
             {
@@ -51,7 +50,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'create-stop-toast-street',
             },
           )
-          hideLoader();
+          hideLoader()
           return
         }
         updateBusLineData({
@@ -61,11 +60,11 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
             ...data,
             schedule: getHoursAndMinutes(data.schedule, true),
           },
-        });
-        setBusLineStep('show-selection-popup');
-        hideLoader();
+        })
+        setBusLineStep('show-selection-popup')
+        hideLoader()
       } catch (error) {
-        hideLoader();
+        hideLoader()
         toast.error('Error intentando crear la ruta', {
           closeOnClick: true,
           position: 'top-left',
@@ -78,9 +77,9 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
   const updateBusLineMutation = useMutation({
     mutationFn: async (data: BusLineFeature) => {
       try {
-        const stopContext = await isBusLineOnStreets(data.geometry);
+        const stopContext = await isBusLineOnStreets(data.geometry)
         if (!stopContext.status) {
-          setErrorPoints(stopContext.errorPoints);
+          setErrorPoints(stopContext.errorPoints)
           toast.error(
             'Error intentando actualizar la ruta, recorrido mal formado o calles no encontradas',
             {
@@ -89,14 +88,14 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
               toastId: 'update-stop-toast-street',
             },
           )
-          hideLoader();
+          hideLoader()
           return
         }
-        updateBusLineData(data);
-        setBusLineStep('show-selection-popup');
-        hideLoader();
+        updateBusLineData(data)
+        setBusLineStep('show-selection-popup')
+        hideLoader()
       } catch (error) {
-        hideLoader();
+        hideLoader()
         toast.error('Error al actualizar la línea', {
           closeOnClick: true,
           position: 'top-left',
@@ -108,8 +107,8 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
   })
 
   const handleSave = () => {
-    if (!newBusLine) return;
-    showLoader();
+    if (!newBusLine) return
+    showLoader()
     if (!line.properties.id) {
       createBusLineMutation.mutate({
         ...newBusLine?.properties,
@@ -128,24 +127,24 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
     }
   }
 
-
   useEffect(() => {
-    getCompanies().then((data) => setCompanies(data))
+    getCompanies()
+      .then((data) => setCompanies(data))
       .catch((error) => {
-        console.error('Error fetching companies:', error);
+        console.error('Error fetching companies:', error)
         toast.error('Error al cargar las empresas', {
           closeOnClick: true,
           position: 'top-left',
-        });
-      });
-  }, []);
+        })
+      })
+  }, [])
 
   return (
     <form
       className="flex flex-row gap-4 w-full"
       onSubmit={(event) => {
         event.preventDefault()
-        handleSave();
+        handleSave()
       }}
     >
       <label>
@@ -154,7 +153,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           disabled={loadingFormAction}
           type="text"
           value={line.properties.number}
-          placeholder='Ej: 123-Canelones'
+          placeholder="Ej: 123-Canelones"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
@@ -173,7 +172,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           disabled={loadingFormAction}
           type="text"
           value={line.properties.origin}
-          placeholder='Ej: Montevideo'
+          placeholder="Ej: Montevideo"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
@@ -190,7 +189,7 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
         Destino:
         <Input
           disabled={loadingFormAction}
-          placeholder='Ej: Canelones'
+          placeholder="Ej: Canelones"
           type="text"
           value={line.properties.destination}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -205,13 +204,13 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           className="border-black"
         />
       </label>
-       <label>
+      <label>
         Observaciones:
         <Input
           disabled={loadingFormAction}
           type="text"
           value={line.properties.description}
-          placeholder='Ej: Observaciones de la linea'
+          placeholder="Ej: Observaciones de la linea"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             updateBusLineData({
               ...line,
@@ -232,10 +231,11 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           value={getHoursAndMinutes(line.properties.schedule)}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Convert HH:MM to HH:MM:SS format
-            const timeValue = e.target.value;
-            const timeWithSeconds = timeValue.includes(':') && timeValue.split(':').length === 2
-              ? `${timeValue}:00`
-              : timeValue;
+            const timeValue = e.target.value
+            const timeWithSeconds =
+              timeValue.includes(':') && timeValue.split(':').length === 2
+                ? `${timeValue}:00`
+                : timeValue
 
             updateBusLineData({
               ...line,
@@ -297,8 +297,9 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
           disabled={loadingFormAction}
           value={line.properties.companyId ?? ''}
           onChange={(e) => {
-            if (!newBusLine) return;
-            const companyId = Number(e.target.value) === 0 ? null : Number(e.target.value);
+            if (!newBusLine) return
+            const companyId =
+              Number(e.target.value) === 0 ? null : Number(e.target.value)
             updateBusLineData({
               ...newBusLine,
               properties: {
@@ -318,26 +319,40 @@ const BusLineForm = ({ line }: BusLineFormProps) => {
       </label>
       <div className="flex gap-2 mt-2">
         {busLineStep === 'creation' && mode !== 'finished' && (
-          <Button disabled={points?.length < 2} onClick={() => setMode('finished')} color="green">
+          <Button
+            disabled={points?.length < 2}
+            onClick={() => setMode('finished')}
+            color="green"
+          >
             Finalizar recorrido
           </Button>
         )}
         {busLineStep === 'creation' && mode === 'finished' && (
-          <Button disabled={loadingFormAction || !canSave} type="submit" color="green">
+          <Button
+            disabled={loadingFormAction || !canSave}
+            type="submit"
+            color="green"
+          >
             Continuar
           </Button>
         )}
         {mode !== 'editing' && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={() => setMode('editing')}>
+          <Button
+            disabled={!newBusLine?.geometry?.coordinates?.length}
+            onClick={() => setMode('editing')}
+          >
             Editar recorrido
           </Button>
         )}
         {mode === 'editing' && (
-          <Button disabled={!newBusLine?.geometry?.coordinates?.length} onClick={handleDeleted} className='bg-orange-400 hover:bg-orange-500'>
+          <Button
+            disabled={!newBusLine?.geometry?.coordinates?.length}
+            onClick={handleDeleted}
+            className="bg-orange-400 hover:bg-orange-500"
+          >
             Redefinir recorrido
           </Button>
         )}
-
       </div>
     </form>
   )

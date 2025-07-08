@@ -26,16 +26,16 @@ const StreetSelector = () => {
         }
 
         try {
-          const streets = await findStreet(stName)
+          const streets = await findStreet(
+            stName.toUpperCase().startsWith('RUTA') ||
+              ['R', 'RU', 'RUT', 'RUTA'].some((pattern) =>
+                stName.toUpperCase().startsWith(pattern),
+              )
+              ? stName
+              : `RUTA ${stName}`,
+          )
           const unique = Array.from(
-            new Map(
-              streets.map((s) => [
-                s.properties.name.startsWith('RUTA')
-                  ? s.properties.name
-                  : s.properties.name + s.properties.department,
-                s,
-              ]),
-            ).values(),
+            new Map(streets.map((s) => [s.properties.name, s])).values(),
           )
           setSuggestions(unique)
         } catch {
@@ -55,7 +55,6 @@ const StreetSelector = () => {
         }
         try {
           const feature = await findKilometerPost(street, kilometer)
-          console.log(feature)
           setKmFeature(feature)
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -85,8 +84,8 @@ const StreetSelector = () => {
   }
 
   const handleApplyFilter = () => {
-    if (!hasSelectedStreet) {
-      toast.error('Seleccione una calle válida primero.', {
+    if (!hasSelectedStreet || !streetName.toUpperCase().startsWith('RUTA')) {
+      toast.error('Seleccione una ruta válida primero.', {
         toastId: 'street-filter-error',
         position: 'top-left',
       })
@@ -107,7 +106,7 @@ const StreetSelector = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-md h-fit max-w-[200px]">
-      <h3 className="font-semibold">Buscar Líneas por Calle/Ruta</h3>
+      <h3 className="font-semibold">Buscar Líneas por Ruta/KM</h3>
       <input
         type="text"
         value={streetName}
@@ -115,7 +114,7 @@ const StreetSelector = () => {
           setHasSelectedStreet(false)
           setStreetName(e.target.value)
         }}
-        placeholder="Ingrese el nombre de la calle"
+        placeholder="Ruta 5"
         className="border p-1 rounded w-full"
       />
       {streetName.trim() && !hasSelectedStreet && (
@@ -128,13 +127,13 @@ const StreetSelector = () => {
                   className="cursor-pointer hover:bg-gray-200 p-1"
                   onClick={() => handleSuggestionClick(s)}
                 >
-                  {s.properties.name} | {s.properties.department}
+                  {s.properties.name}
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-red-500 p-2">
-              No registramos calles con ese nombre
+              No registramos rutas con ese nombre
             </p>
           )}
         </div>
