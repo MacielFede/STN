@@ -562,7 +562,7 @@ const StopAssignmentDrawer = ({
         ...intermediateStops.map((i) => i.stop),
       ]
       const missingSelectedStopIds = Array.from(selectedStops.keys()).filter(
-        (id) => !stops.some((stop) => stop.properties.id === Number(id)),
+        (id) => !stops.some((stop) => stop?.properties.id === Number(id)),
       )
 
       if (missingSelectedStopIds?.length) {
