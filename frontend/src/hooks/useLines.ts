@@ -3,17 +3,18 @@ import { useEffect, useState } from 'react'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { getLines, getLinesInStreet } from '@/services/busLines'
-import { buildBBoxFilter, filterAndSortLinesByDistance } from '@/utils/helpers'
+import { filterAndSortLinesByDistance } from '@/utils/helpers'
+import { useUserLocation } from './useUserLocation'
 
 const useLines = () => {
   const {
     busLinesCqlFilter,
     busLinesInStreetFilter,
     busLineNearUserFilter,
-    userBBox,
     displayDefaultLines,
   } = useGeoContext()
   const [lines, setLines] = useState<Array<BusLineFeature>>([])
+  const {position} = useUserLocation()
   const { data: linesByCql, isLoading: isFetchingByCqlFilter } = useQuery({
     queryKey: ['linesByCql', busLinesCqlFilter],
     queryFn: () => getLines(busLinesCqlFilter),
@@ -38,7 +39,8 @@ const useLines = () => {
     queryKey: ['defaultLines', displayDefaultLines],
     queryFn: () => {
       if (displayDefaultLines) {
-        return getLines(buildBBoxFilter(userBBox))
+        return getLines(`DWITHIN(geometry, POINT(${position[1]} ${position[0]}), 2 , kilometers)`)
+
       }
       return []
     },
