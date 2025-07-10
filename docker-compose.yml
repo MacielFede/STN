@@ -1,19 +1,16 @@
-version: "3.8"
-
 services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.26.2
+    platform: linux/amd64
     container_name: geoserver
     ports:
-      - "8000:8000"
+      - "8000:8080"
     environment:
       - GEOSERVER_DATA_DIR=/var/local/geoserver
       - POSTGIS_HOST=postgis
       - POSTGIS_DB=geodb
       - POSTGIS_USER=geouser
       - POSTGIS_PASSWORD=geopass
-    networks:
-      - red01
     depends_on:
       - postgis
     restart: unless-stopped
@@ -21,33 +18,55 @@ services:
   postgis:
     image: postgis/postgis:latest
     container_name: postgis
+    platform: linux/amd64
     environment:
       - POSTGRES_DB=geodb
       - POSTGRES_USER=geouser
       - POSTGRES_PASSWORD=geopass
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    shm_size: '1gb'
     restart: unless-stopped
+
 
   backend-stn:
     build:
-      context: /backend             # Directorio donde está el Dockerfile
-      dockerfile: Dockerfile # (opcional si se llama Dockerfile)
+      context: ./backend
+      dockerfile: Dockerfile
+    platform: linux/amd64
     ports:
-      - "8080:8080"          # Mapear el puerto del contenedor al host
+      - "8080:8080"
+      - "5005:5005"
     container_name: backend-stn
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx
+  frontend:
+    build:
+      context: ./frontend
     ports:
-      - "80:80"
+      - "3000:3000"
+    platform: linux/amd64
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./html:/usr/share/nginx/html:ro
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     networks:
       - red01
-    restart: unless-stopped
+
+  init-config:
+    image: postgres:17
+    container_name: init-config
+    depends_on:
+      - postgis
+      - geoserver
+    volumes:
+      - ./init:/init
+    entrypoint: [ "sh", "/init/init.sh" ]
+    environment:
+      - POSTGRES_DB=geodb
+      - POSTGRES_USER=geouser
+      - POSTGRES_PASSWORD=geopass
+
 networks:
   red01:
     driver: bridge

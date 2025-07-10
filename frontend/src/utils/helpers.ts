@@ -1,0 +1,134 @@
+import * as turf from '@turf/turf'
+import type {
+  EndUserFilter,
+  FilterData,
+  StatusOptions,
+} from '@/models/database'
+import type { BBox, BusLineFeature, PointGeometry } from '@/models/geoserver'
+
+export const buildDwithinFilter = ([lat, lon]: [number, number]) =>
+  lat && lon ? `DWITHIN(geometry, POINT(${lon} ${lat}), 2 , kilometers)` : ''
+
+export const buildBBoxFilter = ({ sw, ne }: BBox) =>
+  sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
+
+export const buildStopStatusFilter = (status: StatusOptions) =>
+  status ? `status='${status}'` : ''
+
+export const buildCqlFilter = (filters: Array<string>) => {
+  return filters.length > 1
+    ? filters.join(' AND ')
+    : filters.length === 1
+      ? filters[0]
+      : ''
+}
+
+function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
+}
+
+export function transformKeysToCamelCase<T>(obj: T): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map(transformKeysToCamelCase)
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.entries(obj).reduce(
+      (acc, [key, value]) => {
+        ;(acc as { [key: string]: unknown })[toCamelCase(key)] =
+          transformKeysToCamelCase(value)
+        return acc
+      },
+      {} as { [key: string]: unknown },
+    )
+  }
+  return obj
+}
+
+type HalfEndUserFilter = Omit<EndUserFilter, 'isActive'>
+
+function latLngsToWktPolygon(points: Array<[number, number]>): string {
+  const coords = points.map(([lat, lng]) => `${lng} ${lat}`).join(', ')
+  const [firstLat, firstLng] = points[0]
+  return `POLYGON((${coords}, ${firstLng} ${firstLat}))`
+}
+
+export function getLinesCqlFilterFromData({ name, data }: HalfEndUserFilter) {
+  switch (name) {
+    case 'company':
+      return `company_id=${(data as FilterData['company']).id}`
+    case 'schedule': {
+      const schedule = data as FilterData['schedule']
+      return schedule.upperTime
+        ? `schedule BETWEEN '${schedule.lowerTime}' AND '${schedule.upperTime}'`
+        : `schedule = '${schedule.lowerTime}'`
+    }
+
+    case 'polygon': {
+      const polygon = data as FilterData['polygon']
+      const wktPolygon = latLngsToWktPolygon(polygon.polygonPoints)
+      return `INTERSECTS(geometry, ${wktPolygon})`
+    }
+    case 'origin-destination': {
+      const { origin, destination } = data as FilterData['origin-destination']
+      const originFilter = origin ? `origin='${origin}'` : ''
+      const destinationFilter = destination
+        ? `destination='${destination}'`
+        : ''
+      return [originFilter, destinationFilter].filter(Boolean).join(' AND ')
+    }
+
+    case 'status':
+      return `status='${(data as FilterData['status']).lineStatus}'`
+    case 'street': // No puede ir por aca este filtro
+    default:
+      return ''
+  }
+}
+
+export function getHoursAndMinutes(
+  input: string,
+  withSeconds: boolean = false,
+): string {
+  const timeMatch = input.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/)
+  if (timeMatch) {
+    const [, hh, mm, ss] = timeMatch
+    if (withSeconds) {
+      return `${hh}:${mm}:${ss ?? '00'}`
+    }
+    return `${hh}:${mm}`
+  }
+
+  const date = new Date(input)
+  if (!isNaN(date.getTime())) {
+    const hours = String(date.getUTCHours()).padStart(2, '0')
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+    return withSeconds
+      ? `${hours}:${minutes}:${seconds}`
+      : `${hours}:${minutes}`
+  }
+
+  throw new Error('Invalid date or time format')
+}
+
+export function toCQLTime(time: string): string {
+  // Add ":00" if only HH:MM is provided
+  return time.length === 5 ? `${time}:00` : time
+}
+
+export const filterAndSortLinesByDistance = (
+  userPoint: PointGeometry,
+  lines: Array<BusLineFeature>,
+  radius = 1,
+) =>
+  lines
+    .map((line) => {
+      const distance = turf.pointToLineDistance(
+        [userPoint.coordinates[1], userPoint.coordinates[0]],
+        turf.lineString(line.geometry.coordinates),
+        { units: 'kilometers' },
+      )
+      return { line, distance }
+    })
+    .filter((entry) => entry.distance <= radius)
+    .sort((a, b) => a.distance - b.distance)
+    .map((entry) => entry.line)

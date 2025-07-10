@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ReactDOM from 'react-dom/client'
 import {
   Outlet,
@@ -7,11 +8,20 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
+import './types/leaflet-draw.d.ts'
 // import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import './styles.css'
 
-import Map from './screens/Map.tsx'
+import { CookiesProvider } from 'react-cookie'
+import { ToastContainer } from 'react-toastify'
+import EndUserMap from './components/screens/EndUserMap.tsx'
+import AdminPanel from './components/screens/AdminPanel.tsx'
+import { GeoProvider } from './contexts/GeoContext.tsx'
+import { BusLineProvider } from './contexts/BusLineContext.tsx'
+import { TooltipProvider } from './components/ui/tooltip.tsx'
+import { AuthProvider } from './contexts/AuthContext.tsx'
+import { BusStopProvider } from './contexts/BusStopContext.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -25,13 +35,13 @@ const rootRoute = createRootRoute({
 const mapRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: Map,
+  component: EndUserMap,
 })
 
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/',
-  component: Map,
+  component: AdminPanel,
 })
 
 const routeTree = rootRoute.addChildren([mapRoute, adminRoute])
@@ -51,12 +61,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const queryClient = new QueryClient()
+
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
+      <CookiesProvider defaultSetOptions={{ path: '/' }}>
+        <QueryClientProvider client={queryClient}>
+          <GeoProvider>
+            <AuthProvider>
+              <BusLineProvider>
+                <BusStopProvider>
+                  <TooltipProvider>
+                    <RouterProvider router={router} />
+                    <ToastContainer />
+                  </TooltipProvider>
+                </BusStopProvider>
+              </BusLineProvider>
+            </AuthProvider>
+          </GeoProvider>
+        </QueryClientProvider>
+      </CookiesProvider>
     </StrictMode>,
   )
 }

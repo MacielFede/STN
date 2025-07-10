@@ -2,3 +2,11 @@
   width: 100vw;
   height: 100vh;
 }
+
+.leaflet-draw-actions{
+  display: none !important;
+}
+
+.leaflet-draw-toolbar{
+  display: none !important;
+}
