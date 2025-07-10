@@ -85,7 +85,9 @@ const useLines = () => {
 
   return {
     lines:
-      defaultLines?.length && defaultLines.length > 0 ? defaultLines : lines,
+      displayDefaultLines && !!defaultLines?.length && defaultLines.length > 0
+        ? defaultLines
+        : lines,
     isFetching:
       isFetchingByCqlFilter || isFetchingByStreet || isFetchingDefaultLines,
   }

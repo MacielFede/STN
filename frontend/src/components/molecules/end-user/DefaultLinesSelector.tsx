@@ -9,6 +9,7 @@ const DefaultLinesSelector = () => {
     displayDefaultLines,
     flyToUserLocation,
     setFlyToUserLocation,
+    resetEndUserFilters,
   } = useGeoContext()
   const { isInDefaultLocation } = useUserLocation()
 
@@ -23,6 +24,7 @@ const DefaultLinesSelector = () => {
               setDisplayDefaultLines(false)
             } else {
               setFlyToUserLocation(true)
+              resetEndUserFilters()
             }
           }}
         >

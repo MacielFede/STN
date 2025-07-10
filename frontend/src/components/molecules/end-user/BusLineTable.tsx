@@ -80,7 +80,7 @@ export default function BusLinetable({
 
   const tableTitle = useMemo(() => {
     return displayDefaultLines
-      ? 'Lineas cercanas a tu ubicación (los filtros no funcionaran hasta que dejes de ver las lineas cercanas)'
+      ? 'Lineas cercanas a tu ubicación'
       : activeStopId
         ? `Líneas que pasan por esta parada`
         : 'Líneas filtradas'

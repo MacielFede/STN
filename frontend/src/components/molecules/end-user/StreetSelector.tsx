@@ -72,6 +72,7 @@ const StreetSelector = () => {
 
   const handleClear = () => {
     queryClient.removeQueries({ queryKey: ['linesByStreet'] })
+    setKmFeature(undefined)
     setBusLinesInStreetFilter(undefined)
     setStreetName('')
     setSuggestions([])
