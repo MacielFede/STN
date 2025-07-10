@@ -47,7 +47,7 @@ const UserPositionIndicator = () => {
     flyToUserLocation,
     setFlyToUserLocation,
   ])
-
+  if (isInDefaultLocation) return null
   return (
     <CircleMarker
       center={position}

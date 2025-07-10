@@ -6,6 +6,9 @@ import type {
 } from '@/models/database'
 import type { BBox, BusLineFeature, PointGeometry } from '@/models/geoserver'
 
+export const buildDwithinFilter = ([lat, lon]: [number, number]) =>
+  lat && lon ? `DWITHIN(geometry, POINT(${lon} ${lat}), 2 , kilometers)` : ''
+
 export const buildBBoxFilter = ({ sw, ne }: BBox) =>
   sw && ne ? `BBOX(geometry, ${sw.lng}, ${sw.lat}, ${ne.lng}, ${ne.lat})` : ''
 

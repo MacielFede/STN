@@ -5,7 +5,7 @@ export const GEO_WORKSPACE = 'ne'
 
 export const ADMIN_PATHNAME = '/admin'
 
-export const DEFAULT_COORDINATES: [number, number] = [-56.163, -32.5]
+export const DEFAULT_COORDINATES: [number, number] = [-32.5, -56.163]
 
 export const BASIC_STOP_FEATURE: BusStopFeature = {
   type: 'Feature',
