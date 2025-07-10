@@ -62,4 +62,4 @@ You are free to share this work under the following terms:
 To view the full license, visit:  
 [https://creativecommons.org/licenses/by-nc-nd/4.0/](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
-© 2025 [Your Name or Team Name]
+© 2025 STN
