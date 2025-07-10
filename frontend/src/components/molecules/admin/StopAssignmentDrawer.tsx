@@ -30,6 +30,7 @@ import {
 } from '@/utils/constants'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { getHoursAndMinutes } from '@/utils/helpers'
+import useAllLines from '@/hooks/useAllLines'
 
 const StopAssignmentDrawer = ({
   open,
@@ -38,6 +39,7 @@ const StopAssignmentDrawer = ({
   open: boolean
   onClose: () => void
 }) => {
+  const { refetchAllLines } = useAllLines()
   const {
     points,
     newBusLine,
@@ -373,27 +375,31 @@ const StopAssignmentDrawer = ({
       const disabledAssociations = associations.filter((assoc) => {
         const key = `${assoc.stopId}_${assoc.estimatedTime}`
         if (newAssignmentKeys.has(key)) {
-          const newAssignment = newAssignments.find(a => 
-            `${a.stopId}_${a.estimatedTime}` === key
+          const newAssignment = newAssignments.find(
+            (a) => `${a.stopId}_${a.estimatedTime}` === key,
           )
           return newAssignment && !newAssignment.isEnabled
         }
         return false
       })
 
-      const allDeletedOrDisabledAssociations = [...toDeleteAssociations, ...disabledAssociations]
+      const allDeletedOrDisabledAssociations = [
+        ...toDeleteAssociations,
+        ...disabledAssociations,
+      ]
 
       await Promise.all([...upsertRequests, ...deleteRequests])
 
       await updateStopStatusesWithBusLineStatus(
-        allDeletedOrDisabledAssociations, 
-        stops, 
-        newBusLine
+        allDeletedOrDisabledAssociations,
+        stops,
+        newBusLine,
       )
       hideLoader(1500)
       toast.success(
         `${newBusLine?.properties?.id ? 'Se actualizó' : 'Se creó'} linea de bus con éxito.`,
       )
+      refetchAllLines()
       onClose()
     } catch (error) {
       hideLoader(1500)
@@ -408,7 +414,7 @@ const StopAssignmentDrawer = ({
   }
 
   useMapEvents({
-    click: async (e) => {
+    click: (e) => {
       if (busLineStep !== 'select-intermediate' || !newBusLine?.geometry) return
 
       const { lat, lng } = e.latlng

@@ -65,6 +65,7 @@ const AdminMap = () => {
     setActiveStop(null)
     cleanUpBusLineStates()
     cleanUpStopState()
+    setDisplayedRoutes([])
   }, [setActiveStop, setIsOpen, cleanUpBusLineStates, cleanUpStopState])
 
   useEffect(() => {
