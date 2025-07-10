@@ -55,6 +55,14 @@ const StreetSelector = () => {
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e)
+          toast.error(
+            'Error al indicar un kilometro, por favor intente de nuevo',
+            {
+              toastId: 'km-filter-error',
+              position: 'top-left',
+              closeOnClick: true,
+            },
+          )
         }
       }, 1000),
     [setKmFeature],
