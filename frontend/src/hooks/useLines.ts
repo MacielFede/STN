@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { useUserLocation } from './useUserLocation'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { getLines, getLinesInStreet } from '@/services/busLines'
 import {
-  buildDwithinFilter,
+  buildBBoxFilter,
   filterAndSortLinesByDistance,
 } from '@/utils/helpers'
 
@@ -15,9 +14,9 @@ const useLines = () => {
     busLinesInStreetFilter,
     busLineNearUserFilter,
     displayDefaultLines,
+    userBBox
   } = useGeoContext()
   const [lines, setLines] = useState<Array<BusLineFeature>>([])
-  const { position } = useUserLocation()
   const { data: linesByCql, isLoading: isFetchingByCqlFilter } = useQuery({
     queryKey: ['linesByCql', busLinesCqlFilter],
     queryFn: () => getLines(busLinesCqlFilter),
@@ -42,7 +41,7 @@ const useLines = () => {
     queryKey: ['defaultLines', displayDefaultLines],
     queryFn: () => {
       if (displayDefaultLines) {
-        return getLines(buildDwithinFilter(position))
+        return getLines(buildBBoxFilter(userBBox))
       }
       return []
     },
