@@ -48,3 +48,18 @@ To be able to use the frontend fully, you'll need to publish this tables on geos
 
 ** NOTE:
 In steps 5 and 6 you'll need to change the "Validation regular expression" of geoserver sql view to this one -> ^[\w\d\s-']+$ 
+
+## License
+
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).
+
+You are free to share this work under the following terms:
+
+- **Attribution** – You must give appropriate credit to the original author(s).
+- **NonCommercial** – You may not use the material for commercial purposes.
+- **NoDerivatives** – You may not remix, transform, or build upon the material.
+
+To view the full license, visit:  
+[https://creativecommons.org/licenses/by-nc-nd/4.0/](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
+© 2025 STN Team
