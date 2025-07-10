@@ -5,7 +5,7 @@ export const GEO_WORKSPACE = 'ne'
 
 export const ADMIN_PATHNAME = '/admin'
 
-export const DEFAULT_COORDINATES: [number, number] = [-56.163, -32.5]
+export const DEFAULT_COORDINATES: [number, number] = [-32.5, -56.163]
 
 export const BASIC_STOP_FEATURE: BusStopFeature = {
   type: 'Feature',
@@ -24,8 +24,8 @@ export const BASIC_STOP_FEATURE: BusStopFeature = {
   },
 }
 
-export const DISTANCE_BETWEEN_STOPS_AND_STREET = 30
-export const DISTANCE_BETWEEN_LINE_AND_STREET = 80
+export const DISTANCE_BETWEEN_STOPS_AND_STREET = 10
+export const DISTANCE_BETWEEN_LINE_AND_STREET = 10
 
 export const BASIC_LINE_FEATURE: BusLineFeature = {
   geometry_name: 'LineString',

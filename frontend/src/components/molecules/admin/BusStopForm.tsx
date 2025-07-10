@@ -5,19 +5,20 @@ import { toast } from 'react-toastify'
 import { Label } from 'flowbite-react'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
-import type { PointGeometry } from '@/models/geoserver'
+import type { PointGeometry, BusStopFeature } from '@/models/geoserver'
 import type { BusStopProperties, Department } from '@/models/database'
-import { createStop, deleteStop, updateStop } from '@/services/busStops'
+import { _getStops, createStop, deleteStop, updateStop } from '@/services/busStops'
 import { useBusStopContext } from '@/contexts/BusStopContext'
 import { useBusLineContext } from '@/contexts/BusLineContext'
 import { streetPointContext } from '@/services/busLines'
 import { DEPARTMENTS } from '@/utils/constants'
+import { geometry } from '@turf/turf'
 
 type PartialBusStopProperties = Omit<BusStopProperties, 'route'>
 
 const BusStopForm = () => {
   const { stop, setStop, cleanUpStopState } = useBusStopContext()
-  const { cacheStop, busLineStep, setBusLineStep } = useBusLineContext()
+  const { cacheStop, busLineStep, setBusLineStep, setIntermediateStops, newBusLine, sortIntermediateStopsByGeometry } = useBusLineContext()
   const queryClient = useQueryClient()
   const createStopMutation = useMutation({
     mutationFn: async (
@@ -57,18 +58,44 @@ const BusStopForm = () => {
               data.geometry.coordinates[0],
             ],
           },
-          route: stopContext.properties.name,
+          route: stopContext.properties.name ?? 'unknown',
         })
         if (busLineStep === 'select-intermediate') {
           cacheStop({
-            geometry: data.geometry,
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                data.geometry.coordinates[1],
+                data.geometry.coordinates[0],
+              ],
+            },
             properties: {
               ...data,
               id: response.data.id,
               route: stopContext.properties.name,
             },
-          })
-          setBusLineStep('show-selection-popup')
+          });
+
+
+          const stopsFromApi = await _getStops(`id = ${response.data.id}`);
+          const fetchedStop = Array.isArray(stopsFromApi) && stopsFromApi.length > 0 ? stopsFromApi[0] : null;
+
+          setIntermediateStops((prev) => {
+            if (!fetchedStop) return prev;
+            const updated = [
+              ...prev,
+              { stop: fetchedStop, estimatedTimes: [] },
+            ];
+            if (newBusLine?.geometry?.coordinates) {
+              return sortIntermediateStopsByGeometry(
+                updated.filter((i): i is { stop: BusStopFeature; estimatedTimes: string[]; status?: boolean } => !!i.stop),
+                newBusLine.geometry
+              );
+            }
+            return updated;
+          });
+
+          setBusLineStep('show-selection-popup');
         }
         setStop(null)
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
@@ -118,7 +145,7 @@ const BusStopForm = () => {
         }
         await updateStop({
           ...data,
-          route: stopContext.properties.name,
+          route: stopContext.properties.name ?? 'unknown',
         })
         await queryClient.invalidateQueries({ queryKey: ['stops'] })
         toast.success('Parada actualizada correctamente', {

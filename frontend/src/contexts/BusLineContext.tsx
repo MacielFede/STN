@@ -1,9 +1,10 @@
 // context/BusLineContext.tsx
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react'
 import L, { type LatLngLiteral } from 'leaflet'
-import type { BusLineFeature, BusStopFeature } from '@/models/geoserver'
+import type { BusLineFeature, BusStopFeature, LineStringGeometry } from '@/models/geoserver'
 import { getHoursAndMinutes } from '@/utils/helpers';
 import { useBusLineCreation, type BusLineCreationType } from '@/hooks/useBusLineCreation';
+import { lineString, nearestPointOnLine } from '@turf/turf';
 
 type BusLineStep =
     | 'show-crud'
@@ -37,6 +38,7 @@ type BusLineContextType = {
     setIntermediateStops: React.Dispatch<React.SetStateAction<{ stop: BusStopFeature | null, estimatedTimes: Array<string>, status?: boolean }[]>>
     sortIntermediateStopsByGeometry: (
         intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[], status?: boolean }>,
+        busLineGeometry: LineStringGeometry
     ) => Array<{ stop: BusStopFeature, estimatedTimes: string[] }>
     cleanStopFromAssignments: (
         stopId: number,
@@ -184,16 +186,21 @@ export const BusLineProvider = ({ children }: { children: React.ReactNode }) => 
     }, [newBusLine, updateBusLineData, finishEditingLine]);
 
     const sortIntermediateStopsByGeometry = (
-        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[], status?: boolean }>
+        intermediateStops: Array<{ stop: BusStopFeature, estimatedTimes: string[], status?: boolean }>,
+        busLineGeometry: LineStringGeometry
     ) => {
+        if (!busLineGeometry?.coordinates?.length) return intermediateStops;
+        const busLine = lineString(busLineGeometry.coordinates);
+
         return [...intermediateStops].sort((a, b) => {
             const aCoord = a.stop?.geometry?.coordinates;
             const bCoord = b.stop?.geometry?.coordinates;
             if (!aCoord || !bCoord) return 0;
-            if (aCoord[0] !== bCoord[0]) {
-                return aCoord[0] - bCoord[0];
-            }
-            return aCoord[1] - bCoord[1];
+
+            const aSnap = nearestPointOnLine(busLine, aCoord);
+            const bSnap = nearestPointOnLine(busLine, bCoord);
+
+            return aSnap.properties.location - bSnap.properties.location;
         });
     };
 

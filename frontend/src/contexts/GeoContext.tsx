@@ -12,7 +12,7 @@ import { buildCqlFilter, getLinesCqlFilterFromData } from '@/utils/helpers'
 type GeoContextType = {
   endUserFilters: Array<EndUserFilter>
   toogleEndUserFilter: (filterToToogle: EndUserFilter) => void
-  resetBusLineCqlFilter: () => void
+  resetEndUserFilters: () => void
   busLinesCqlFilter: string
   busLinesInStreetFilter: FilterData['street'] | undefined
   setBusLinesInStreetFilter: (
@@ -25,7 +25,9 @@ type GeoContextType = {
   userBBox: BBox
   setUserBBox: (newBBox: BBox) => void
   displayDefaultLines: boolean
+  flyToUserLocation: boolean
   setDisplayDefaultLines: (toogleDefaultLines: boolean) => void
+  setFlyToUserLocation: (toogleFly: boolean) => void
   kmFeature: KmFeature | undefined
   setKmFeature: (newKm: KmFeature | undefined) => void
 }
@@ -34,6 +36,7 @@ const GeoContext = createContext<GeoContextType | undefined>(undefined)
 
 export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
   const [displayDefaultLines, setDisplayDefaultLines] = useState<boolean>(false)
+  const [flyToUserLocation, setFlyToUserLocation] = useState<boolean>(true)
   const [userBBox, setUserBBox] = useState<BBox>({})
   const [busLinesCqlFilter, setBusLinesCqlFilter] = useState('')
   const [endUserFilters, setEndUserFilters] = useState<Array<EndUserFilter>>([])
@@ -55,8 +58,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
       )
     else setEndUserFilters([...endUserFilters, filterToToogle])
   }
-  const resetBusLineCqlFilter = useCallback(() => {
-    setBusLinesCqlFilter('')
+  const resetEndUserFilters = useCallback(() => {
+    setEndUserFilters([])
   }, [])
 
   useEffect(() => {
@@ -74,6 +77,8 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
           .filter((filter) => filter !== ''),
       ),
     )
+    if (endUserFilters.some((filter) => filter.isActive))
+      setDisplayDefaultLines(false)
   }, [endUserFilters])
 
   return (
@@ -81,7 +86,7 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         endUserFilters,
         toogleEndUserFilter,
-        resetBusLineCqlFilter,
+        resetEndUserFilters,
         busLinesCqlFilter,
         busLinesInStreetFilter,
         setBusLinesInStreetFilter,
@@ -90,7 +95,9 @@ export const GeoProvider = ({ children }: { children: React.ReactNode }) => {
         userBBox,
         setUserBBox,
         displayDefaultLines,
+        flyToUserLocation,
         setDisplayDefaultLines,
+        setFlyToUserLocation,
         kmFeature,
         setKmFeature,
       }}

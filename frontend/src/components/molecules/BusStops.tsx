@@ -152,7 +152,7 @@ const BusStops = ({
       setIntermediateStops((prev) => {
         const updated = [...prev, { stop: stop, estimatedTimes: [] }]
         if (newBusLine.geometry?.coordinates) {
-          return sortIntermediateStopsByGeometry(updated)
+          return sortIntermediateStopsByGeometry(updated, newBusLine.geometry);
         }
         return updated
       })

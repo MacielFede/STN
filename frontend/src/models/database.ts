@@ -16,21 +16,14 @@ export type StatusOptions = BusStopProperties['status'] | ''
 
 export type StreetProperties = {
   id?: number
-  sourceId: string
-  segmentRef: string
-  streetCode: string
   name: string
-  streetType: string
-  source: string
-  locality: string
-  department: string
 }
 
 export type KmProperties = {
   id?: number
   kilometer: number
   route: number
-  route_name: string
+  routeName: string
 }
 
 export type BusLineProperties = {

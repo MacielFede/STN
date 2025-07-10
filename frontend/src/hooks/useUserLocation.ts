@@ -77,5 +77,9 @@ export function useUserLocation() {
     }
   }, [])
 
-  return { position, error }
+  return {
+    position,
+    error,
+    isInDefaultLocation: !!error || Object.is(position, DEFAULT_COORDINATES),
+  }
 }

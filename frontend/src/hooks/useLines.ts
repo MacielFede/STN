@@ -3,15 +3,18 @@ import { useEffect, useState } from 'react'
 import type { BusLineFeature } from '@/models/geoserver'
 import { useGeoContext } from '@/contexts/GeoContext'
 import { getLines, getLinesInStreet } from '@/services/busLines'
-import { buildBBoxFilter, filterAndSortLinesByDistance } from '@/utils/helpers'
+import {
+  buildBBoxFilter,
+  filterAndSortLinesByDistance,
+} from '@/utils/helpers'
 
 const useLines = () => {
   const {
     busLinesCqlFilter,
     busLinesInStreetFilter,
     busLineNearUserFilter,
-    userBBox,
     displayDefaultLines,
+    userBBox
   } = useGeoContext()
   const [lines, setLines] = useState<Array<BusLineFeature>>([])
   const { data: linesByCql, isLoading: isFetchingByCqlFilter } = useQuery({
@@ -34,7 +37,7 @@ const useLines = () => {
     enabled: !!busLinesInStreetFilter,
   })
 
-  const { data: defaultLines } = useQuery({
+  const { data: defaultLines, isLoading: isFetchingDefaultLines } = useQuery({
     queryKey: ['defaultLines', displayDefaultLines],
     queryFn: () => {
       if (displayDefaultLines) {
@@ -81,8 +84,11 @@ const useLines = () => {
 
   return {
     lines:
-      defaultLines?.length && defaultLines.length > 0 ? defaultLines : lines,
-    isFetching: isFetchingByCqlFilter || isFetchingByStreet,
+      displayDefaultLines && !!defaultLines?.length && defaultLines.length > 0
+        ? defaultLines
+        : lines,
+    isFetching:
+      isFetchingByCqlFilter || isFetchingByStreet || isFetchingDefaultLines,
   }
 }
 

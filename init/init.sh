@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set e
 #PostGIS data initializer
 until pg_isready -h postgis -p 5432 -U "$POSTGRES_USER"; do
   echo "Waiting for PostGIS initialization..."
