@@ -388,8 +388,7 @@ const StopAssignmentDrawer = ({
       await updateStopStatusesWithBusLineStatus(
         allDeletedOrDisabledAssociations, 
         stops, 
-        newBusLine.properties.status,
-        newBusLine.properties.id
+        newBusLine
       )
       hideLoader(1500)
       toast.success(

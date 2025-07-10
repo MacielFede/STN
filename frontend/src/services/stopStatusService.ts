@@ -1,8 +1,11 @@
 import { toast } from 'react-toastify'
 import { getByStop } from './busLines'
 import { _getStops, updateStop } from './busStops'
-import type { BusStopFeature } from '@/models/geoserver'
+import type { BusLineFeature, BusStopFeature, LineStringGeometry } from '@/models/geoserver'
 import type { BusStopLine } from '@/models/database'
+import { lineString, pointToLineDistance } from '@turf/turf'
+import { point } from 'leaflet'
+import { DISTANCE_BETWEEN_STOPS_AND_STREET } from '@/utils/constants'
 
 /**
  * Handles updating stop status when stops become orphaned (no longer assigned to any active bus line)
@@ -16,7 +19,7 @@ export async function handleOrphanedStops(
 
   for (const association of deletedAssociations) {
     const remainingAssociations = await getByStop(String(association.stopId))
-    
+
     if (remainingAssociations.length === 0 || remainingAssociations.every((assoc) => assoc.isEnabled === false)) {
       const stopFeatures = await _getStops(`id = ${association.stopId}`)
       if (!stopFeatures || stopFeatures.length === 0) continue
@@ -46,10 +49,20 @@ export async function handleOrphanedStops(
  * @param stops Array of stops with their features to activate
  */
 export async function activateAssignedStops(
-  stops: Array<{ stop: BusStopFeature | null }>
+  stops: Array<{ stop: BusStopFeature | null }>,
+  busLineGeometry?: LineStringGeometry | null
 ): Promise<void> {
   for (const stop of stops) {
     if (!stop.stop || stop.stop.properties.status === 'ACTIVE') continue
+    if (busLineGeometry) {
+      const linestring = lineString(busLineGeometry.coordinates);
+      if (linestring && stop.stop.geometry.coordinates) {
+        const distance = pointToLineDistance(stop.stop.geometry.coordinates, linestring, { units: 'meters' });
+        if (distance > DISTANCE_BETWEEN_STOPS_AND_STREET) {
+          continue;
+        }
+      }
+    }
 
     stop.stop.properties.status = 'ACTIVE'
     await updateStop({
@@ -87,11 +100,11 @@ export async function handleStopStatusAfterBusLineDeletion(
 ): Promise<void> {
   for (const stop of deletedStopAssociations) {
     const remainingAssociations = await getByStop(stop.stopId)
-    
+
     if (remainingAssociations.length === 0 || remainingAssociations.every((assoc) => assoc.isEnabled === false)) {
       const stopData = await _getStops(`id=${stop.stopId}`)
       if (!stopData || !stopData.length) continue
-      
+
       stopData[0].properties.status = 'INACTIVE'
       await updateStop({
         ...stopData[0].properties,
@@ -110,20 +123,21 @@ export async function handleStopStatusAfterBusLineDeletion(
 export async function updateStopStatusesForBusLineStatus(
   busLineStatus: 'ACTIVE' | 'INACTIVE',
   assignedStops: Array<{ stop: BusStopFeature | null }>,
-  busLineId?: string | number
+  busLineId?: string | number,
+  busLineGeometry?: LineStringGeometry | null
 ): Promise<void> {
   if (busLineStatus === 'INACTIVE') {
     for (const stop of assignedStops) {
       if (!stop.stop) continue
-      
+
       const remainingAssociations = await getByStop(String(stop.stop.properties.id))
-      
-      const otherAssociations = busLineId 
+
+      const otherAssociations = busLineId
         ? remainingAssociations.filter(assoc => String(assoc.lineId) !== String(busLineId))
         : remainingAssociations
-      
+
       const hasActiveAssociations = otherAssociations.some((assoc) => assoc.isEnabled === true)
-      
+
       if (!hasActiveAssociations) {
         stop.stop.properties.status = 'INACTIVE'
         await updateStop({
@@ -133,7 +147,7 @@ export async function updateStopStatusesForBusLineStatus(
       }
     }
   } else {
-    await activateAssignedStops(assignedStops)
+    await activateAssignedStops(assignedStops, busLineGeometry)
   }
 }
 
@@ -148,12 +162,11 @@ export async function updateStopStatusesForBusLineStatus(
 export async function updateStopStatusesWithBusLineStatus(
   deletedAssociations: Array<BusStopLine>,
   assignedStops: Array<{ stop: BusStopFeature | null }>,
-  busLineStatus: 'ACTIVE' | 'INACTIVE',
-  busLineId?: string | number
+  newBusLine: BusLineFeature
 ): Promise<boolean> {
   const hasOrphanedStops = await handleOrphanedStops(deletedAssociations)
 
-  await updateStopStatusesForBusLineStatus(busLineStatus, assignedStops, busLineId)
+  await updateStopStatusesForBusLineStatus(newBusLine.properties.status, assignedStops, newBusLine.properties.id, newBusLine?.geometry)
 
   return hasOrphanedStops
 }
