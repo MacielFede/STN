@@ -128,7 +128,7 @@ const BusLinesCrud = ({ onClose }: { onClose: () => void }) => {
             }
         });
         if (type === 'hide') return;  
-        travelToGeometry(line.geometry.coordinates, 'fly');
+        travelToGeometry(line.geometry.coordinates, 'fit');
     }
 
     const handleEditAssociations = (line: BusLineFeature) => {
