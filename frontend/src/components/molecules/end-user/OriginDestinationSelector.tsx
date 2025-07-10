@@ -42,7 +42,7 @@ const BusLineSelector = () => {
       setBusLineNearUserFilter({
         userLocation: { coordinates: userLocation, type: 'Point' },
       })
-    }
+    } else setBusLineNearUserFilter(undefined)
   }
 
   const origins = useMemo(() => {
