@@ -118,7 +118,7 @@ export function toCQLTime(time: string): string {
 export const filterAndSortLinesByDistance = (
   userPoint: PointGeometry,
   lines: Array<BusLineFeature>,
-  radius = 1,
+  radius = 2,
 ) =>
   lines
     .map((line) => {
