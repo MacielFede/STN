@@ -22,7 +22,7 @@ public class BusStopController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody BusStopRequest request) {
+        public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody BusStopRequest request) {
         return ResponseEntity.ok(busStopService.update(id, request));
     }
 
